@@ -794,7 +794,7 @@
           </p>
         </div>
       </div>
-      <form class="contact-form fade-up" onsubmit="handleSubmit(event)">
+      <form class="contact-form fade-up" action="https://formspree.io/f/mjgzlvvn" method="POST">
         <div class="form-row">
           <div class="form-group">
             <label for="nom">Nom</label>
@@ -823,7 +823,6 @@
           <textarea id="message" placeholder="Décrivez brièvement l'ouvrage concerné et les désordres observés..." required></textarea>
         </div>
         <button type="submit" class="btn-submit">Envoyer la demande →</button>
-        <p id="form-msg" style="font-size:0.8rem;color:var(--gold);display:none;margin-top:8px;">Message envoyé — réponse sous 24 h ouvrées.</p>
       </form>
     </div>
   </div>
@@ -860,12 +859,7 @@ window.addEventListener('scroll', () => {
   });
 });
 
-// Form
-function handleSubmit(e) {
-  e.preventDefault();
-  document.getElementById('form-msg').style.display = 'block';
-  e.target.reset();
-}
+
 </script>
 </body>
 </html>
