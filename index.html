@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Expertis Bois Réunion — Expert technique indépendant Bâtiment Bois & Structure</title>
+<meta name="description" content="Expertis Bois Réunion — Franck Guenebaut, expert technique indépendant spécialisé en construction bois, charpente, terrasses, bardages et pathologies bois à La Réunion.">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Source+Sans+3:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy:   #1B2A4A;
+    --gold:   #C8972B;
+    --gold-l: #D4A843;
+    --white:  #FFFFFF;
+    --off:    #F7F6F2;
+    --gray:   #5A6475;
+    --lgray:  #E8E6E0;
+    --text:   #1A1A1A;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Source Sans 3', sans-serif;
+    font-weight: 400;
+    color: var(--text);
+    background: var(--white);
+    line-height: 1.7;
+    overflow-x: hidden;
+  }
+
+  /* ── NAVIGATION ── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    background: rgba(27, 42, 74, 0.97);
+    backdrop-filter: blur(8px);
+    border-bottom: 2px solid var(--gold);
+    padding: 0 5%;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 68px;
+  }
+  .nav-logo {
+    display: flex; align-items: center; gap: 14px;
+    text-decoration: none;
+  }
+  .nav-logo svg { width: 44px; height: 30px; }
+  .nav-brand {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.05rem; font-weight: 600;
+    color: var(--white); letter-spacing: 0.04em;
+  }
+  .nav-brand span { color: var(--gold); }
+  .nav-links { display: flex; gap: 36px; }
+  .nav-links a {
+    color: rgba(255,255,255,0.8); text-decoration: none;
+    font-size: 0.875rem; font-weight: 500; letter-spacing: 0.06em;
+    text-transform: uppercase; transition: color 0.2s;
+  }
+  .nav-links a:hover { color: var(--gold); }
+  .nav-cta {
+    background: var(--gold); color: var(--navy) !important;
+    padding: 8px 20px; border-radius: 2px;
+    font-weight: 600 !important;
+  }
+  .nav-cta:hover { background: var(--gold-l) !important; color: var(--navy) !important; }
+
+  /* ── HERO ── */
+  #hero {
+    min-height: 100vh;
+    background: var(--navy);
+    display: flex; align-items: center;
+    position: relative; overflow: hidden;
+    padding: 100px 5% 80px;
+  }
+  .hero-bg {
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse 70% 60% at 65% 50%, rgba(200,151,43,0.07) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero-grid {
+    position: absolute; inset: 0; opacity: 0.03;
+    background-image: linear-gradient(var(--gold) 1px, transparent 1px),
+                      linear-gradient(90deg, var(--gold) 1px, transparent 1px);
+    background-size: 60px 60px;
+    pointer-events: none;
+  }
+  .hero-content {
+    position: relative; z-index: 2;
+    max-width: 1100px; margin: 0 auto;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center;
+  }
+  .hero-text {}
+  .hero-tag {
+    display: inline-block;
+    font-size: 0.75rem; font-weight: 600; letter-spacing: 0.15em;
+    text-transform: uppercase; color: var(--gold);
+    border: 1px solid rgba(200,151,43,0.4);
+    padding: 5px 14px; margin-bottom: 28px;
+    border-radius: 1px;
+  }
+  .hero-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2.2rem, 4vw, 3.4rem);
+    font-weight: 700; line-height: 1.15;
+    color: var(--white); margin-bottom: 10px;
+  }
+  .hero-title em {
+    font-style: normal; color: var(--gold);
+    display: block;
+  }
+  .hero-sub {
+    font-size: 1rem; color: rgba(255,255,255,0.6);
+    font-weight: 300; letter-spacing: 0.08em;
+    text-transform: uppercase; margin-bottom: 28px;
+  }
+  .hero-desc {
+    font-size: 1.05rem; color: rgba(255,255,255,0.75);
+    line-height: 1.8; margin-bottom: 40px; max-width: 480px;
+  }
+  .hero-btns { display: flex; gap: 16px; flex-wrap: wrap; }
+  .btn-primary {
+    background: var(--gold); color: var(--navy);
+    padding: 14px 32px; font-weight: 600; font-size: 0.9rem;
+    letter-spacing: 0.05em; text-decoration: none;
+    border-radius: 2px; transition: all 0.2s;
+    display: inline-block;
+  }
+  .btn-primary:hover { background: var(--gold-l); transform: translateY(-1px); }
+  .btn-outline {
+    border: 1px solid rgba(255,255,255,0.3); color: var(--white);
+    padding: 14px 32px; font-weight: 400; font-size: 0.9rem;
+    letter-spacing: 0.05em; text-decoration: none;
+    border-radius: 2px; transition: all 0.2s;
+    display: inline-block;
+  }
+  .btn-outline:hover { border-color: var(--gold); color: var(--gold); }
+
+  /* Logo SVG hero */
+  .hero-visual {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 32px;
+  }
+  .hero-logo-wrap {
+    position: relative;
+  }
+  .hero-logo-wrap svg {
+    width: 100%; max-width: 340px; height: auto;
+    filter: drop-shadow(0 20px 60px rgba(200,151,43,0.15));
+    animation: float 6s ease-in-out infinite;
+  }
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+  }
+  .hero-stats {
+    display: flex; gap: 40px;
+  }
+  .stat { text-align: center; }
+  .stat-num {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.8rem; font-weight: 700; color: var(--gold);
+    display: block;
+  }
+  .stat-label {
+    font-size: 0.75rem; color: rgba(255,255,255,0.5);
+    letter-spacing: 0.08em; text-transform: uppercase;
+  }
+
+  /* ── SECTIONS COMMUNES ── */
+  section { padding: 90px 5%; }
+  .section-inner { max-width: 1100px; margin: 0 auto; }
+  .section-tag {
+    font-size: 0.72rem; font-weight: 600; letter-spacing: 0.15em;
+    text-transform: uppercase; color: var(--gold);
+    display: block; margin-bottom: 14px;
+  }
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.8rem, 3vw, 2.6rem);
+    font-weight: 700; color: var(--navy);
+    line-height: 1.2; margin-bottom: 20px;
+  }
+  .section-title.light { color: var(--white); }
+  .section-lead {
+    font-size: 1.05rem; color: var(--gray);
+    max-width: 600px; line-height: 1.8;
+    margin-bottom: 56px;
+  }
+  .section-lead.light { color: rgba(255,255,255,0.65); }
+  .divider {
+    width: 48px; height: 3px;
+    background: var(--gold); margin-bottom: 28px;
+  }
+
+  /* ── EXPERTISES ── */
+  #expertises { background: var(--off); }
+  .expertises-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2px;
+  }
+  .expertise-card {
+    background: var(--white);
+    padding: 40px 32px;
+    transition: all 0.25s;
+    border-bottom: 3px solid transparent;
+    position: relative; overflow: hidden;
+  }
+  .expertise-card::before {
+    content: '';
+    position: absolute; bottom: 0; left: 0; right: 0;
+    height: 3px; background: var(--gold);
+    transform: scaleX(0); transition: transform 0.3s;
+    transform-origin: left;
+  }
+  .expertise-card:hover::before { transform: scaleX(1); }
+  .expertise-card:hover { transform: translateY(-4px); box-shadow: 0 12px 40px rgba(27,42,74,0.1); }
+  .expertise-icon {
+    width: 48px; height: 48px; margin-bottom: 20px;
+    color: var(--gold);
+  }
+  .expertise-icon svg { width: 100%; height: 100%; stroke: currentColor; }
+  .expertise-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.15rem; font-weight: 600;
+    color: var(--navy); margin-bottom: 12px;
+  }
+  .expertise-desc {
+    font-size: 0.9rem; color: var(--gray); line-height: 1.7;
+  }
+
+  /* ── MÉTHODE ── */
+  #methode { background: var(--navy); }
+  .methode-grid {
+    display: grid; grid-template-columns: repeat(4,1fr); gap: 2px;
+  }
+  .methode-step {
+    padding: 40px 28px;
+    border-left: 1px solid rgba(255,255,255,0.06);
+    position: relative;
+  }
+  .methode-step:first-child { border-left: none; }
+  .step-num {
+    font-family: 'Playfair Display', serif;
+    font-size: 3rem; font-weight: 700;
+    color: rgba(200,151,43,0.2);
+    display: block; margin-bottom: 16px; line-height: 1;
+  }
+  .step-title {
+    font-size: 1rem; font-weight: 600;
+    color: var(--white); margin-bottom: 10px;
+  }
+  .step-desc {
+    font-size: 0.875rem; color: rgba(255,255,255,0.5); line-height: 1.7;
+  }
+
+  /* ── TARIFS ── */
+  #tarifs { background: var(--white); }
+  .tarifs-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 32px;
+    margin-bottom: 48px;
+  }
+  .tarif-card {
+    border: 1px solid var(--lgray);
+    padding: 40px; border-radius: 2px;
+    position: relative; transition: all 0.25s;
+  }
+  .tarif-card:hover { border-color: var(--gold); box-shadow: 0 8px 32px rgba(200,151,43,0.1); }
+  .tarif-card.featured {
+    border-color: var(--navy); background: var(--navy);
+  }
+  .tarif-badge {
+    position: absolute; top: -12px; left: 32px;
+    background: var(--gold); color: var(--navy);
+    font-size: 0.7rem; font-weight: 700;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    padding: 4px 12px;
+  }
+  .tarif-label {
+    font-size: 0.75rem; font-weight: 600; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--gold);
+    margin-bottom: 10px; display: block;
+  }
+  .tarif-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.3rem; font-weight: 600;
+    color: var(--navy); margin-bottom: 16px;
+  }
+  .tarif-card.featured .tarif-title { color: var(--white); }
+  .tarif-price {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.8rem; font-weight: 700;
+    color: var(--gold); line-height: 1; margin-bottom: 6px;
+  }
+  .tarif-price-sub {
+    font-size: 0.8rem; color: var(--gray); margin-bottom: 28px;
+  }
+  .tarif-card.featured .tarif-price-sub { color: rgba(255,255,255,0.4); }
+  .tarif-features { list-style: none; margin-bottom: 28px; }
+  .tarif-features li {
+    padding: 8px 0; font-size: 0.9rem; color: var(--text);
+    border-bottom: 1px solid var(--lgray);
+    display: flex; align-items: flex-start; gap: 10px;
+  }
+  .tarif-card.featured .tarif-features li {
+    color: rgba(255,255,255,0.75); border-color: rgba(255,255,255,0.08);
+  }
+  .tarif-features li::before {
+    content: '–'; color: var(--gold); font-weight: 700;
+    flex-shrink: 0; margin-top: 1px;
+  }
+  .tarif-note {
+    font-size: 0.8rem; color: var(--gray);
+    font-style: italic; text-align: center;
+    padding: 20px; background: var(--off);
+    border-radius: 2px;
+  }
+
+  /* ── ZONE ── */
+  #zone { background: var(--off); }
+  .zone-content {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: start;
+  }
+  .zones-list { display: flex; flex-direction: column; gap: 8px; }
+  .zone-item {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 16px; background: var(--white);
+    border-left: 3px solid transparent; transition: all 0.2s;
+  }
+  .zone-item:hover { border-color: var(--gold); padding-left: 20px; }
+  .zone-name { font-size: 0.9rem; font-weight: 500; color: var(--navy); }
+  .zone-communes { font-size: 0.8rem; color: var(--gray); }
+  .zone-price {
+    font-weight: 600; color: var(--gold); font-size: 0.9rem;
+    white-space: nowrap; margin-left: 16px;
+  }
+  .zone-note {
+    margin-top: 24px; padding: 16px;
+    background: var(--navy); color: rgba(255,255,255,0.7);
+    font-size: 0.85rem; line-height: 1.6; border-radius: 2px;
+  }
+  .zone-note strong { color: var(--gold); }
+
+  /* ── CONTACT ── */
+  #contact { background: var(--navy); }
+  .contact-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 80px;
+  }
+  .contact-info { display: flex; flex-direction: column; gap: 28px; }
+  .contact-item { display: flex; gap: 16px; align-items: flex-start; }
+  .contact-icon {
+    width: 40px; height: 40px; background: rgba(200,151,43,0.15);
+    border-radius: 2px; display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; color: var(--gold);
+  }
+  .contact-icon svg { width: 20px; height: 20px; stroke: currentColor; fill: none; }
+  .contact-label {
+    font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase;
+    color: rgba(255,255,255,0.4); margin-bottom: 4px; display: block;
+  }
+  .contact-value {
+    font-size: 0.95rem; color: var(--white); font-weight: 400;
+  }
+  .contact-form { display: flex; flex-direction: column; gap: 16px; }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .form-group { display: flex; flex-direction: column; gap: 8px; }
+  .form-group label {
+    font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase;
+    color: rgba(255,255,255,0.4); font-weight: 500;
+  }
+  .form-group input,
+  .form-group textarea,
+  .form-group select {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.12);
+    color: var(--white); font-family: inherit;
+    font-size: 0.9rem; padding: 12px 16px;
+    border-radius: 2px; outline: none;
+    transition: border-color 0.2s;
+  }
+  .form-group input:focus,
+  .form-group textarea:focus,
+  .form-group select:focus { border-color: var(--gold); }
+  .form-group input::placeholder,
+  .form-group textarea::placeholder { color: rgba(255,255,255,0.25); }
+  .form-group select option { background: var(--navy); }
+  .form-group textarea { resize: vertical; min-height: 120px; }
+  .btn-submit {
+    background: var(--gold); color: var(--navy);
+    border: none; padding: 14px 32px;
+    font-family: inherit; font-size: 0.9rem; font-weight: 600;
+    letter-spacing: 0.05em; cursor: pointer;
+    border-radius: 2px; transition: all 0.2s; align-self: flex-start;
+  }
+  .btn-submit:hover { background: var(--gold-l); transform: translateY(-1px); }
+
+  /* ── FOOTER ── */
+  footer {
+    background: #0F1929; color: rgba(255,255,255,0.4);
+    padding: 32px 5%; text-align: center;
+    font-size: 0.8rem; border-top: 1px solid rgba(200,151,43,0.2);
+  }
+  footer a { color: var(--gold); text-decoration: none; }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 900px) {
+    .hero-content { grid-template-columns: 1fr; gap: 48px; }
+    .hero-visual { display: none; }
+    .expertises-grid { grid-template-columns: 1fr 1fr; }
+    .methode-grid { grid-template-columns: 1fr 1fr; }
+    .tarifs-grid { grid-template-columns: 1fr; }
+    .zone-content { grid-template-columns: 1fr; gap: 40px; }
+    .contact-grid { grid-template-columns: 1fr; gap: 48px; }
+    .nav-links { display: none; }
+    .form-row { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 600px) {
+    .expertises-grid { grid-template-columns: 1fr; }
+    .methode-grid { grid-template-columns: 1fr 1fr; }
+  }
+
+  /* ── ANIMATIONS ── */
+  .fade-up {
+    opacity: 0; transform: translateY(24px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+  .fade-up.visible { opacity: 1; transform: translateY(0); }
+</style>
+</head>
+<body>
+
+<!-- NAVIGATION -->
+<nav>
+  <a class="nav-logo" href="#hero">
+    <svg viewBox="0 0 44 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <polygon points="22,1 42,27 2,27" stroke="white" stroke-width="2.2" stroke-linejoin="round" fill="none"/>
+      <line x1="2" y1="27" x2="42" y2="27" stroke="white" stroke-width="2" stroke-linecap="round"/>
+      <line x1="22" y1="1" x2="22" y2="27" stroke="white" stroke-width="0.8" opacity="0.3"/>
+      <circle cx="22" cy="1" r="3" fill="#C8972B"/>
+      <line x1="22" y1="1" x2="5" y2="27" stroke="white" stroke-width="1.5" opacity="0.4"/>
+      <line x1="22" y1="1" x2="39" y2="27" stroke="white" stroke-width="1.5" opacity="0.4"/>
+      <line x1="11" y1="15" x2="33" y2="15" stroke="#C8972B" stroke-width="1.8" stroke-linecap="round"/>
+      <circle cx="11" cy="15" r="2" fill="#C8972B"/>
+      <circle cx="33" cy="15" r="2" fill="#C8972B"/>
+    </svg>
+    <div class="nav-brand">EXPERTIS BOIS <span>RÉUNION</span></div>
+  </a>
+  <div class="nav-links">
+    <a href="#expertises">Expertises</a>
+    <a href="#methode">Méthode</a>
+    <a href="#tarifs">Tarifs</a>
+    <a href="#zone">Zone</a>
+    <a href="#contact" class="nav-cta">Contact</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-grid"></div>
+  <div class="hero-content">
+    <div class="hero-text">
+      <span class="hero-tag">La Réunion (974) — Saint-Leu</span>
+      <h1 class="hero-title">
+        Expert technique
+        <em>Bois & Structure</em>
+      </h1>
+      <p class="hero-sub">Expertis Bois Réunion</p>
+      <p class="hero-desc">
+        Analyse indépendante des désordres sur ouvrages bois — charpente, terrasses, bardages, ossatures. Rapports opposables pour particuliers, avocats et assureurs.
+      </p>
+      <div class="hero-btns">
+        <a href="#contact" class="btn-primary">Demander un devis</a>
+        <a href="#expertises" class="btn-outline">Nos expertises</a>
+      </div>
+    </div>
+    <div class="hero-visual">
+      <div class="hero-logo-wrap">
+        <svg viewBox="0 0 340 240" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Rayonnement -->
+          <line x1="170" y1="30" x2="170" y2="8" stroke="#C8972B" stroke-width="0.8" opacity="0.4"/>
+          <line x1="170" y1="30" x2="200" y2="12" stroke="#C8972B" stroke-width="0.8" opacity="0.3"/>
+          <line x1="170" y1="30" x2="140" y2="12" stroke="#C8972B" stroke-width="0.8" opacity="0.3"/>
+          <!-- Triangle charpente -->
+          <polygon points="170,18 300,180 40,180" fill="none" stroke="white" stroke-width="4.5" stroke-linejoin="round"/>
+          <!-- Sablière -->
+          <line x1="40" y1="180" x2="300" y2="180" stroke="white" stroke-width="4" stroke-linecap="round"/>
+          <!-- Poinçon -->
+          <line x1="170" y1="18" x2="170" y2="180" stroke="white" stroke-width="1.5" opacity="0.2"/>
+          <!-- Panne -->
+          <line x1="105" y1="100" x2="235" y2="100" stroke="white" stroke-width="1.2" opacity="0.2"/>
+          <!-- Pivot compas -->
+          <circle cx="170" cy="18" r="9" fill="#C8972B"/>
+          <circle cx="170" cy="18" r="4.5" fill="white"/>
+          <!-- Branches compas -->
+          <line x1="170" y1="18" x2="52" y2="180" stroke="white" stroke-width="3" opacity="0.45"/>
+          <line x1="170" y1="18" x2="288" y2="180" stroke="white" stroke-width="3" opacity="0.45"/>
+          <!-- Entretoise or -->
+          <line x1="118" y1="77" x2="222" y2="77" stroke="#C8972B" stroke-width="4" stroke-linecap="round"/>
+          <circle cx="118" cy="77" r="6" fill="#C8972B"/>
+          <circle cx="222" cy="77" r="6" fill="#C8972B"/>
+          <!-- Pointes -->
+          <circle cx="52" cy="180" r="5.5" fill="white"/>
+          <circle cx="288" cy="180" r="5.5" fill="white"/>
+          <!-- Chevron faîtage -->
+          <path d="M158,38 L170,18 L182,38" fill="none" stroke="#C8972B" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+          <!-- Marques taillant -->
+          <line x1="132" y1="58" x2="120" y2="70" stroke="#C8972B" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="118" y1="82" x2="106" y2="94" stroke="#C8972B" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="208" y1="58" x2="220" y2="70" stroke="#C8972B" stroke-width="2.5" stroke-linecap="round"/>
+          <line x1="222" y1="82" x2="234" y2="94" stroke="#C8972B" stroke-width="2.5" stroke-linecap="round"/>
+          <!-- Texte -->
+          <text x="170" y="212" text-anchor="middle" font-family="Georgia, serif" font-weight="700" font-size="20" fill="white" letter-spacing="3">EXPERTIS BOIS</text>
+          <line x1="88" y1="218" x2="252" y2="218" stroke="#C8972B" stroke-width="1.5"/>
+          <text x="170" y="233" text-anchor="middle" font-family="Georgia, serif" font-size="11" fill="#C8972B" letter-spacing="6">RÉUNION</text>
+        </svg>
+      </div>
+      <div class="hero-stats">
+        <div class="stat">
+          <span class="stat-num">890€</span>
+          <span class="stat-label">Rapport de constat</span>
+        </div>
+        <div class="stat">
+          <span class="stat-num">21j</span>
+          <span class="stat-label">Délai de remise</span>
+        </div>
+        <div class="stat">
+          <span class="stat-num">974</span>
+          <span class="stat-label">Toute l'île</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- EXPERTISES -->
+<section id="expertises">
+  <div class="section-inner">
+    <span class="section-tag fade-up">Domaines d'intervention</span>
+    <div class="divider fade-up"></div>
+    <h2 class="section-title fade-up">Spécialiste de tous les ouvrages bois</h2>
+    <p class="section-lead fade-up">À La Réunion, le climat tropical accélère considérablement la dégradation des ouvrages bois mal conçus ou mal mis en œuvre. J'interviens sur l'ensemble des pathologies et désordres.</p>
+    <div class="expertises-grid">
+      <div class="expertise-card fade-up">
+        <div class="expertise-icon">
+          <svg viewBox="0 0 48 48" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="24,4 44,38 4,38"/>
+            <line x1="4" y1="38" x2="44" y2="38"/>
+            <line x1="24" y1="4" x2="24" y2="38" opacity="0.4"/>
+            <line x1="14" y1="22" x2="34" y2="22" opacity="0.4"/>
+          </svg>
+        </div>
+        <h3 class="expertise-title">Charpente & Ossature bois</h3>
+        <p class="expertise-desc">Charpente traditionnelle et industrielle, fermettes, pannes, ossature plateforme (DTU 31.2), poteaux-poutres. Désordres structurels, déformations excessives, assemblages non conformes.</p>
+      </div>
+      <div class="expertise-card fade-up">
+        <div class="expertise-icon">
+          <svg viewBox="0 0 48 48" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="4" y="20" width="40" height="8" rx="1"/>
+            <rect x="4" y="30" width="40" height="8" rx="1"/>
+            <line x1="10" y1="22" x2="10" y2="26" opacity="0.4"/>
+            <line x1="20" y1="22" x2="20" y2="26" opacity="0.4"/>
+            <line x1="30" y1="32" x2="30" y2="36" opacity="0.4"/>
+          </svg>
+        </div>
+        <h3 class="expertise-title">Terrasses & Platelages</h3>
+        <p class="expertise-desc">Platelages extérieurs bois et composites (DTU 51.4, règles UMBO/CSFE). Pourrissement des lames et lambourdes, défaut de ventilation, fixations inadaptées au climat tropical humide.</p>
+      </div>
+      <div class="expertise-card fade-up">
+        <div class="expertise-icon">
+          <svg viewBox="0 0 48 48" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="4" y="8" width="8" height="32" rx="1"/>
+            <rect x="20" y="8" width="8" height="32" rx="1"/>
+            <line x1="12" y1="14" x2="20" y2="14"/>
+            <line x1="12" y1="24" x2="20" y2="24"/>
+            <line x1="12" y1="34" x2="20" y2="34"/>
+            <line x1="36" y1="8" x2="36" y2="40" opacity="0.3"/>
+          </svg>
+        </div>
+        <h3 class="expertise-title">Bardages bois & Composites</h3>
+        <p class="expertise-desc">Bardages bois et composites (DTU 41.2). Décollement, gonflement, défaut de ventilation de lame d'air, essence inadaptée à la classe d'emploi CE3/CE4 requise à La Réunion.</p>
+      </div>
+      <div class="expertise-card fade-up">
+        <div class="expertise-icon">
+          <svg viewBox="0 0 48 48" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="24" cy="24" r="8"/>
+            <line x1="24" y1="4" x2="24" y2="14" opacity="0.5"/>
+            <line x1="24" y1="34" x2="24" y2="44" opacity="0.5"/>
+            <line x1="4" y1="24" x2="14" y2="24" opacity="0.5"/>
+            <line x1="34" y1="24" x2="44" y2="24" opacity="0.5"/>
+          </svg>
+        </div>
+        <h3 class="expertise-title">Pathologies du bois</h3>
+        <p class="expertise-desc">Pourriture brune, blanche et molle. Insectes xylophages (capricornes, vrillettes, termites). Mesures hygrométriques. Analyse des classes de service EN 1995 et d'emploi EN 335.</p>
+      </div>
+      <div class="expertise-card fade-up">
+        <div class="expertise-icon">
+          <svg viewBox="0 0 48 48" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="8" y="8" width="32" height="32" rx="2"/>
+            <line x1="8" y1="20" x2="40" y2="20" opacity="0.4"/>
+            <line x1="20" y1="8" x2="20" y2="40" opacity="0.4"/>
+            <line x1="8" y1="32" x2="40" y2="32" opacity="0.4"/>
+          </svg>
+        </div>
+        <h3 class="expertise-title">Vérification structurelle</h3>
+        <p class="expertise-desc">Notes de calcul selon l'Eurocode 5 (EN 1995-1-1) — flexion, flèche, stabilité, assemblages. Vérification ELU/ELS. Identification des sous-dimensionnements et risques de rupture.</p>
+      </div>
+      <div class="expertise-card fade-up">
+        <div class="expertise-icon">
+          <svg viewBox="0 0 48 48" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M8 40 L8 16 L24 8 L40 16 L40 40"/>
+            <line x1="8" y1="40" x2="40" y2="40"/>
+            <line x1="16" y1="40" x2="16" y2="28"/>
+            <line x1="32" y1="40" x2="32" y2="28"/>
+            <line x1="16" y1="28" x2="32" y2="28"/>
+          </svg>
+        </div>
+        <h3 class="expertise-title">Structures extérieures</h3>
+        <p class="expertise-desc">Pergolas, carports, caillebotis, couvertures bois. Structures légères en zone cyclonique (La Réunion — zone 5). Conformité DTU 43.4, assemblages sous charge vent.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MÉTHODE -->
+<section id="methode">
+  <div class="section-inner">
+    <span class="section-tag fade-up">Déroulement d'une mission</span>
+    <div class="divider fade-up"></div>
+    <h2 class="section-title light fade-up">De la prise de contact au rapport</h2>
+    <p class="section-lead light fade-up">Un processus rigoureux, transparent, adapté aux exigences judiciaires françaises.</p>
+    <div class="methode-grid">
+      <div class="methode-step fade-up">
+        <span class="step-num">01</span>
+        <p class="step-title">Prise de contact & cadrage</p>
+        <p class="step-desc">Description de votre situation. Définition du type de mission adapté. Proposition tarifaire sous 48 heures.</p>
+      </div>
+      <div class="methode-step fade-up">
+        <span class="step-num">02</span>
+        <p class="step-title">Visite contradictoire</p>
+        <p class="step-desc">Examen complet de l'ouvrage. Relevé photographique numéroté. Mesures hygrométriques. Sondages non destructifs.</p>
+      </div>
+      <div class="methode-step fade-up">
+        <span class="step-num">03</span>
+        <p class="step-title">Analyse & rédaction</p>
+        <p class="step-desc">Analyse technique (DTU, Eurocode 5), qualification juridique des désordres, identification des responsabilités.</p>
+      </div>
+      <div class="methode-step fade-up">
+        <span class="step-num">04</span>
+        <p class="step-title">Remise du rapport</p>
+        <p class="step-desc">Rapport complet opposable, avec photos numérotées et note de calcul. Livraison PDF + Word sous 21 jours ouvrés.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TARIFS -->
+<section id="tarifs">
+  <div class="section-inner">
+    <span class="section-tag fade-up">Honoraires</span>
+    <div class="divider fade-up"></div>
+    <h2 class="section-title fade-up">Tarification claire et forfaitaire</h2>
+    <p class="section-lead fade-up">Tous les montants sont hors taxes. TVA non applicable — art. 293 B du CGI (régime micro-entrepreneur).</p>
+    <div class="tarifs-grid">
+      <div class="tarif-card fade-up">
+        <span class="tarif-badge">Produit d'entrée</span>
+        <span class="tarif-label">Forfait 1</span>
+        <h3 class="tarif-title">Rapport de constat simple</h3>
+        <div class="tarif-price">890 €</div>
+        <p class="tarif-price-sub">Hors déplacements — livraison sous 21 jours</p>
+        <ul class="tarif-features">
+          <li>Visite d'expertise demi-journée (4 h)</li>
+          <li>Relevé photographique numéroté et légendé</li>
+          <li>Rapport de constat technique (3 h)</li>
+          <li>Format PDF + Word natif</li>
+        </ul>
+      </div>
+      <div class="tarif-card featured fade-up">
+        <span class="tarif-badge">Mission complète</span>
+        <span class="tarif-label">Forfait 2</span>
+        <h3 class="tarif-title">Mission complète standard</h3>
+        <div class="tarif-price">2 400 €</div>
+        <p class="tarif-price-sub">Tout compris hors déplacements — rapport opposable</p>
+        <ul class="tarif-features">
+          <li>Analyse documentaire (≤ 50 pages)</li>
+          <li>Visite contradictoire + mesures hygrométriques</li>
+          <li>Analyse technique & normative (DTU, EC5)</li>
+          <li>Note de calcul simplifiée (Eurocode 5)</li>
+          <li>Analyse juridique & imputabilité</li>
+          <li>Rapport complet 13 chapitres + annexes</li>
+          <li>Un aller-retour de relecture inclus</li>
+        </ul>
+      </div>
+    </div>
+    <p class="tarif-note fade-up">Déplacements facturés en forfait zone depuis Saint-Leu · Urgence (+40 %) · Prestations à la carte disponibles</p>
+  </div>
+</section>
+
+<!-- ZONE -->
+<section id="zone">
+  <div class="section-inner">
+    <span class="section-tag fade-up">Déplacements</span>
+    <div class="divider fade-up"></div>
+    <h2 class="section-title fade-up">Intervention sur toute La Réunion</h2>
+    <div class="zone-content">
+      <div class="fade-up">
+        <p style="font-size:1rem;color:var(--gray);line-height:1.8;margin-bottom:32px;">
+          Base de départ : Saint-Leu (côte ouest). Les déplacements sont facturés en forfait aller-retour par zone géographique, sans surprise.
+        </p>
+        <div class="zones-list">
+          <div class="zone-item"><div><span class="zone-name">Zone 0</span><span class="zone-communes" style="display:block;"> Saint-Leu, Les Avirons, Étang-Salé</span></div><span class="zone-price">Offert</span></div>
+          <div class="zone-item"><div><span class="zone-name">Zone 1</span><span class="zone-communes" style="display:block;"> Saint-Pierre, Le Tampon, Saint-Louis</span></div><span class="zone-price">40 €</span></div>
+          <div class="zone-item"><div><span class="zone-name">Zone 2</span><span class="zone-communes" style="display:block;"> Saint-Paul, Le Port, La Possession</span></div><span class="zone-price">50 €</span></div>
+          <div class="zone-item"><div><span class="zone-name">Zone 3</span><span class="zone-communes" style="display:block;"> Saint-Denis, Sainte-Marie, Sainte-Suzanne</span></div><span class="zone-price">70 €</span></div>
+          <div class="zone-item"><div><span class="zone-name">Zone 4</span><span class="zone-communes" style="display:block;"> Saint-Benoît, Bras-Panon, Saint-André</span></div><span class="zone-price">90 €</span></div>
+          <div class="zone-item"><div><span class="zone-name">Zone 5</span><span class="zone-communes" style="display:block;"> Saint-Joseph, Saint-Philippe, Petite-Île</span></div><span class="zone-price">80 €</span></div>
+          <div class="zone-item"><div><span class="zone-name">Supplément Hauts</span><span class="zone-communes" style="display:block;"> Cilaos, Salazie, Plaines</span></div><span class="zone-price">+ 50 €</span></div>
+        </div>
+        <div class="zone-note">
+          <strong>Exemple :</strong> Intervention à Cilaos = Zone 1 (Saint-Louis) + supplément Hauts = <strong style="color:var(--gold)">40 + 50 = 90 €</strong>
+        </div>
+      </div>
+      <div class="fade-up" style="display:flex;flex-direction:column;gap:24px;">
+        <div style="background:var(--navy);padding:32px;border-radius:2px;color:white;">
+          <h3 style="font-family:'Playfair Display',serif;font-size:1.2rem;color:var(--gold);margin-bottom:16px;">Pourquoi un expert bois indépendant ?</h3>
+          <p style="font-size:0.9rem;color:rgba(255,255,255,0.7);line-height:1.8;margin-bottom:16px;">À La Réunion, la forte hygrométrie, les cyclones et l'exposition UV intense dégradent les ouvrages bois bien plus rapidement qu'en métropole. Un rapport technique rigoureux vous permet d'engager sereinement une démarche amiable ou judiciaire.</p>
+          <ul style="list-style:none;display:flex;flex-direction:column;gap:10px;">
+            <li style="font-size:0.875rem;color:rgba(255,255,255,0.6);display:flex;gap:10px;"><span style="color:var(--gold);font-weight:700;">–</span> Rapport opposable juridiquement</li>
+            <li style="font-size:0.875rem;color:rgba(255,255,255,0.6);display:flex;gap:10px;"><span style="color:var(--gold);font-weight:700;">–</span> Qualification des désordres décennaux (art. 1792 C.civ.)</li>
+            <li style="font-size:0.875rem;color:rgba(255,255,255,0.6);display:flex;gap:10px;"><span style="color:var(--gold);font-weight:700;">–</span> Identification des responsabilités et imputabilité</li>
+            <li style="font-size:0.875rem;color:rgba(255,255,255,0.6);display:flex;gap:10px;"><span style="color:var(--gold);font-weight:700;">–</span> Estimatif des travaux de reprise</li>
+          </ul>
+        </div>
+        <div style="padding:24px;border:1px solid var(--lgray);border-radius:2px;">
+          <p style="font-size:0.8rem;color:var(--gray);line-height:1.7;"><strong style="color:var(--navy);">Clients servis :</strong> Particuliers en litige avec une entreprise — Avocats spécialisés droit de la construction — Compagnies d'assurance (DO, RCD) — Syndics de copropriété.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section id="contact">
+  <div class="section-inner">
+    <span class="section-tag fade-up">Me contacter</span>
+    <div class="divider fade-up"></div>
+    <h2 class="section-title light fade-up">Parlons de votre dossier</h2>
+    <p class="section-lead light fade-up">Réponse sous 24 heures ouvrées. Devis gratuit sous 48 heures.</p>
+    <div class="contact-grid">
+      <div class="contact-info fade-up">
+        <div class="contact-item">
+          <div class="contact-icon">
+            <svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          </div>
+          <div>
+            <span class="contact-label">Adresse</span>
+            <span class="contact-value">574 B Chemin Dubuisson — Saint-Leu, 97436 — La Réunion</span>
+          </div>
+        </div>
+        <div class="contact-item">
+          <div class="contact-icon">
+            <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.38 2 2 0 0 1 3.6 1.21h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.91 8.96a16 16 0 0 0 5.45 5.45l.96-.96a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+          </div>
+          <div>
+            <span class="contact-label">Téléphone</span>
+            <span class="contact-value">0693 40 80 11</span>
+          </div>
+        </div>
+        <div class="contact-item">
+          <div class="contact-icon">
+            <svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+          </div>
+          <div>
+            <span class="contact-label">Email</span>
+            <span class="contact-value">contact@expertis-bois-reunion.re</span>
+          </div>
+        </div>
+        <div class="contact-item">
+          <div class="contact-icon">
+            <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          </div>
+          <div>
+            <span class="contact-label">Disponibilité</span>
+            <span class="contact-value">Lundi – Vendredi · Urgences sous 5 jours ouvrés</span>
+          </div>
+        </div>
+        <div style="margin-top:8px;padding:20px;background:rgba(200,151,43,0.1);border-left:3px solid var(--gold);">
+          <p style="font-size:0.85rem;color:rgba(255,255,255,0.6);line-height:1.7;">
+            <strong style="color:var(--gold);">SIRET :</strong> 50032069200030<br>
+            TVA non applicable — art. 293 B du CGI<br>
+            Assurance RCP : [Compagnie] — Police n° [XXXX]
+          </p>
+        </div>
+      </div>
+      <form class="contact-form fade-up" onsubmit="handleSubmit(event)">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="nom">Nom</label>
+            <input type="text" id="nom" placeholder="Votre nom" required>
+          </div>
+          <div class="form-group">
+            <label for="tel">Téléphone</label>
+            <input type="tel" id="tel" placeholder="+262 ...">
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input type="email" id="email" placeholder="votre@email.re" required>
+        </div>
+        <div class="form-group">
+          <label for="type">Type de mission</label>
+          <select id="type">
+            <option value="">Sélectionner...</option>
+            <option>Rapport de constat simple (890 €)</option>
+            <option>Mission complète standard (2 400 €)</option>
+            <option>Autre — à préciser</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="message">Description du désordre</label>
+          <textarea id="message" placeholder="Décrivez brièvement l'ouvrage concerné et les désordres observés..." required></textarea>
+        </div>
+        <button type="submit" class="btn-submit">Envoyer la demande →</button>
+        <p id="form-msg" style="font-size:0.8rem;color:var(--gold);display:none;margin-top:8px;">Message envoyé — réponse sous 24 h ouvrées.</p>
+      </form>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <p>© 2026 Expertis Bois Réunion — Franck Guenebaut · SIRET 50032069200030 · Saint-Leu, La Réunion</p>
+  <p style="margin-top:8px;">TVA non applicable — art. 293 B du CGI · <a href="mailto:contact@expertis-bois-reunion.re">contact@expertis-bois-reunion.re</a></p>
+</footer>
+
+<script>
+// Scroll animations
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach((entry, i) => {
+    if (entry.isIntersecting) {
+      setTimeout(() => entry.target.classList.add('visible'), i * 80);
+    }
+  });
+}, { threshold: 0.1 });
+document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+
+// Smooth active nav
+const sections = document.querySelectorAll('section[id]');
+const navLinks = document.querySelectorAll('.nav-links a');
+window.addEventListener('scroll', () => {
+  let current = '';
+  sections.forEach(s => {
+    if (window.scrollY >= s.offsetTop - 100) current = s.id;
+  });
+  navLinks.forEach(a => {
+    a.style.color = a.getAttribute('href') === '#'+current
+      ? 'var(--gold)' : 'rgba(255,255,255,0.8)';
+  });
+});
+
+// Form
+function handleSubmit(e) {
+  e.preventDefault();
+  document.getElementById('form-msg').style.display = 'block';
+  e.target.reset();
+}
+</script>
+</body>
+</html>
