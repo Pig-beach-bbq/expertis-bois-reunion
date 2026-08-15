@@ -334,13 +334,20 @@ h1:first-child{margin-top:0}
   <h2><b>1</b> Identification</h2>
   <div class="body">
     <div class="grid g4">
-      <div class="f"><label>N° dossier</label><input type="text" placeholder="EBR-2026-___"></div>
+      <div class="f"><label>N° dossier</label><input type="text" id="v-nRef" placeholder="EBR-2026-___">
+        <button type="button" onclick="window.EBR2FillNext('v-nRef','v-nClient')" style="margin-top:4px;font-size:11px;padding:3px 8px;border:1px solid var(--line);background:#fcfbf7;border-radius:4px;cursor:pointer;color:var(--muted)">N° suivant</button></div>
       <div class="f"><label>Date de visite</label><input type="date" id="v-date"></div>
       <div class="f"><label>Heure arrivée</label><input type="time"></div>
       <div class="f"><label>Heure départ</label><input type="time"></div>
     </div>
+    <div class="grid g2" style="margin-top:8px;align-items:end">
+      <div class="f"><label>Fiches enregistrées (par client)</label>
+        <select id="v-ficheSel"><option value="">— Nouvelle fiche vierge —</option></select></div>
+      <div class="f"><label>&nbsp;</label>
+        <button type="button" class="ghost" onclick="window.EBR2Load_v()">Ouvrir la fiche sélectionnée</button></div>
+    </div>
     <div class="grid g2" style="margin-top:10px">
-      <div class="f"><label>Client — nom et prénom</label><input type="text"></div>
+      <div class="f"><label>Client — nom et prénom</label><input type="text" id="v-nClient"></div>
       <div class="f"><label>Téléphone</label><input type="tel"></div>
       <div class="f"><label>E-mail</label><input type="email"></div>
       <div class="f"><label>Qualité</label>
@@ -660,13 +667,20 @@ h1:first-child{margin-top:0}
   <h2><b>1</b> Identification</h2>
   <div class="body">
     <div class="grid g4">
-      <div class="f"><label>N° dossier</label><input type="text" placeholder="EBR-2026-___"></div>
+      <div class="f"><label>N° dossier</label><input type="text" id="c-nRef" placeholder="EBR-2026-___">
+        <button type="button" onclick="window.EBR2FillNext('c-nRef','c-nClient')" style="margin-top:4px;font-size:11px;padding:3px 8px;border:1px solid var(--line);background:#fcfbf7;border-radius:4px;cursor:pointer;color:var(--muted)">N° suivant</button></div>
       <div class="f"><label>Date de visite</label><input type="date" id="c-date"></div>
       <div class="f"><label>Heure arrivée</label><input type="time"></div>
       <div class="f"><label>Heure départ</label><input type="time"></div>
     </div>
+    <div class="grid g2" style="margin-top:8px;align-items:end">
+      <div class="f"><label>Fiches enregistrées (par client)</label>
+        <select id="c-ficheSel"><option value="">— Nouvelle fiche vierge —</option></select></div>
+      <div class="f"><label>&nbsp;</label>
+        <button type="button" class="ghost" onclick="window.EBR2Load_c()">Ouvrir la fiche sélectionnée</button></div>
+    </div>
     <div class="grid g2" style="margin-top:10px">
-      <div class="f"><label>Client — nom et prénom</label><input type="text"></div>
+      <div class="f"><label>Client — nom et prénom</label><input type="text" id="c-nClient"></div>
       <div class="f"><label>Téléphone</label><input type="tel"></div>
       <div class="f"><label>E-mail</label><input type="email"></div>
       <div class="f"><label>Qualité</label>
@@ -1001,13 +1015,20 @@ h1:first-child{margin-top:0}
   <h2><b>1</b> Identification et cadre de la mission</h2>
   <div class="body">
     <div class="grid g4">
-      <div class="f"><label>N° dossier</label><input type="text" placeholder="EBR-2026-___"></div>
+      <div class="f"><label>N° dossier</label><input type="text" id="r-nRef" placeholder="EBR-2026-___">
+        <button type="button" onclick="window.EBR2FillNext('r-nRef','r-nClient')" style="margin-top:4px;font-size:11px;padding:3px 8px;border:1px solid var(--line);background:#fcfbf7;border-radius:4px;cursor:pointer;color:var(--muted)">N° suivant</button></div>
       <div class="f"><label>Date de visite</label><input type="date" id="r-date"></div>
       <div class="f"><label>Heure arrivée</label><input type="time"></div>
       <div class="f"><label>Heure départ</label><input type="time"></div>
     </div>
+    <div class="grid g2" style="margin-top:8px;align-items:end">
+      <div class="f"><label>Fiches enregistrées (par client)</label>
+        <select id="r-ficheSel"><option value="">— Nouvelle fiche vierge —</option></select></div>
+      <div class="f"><label>&nbsp;</label>
+        <button type="button" class="ghost" onclick="window.EBR2Load_r()">Ouvrir la fiche sélectionnée</button></div>
+    </div>
     <div class="grid g2" style="margin-top:10px">
-      <div class="f"><label>Commanditaire — nom et prénom</label><input type="text"></div>
+      <div class="f"><label>Commanditaire — nom et prénom</label><input type="text" id="r-nClient"></div>
       <div class="f"><label>Téléphone</label><input type="tel"></div>
       <div class="f"><label>E-mail</label><input type="email"></div>
       <div class="f"><label>Qualité du commanditaire</label>
@@ -1572,23 +1593,30 @@ h1:first-child{margin-top:0}
     <div class="note">
       <b>Identité du cabinet</b> — utilisée pour les factures. Renseignée une fois, mémorisée pour tous les dossiers.
       <div class="grid g2" style="margin-top:8px">
-        <div class="f"><label>SIRET</label><input type="text" id="devis-cabSiret" data-cabinet="1" placeholder="XXX XXX XXX XXXXX"></div>
-        <div class="f"><label>Adresse du cabinet</label><input type="text" id="devis-cabAdr" data-cabinet="1" placeholder="Île de La Réunion · 974"></div>
+        <div class="f"><label>SIRET</label><input type="text" id="devis-cabSiret" data-cabinet="1" value="500 320 692 00048"></div>
+        <div class="f"><label>Adresse du cabinet</label><input type="text" id="devis-cabAdr" data-cabinet="1" value="Île de La Réunion · 974"></div>
       </div>
       <div class="grid g2" style="margin-top:8px">
-        <div class="f"><label>Intervenant — nom et prénom</label><input type="text" id="devis-cabExpert" data-cabinet="1" placeholder="Celui qui signe le rapport"></div>
-        <div class="f"><label>Qualification / titre</label><input type="text" id="devis-cabQual" data-cabinet="1" placeholder="Tel que vous voulez le voir écrit"></div>
+        <div class="f"><label>Intervenant — nom et prénom</label><input type="text" id="devis-cabExpert" data-cabinet="1" value="Franck Guenebaut"></div>
+        <div class="f"><label>Qualification / titre</label><input type="text" id="devis-cabQual" data-cabinet="1" value="Expert technique indépendant"></div>
       </div>
       <div class="grid g2" style="margin-top:8px">
-        <div class="f"><label>Assurance RC professionnelle</label><input type="text" id="devis-cabRcCie" data-cabinet="1" placeholder="Compagnie"></div>
+        <div class="f"><label>Assurance RC professionnelle</label><input type="text" id="devis-cabRcCie" data-cabinet="1" value="Hiscox"></div>
         <div class="f"><label>N° de police</label><input type="text" id="devis-cabRcNum" data-cabinet="1" placeholder="N° de contrat"></div>
       </div>
     </div>
     <div class="grid g4" style="margin-top:10px">
-      <div class="f"><label>N° dossier</label><input type="text" id="devis-nRef" placeholder="EBR-2026-___"></div>
+      <div class="f"><label>N° dossier</label><input type="text" id="devis-nRef" placeholder="EBR-2026-___">
+        <button type="button" onclick="window.EBR2FillNext('devis-nRef','devis-client')" style="margin-top:4px;font-size:11px;padding:3px 8px;border:1px solid var(--line);background:#fcfbf7;border-radius:4px;cursor:pointer;color:var(--muted)">N° suivant</button></div>
       <div class="f"><label>Date du devis</label><input type="date" id="devis-date"></div>
       <div class="f"><label>Validité (jours)</label><input type="number" id="devis-valid" value="30" min="1"></div>
       <div class="f"><label>Origine du contact</label><input type="text" id="devis-origine" placeholder="Site internet, bouche à oreille…"></div>
+    </div>
+    <div class="grid g2" style="margin-top:8px;align-items:end">
+      <div class="f"><label>Devis enregistrés (par client)</label>
+        <select id="devis-ficheSel"><option value="">— Nouveau devis vierge —</option></select></div>
+      <div class="f"><label>&nbsp;</label>
+        <button type="button" class="ghost" onclick="window.EBR2Load_devis()">Ouvrir le devis sélectionné</button></div>
     </div>
     <div class="grid g2" style="margin-top:10px">
       <div class="f"><label>Client — nom et prénom</label><input type="text" id="devis-client"></div>
@@ -1719,7 +1747,8 @@ h1:first-child{margin-top:0}
         de clichés attribués ici se reportent automatiquement dans les cases « n° » du plan de prise
         de vue de la fiche correspondante.</div>
       <div class="ph-grid4">
-        <div class="f"><label>N° dossier</label><input type="text" id="ph-nRef" placeholder="EBR-2026-___"></div>
+        <div class="f"><label>N° dossier</label><input type="text" id="ph-nRef" placeholder="EBR-2026-___">
+          <button type="button" onclick="window.EBR2FillNext('ph-nRef','ph-nClient')" style="margin-top:4px;font-size:11px;padding:3px 8px;border:1px solid var(--line);background:#fcfbf7;border-radius:4px;cursor:pointer;color:var(--muted)">N° suivant</button></div>
         <div class="f"><label>Nom court du dossier</label><input type="text" id="ph-nNom" placeholder="Ex. : Chantier AURE"></div>
         <div class="f"><label>Prestation</label>
           <select id="ph-nPresta">
@@ -1728,12 +1757,12 @@ h1:first-child{margin-top:0}
             <option value="v">Visite technique</option>
           </select></div>
         <div class="f"><label>Date de visite</label><input type="date" id="ph-nDate"></div>
-        <div class="f"><label>Appareil utilisé</label><input type="text" id="ph-nCam" placeholder="Téléphone, reflex, perche"></div>
+        <div class="f"><label>Appareil utilisé</label><input type="text" id="ph-nCam" value="Tablette"></div>
       </div>
       <div class="ph-grid3" style="margin-top:10px">
         <div class="f"><label>Client</label><input type="text" id="ph-nClient" placeholder="Nom et prénom"></div>
         <div class="f"><label>Adresse du chantier</label><input type="text" id="ph-nAdr"></div>
-        <div class="f"><label>Expert</label><input type="text" id="ph-nExp" placeholder="Nom de l'expert"></div>
+        <div class="f"><label>Expert</label><input type="text" id="ph-nExp" value="Franck Guenebaut"></div>
       </div>
       <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px">
         <button class="ph-btn o" onclick="phFromFiche('c')">Reprendre la fiche Constat</button>
@@ -1969,6 +1998,89 @@ h1:first-child{margin-top:0}
 </div>
 
 <script>
+/* ==========================================================================
+   EBR2Multi — stockage des fiches (visite, constat, rapport technique, devis)
+   PAR DOSSIER CLIENT (numéro de dossier), pour que deux clients différents
+   ne puissent jamais s'écraser l'un l'autre.
+   ========================================================================== */
+window.EBR2Multi = (function(){
+  function slot(ref){ return (ref && ref.trim()) ? ref.trim() : '_brouillon'; }
+  function key(type, ref){ return 'ebr2:fiche:' + type + ':' + slot(ref); }
+  function idxKey(){ return 'ebr2:fiches:index'; }
+  function loadIndex(){ try{ return JSON.parse(localStorage.getItem(idxKey()) || '[]'); }catch(e){ return []; } }
+  function saveIndex(idx){ try{ localStorage.setItem(idxKey(), JSON.stringify(idx)); }catch(e){} }
+  function touch(type, ref, client){
+    const r = ref && ref.trim();
+    if(!r) return; // les brouillons sans numéro ne sont pas listés
+    const idx = loadIndex();
+    const i = idx.findIndex(x => x.type === type && x.ref === r);
+    const entry = { type, ref: r, client: client || '', updatedAt: new Date().toISOString() };
+    if(i >= 0) idx[i] = entry; else idx.push(entry);
+    saveIndex(idx);
+  }
+  function list(type){
+    return loadIndex().filter(x => x.type === type).sort((a,b) => b.updatedAt.localeCompare(a.updatedAt));
+  }
+  function remove(type, ref){
+    saveIndex(loadIndex().filter(x => !(x.type === type && x.ref === ref)));
+    try{ localStorage.removeItem(key(type, ref)); }catch(e){}
+  }
+  function allRefs(){
+    const out = [];
+    loadIndex().forEach(x => { if(x.ref) out.push(x.ref); });
+    try{
+      const ph = JSON.parse(localStorage.getItem('ebr2:index') || '[]');
+      ph.forEach(x => { if(x.ref) out.push(x.ref); });
+    }catch(e){}
+    return out;
+  }
+  function nextSeq(){
+    // le numéro séquentiel ne dépend jamais du nom du client : il continue
+    // toujours à la suite, quel que soit le client concerné.
+    const refs = allRefs();
+    let best = 0, width = 4;
+    refs.forEach(r => {
+      const m = /(\d+)\s*$/.exec(r.trim());
+      if(!m) return;
+      const n = parseInt(m[1], 10);
+      if(n > best){ best = n; width = m[1].length; }
+    });
+    return { n: best + 1, width: Math.max(width, 4) };
+  }
+  function slugClient(name){
+    return (name || '').toUpperCase()
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '')   // enlève les accents
+      .replace(/[^A-Z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+  }
+  function nextRef(clientName){
+    const year = new Date().getFullYear();
+    const seq = nextSeq();
+    const num = String(seq.n).padStart(seq.width, '0');
+    const slug = slugClient(clientName);
+    return 'EBR-' + (slug ? slug + '-' : '') + year + '-' + num;
+  }
+  return { key, touch, list, remove, nextRef };
+})();
+window.EBR2FillNext = function(fieldId, clientFieldId){
+  const el = document.getElementById(fieldId);
+  if(!el) return;
+  if(el.value && el.value.trim()){
+    if(!confirm('Le champ contient déjà "'+el.value+'". Le remplacer par le numéro suivant ?')) return;
+  }
+  const clientEl = clientFieldId ? document.getElementById(clientFieldId) : null;
+  const clientName = clientEl ? clientEl.value : '';
+  if(clientFieldId && !clientName.trim()){
+    alert('Indiquez d\'abord le nom du client, pour que le numéro le reprenne (ex. EBR-AURE-2026-1009).');
+    if(clientEl) clientEl.focus();
+    return;
+  }
+  el.value = window.EBR2Multi.nextRef(clientName);
+  el.dispatchEvent(new Event('input', { bubbles: true }));
+  el.dispatchEvent(new Event('change', { bubbles: true }));
+};
+</script>
+
+<script>
 (function(){
 
 const $ = id => document.getElementById(id);
@@ -1985,27 +2097,49 @@ function calc(){
 
 $('v-nbElem').addEventListener('change', e => { $('v-qCalc').value = e.target.value; calc(); save(); });
 
-const KEY = 'ebr-fiche-poutres';
-const fields = () => [...document.querySelectorAll('#panel-v input,#panel-v select,#panel-v textarea')];
+const fields = () => [...document.querySelectorAll('#panel-v input,#panel-v select,#panel-v textarea')]
+  .filter(el => el.id !== 'v-ficheSel');
+function KEY(){ return window.EBR2Multi.key('v', ($('v-nRef')||{}).value || ''); }
+
+function refreshFicheList(){
+  const sel = $('v-ficheSel'); if(!sel) return;
+  const cur = sel.value;
+  const items = window.EBR2Multi.list('v');
+  sel.innerHTML = '<option value="">— Nouvelle fiche vierge —</option>' +
+    items.map(x => '<option value="'+x.ref.replace(/"/g,'&quot;')+'">'+x.ref+(x.client?' — '+x.client:'')+'</option>').join('');
+  if(items.some(x => x.ref === cur)) sel.value = cur;
+}
+window.EBR2Load_v = function(){
+  const ref = $('v-ficheSel').value;
+  if(!ref) return;
+  try{
+    const d = JSON.parse(localStorage.getItem(window.EBR2Multi.key('v', ref)) || 'null');
+    if(!d){ alert('Fiche introuvable.'); return; }
+    const f = fields();
+    if(d.length === f.length) f.forEach((el,i) => { if(el.type === 'checkbox') el.checked = d[i]; else el.value = d[i]; });
+    calc();
+  }catch(e){ alert('Impossible d\'ouvrir cette fiche.'); }
+};
 
 function save(){
   try{
-    localStorage.setItem(KEY, JSON.stringify(fields().map(f => f.type === 'checkbox' ? f.checked : f.value)));
+    localStorage.setItem(KEY(), JSON.stringify(fields().map(f => f.type === 'checkbox' ? f.checked : f.value)));
+    window.EBR2Multi.touch('v', ($('v-nRef')||{}).value, ($('v-nClient')||{}).value);
+    refreshFicheList();
     $('v-saved').textContent = 'Enregistré ' + new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
   }catch(e){}
 }
 function load(){
   try{
-    const d = JSON.parse(localStorage.getItem(KEY) || 'null');
-    if(!d) return;
+    const d = JSON.parse(localStorage.getItem(KEY()) || 'null');
     const f = fields();
-    if(d.length !== f.length) return;
-    f.forEach((el,i) => { if(el.type === 'checkbox') el.checked = d[i]; else el.value = d[i]; });
+    if(d && d.length === f.length) f.forEach((el,i) => { if(el.type === 'checkbox') el.checked = d[i]; else el.value = d[i]; });
   }catch(e){}
+  refreshFicheList();
 }
 function wipe(){
   if(!askWipe()) return;
-  try{ localStorage.removeItem(KEY); }catch(e){}
+  try{ localStorage.removeItem(KEY()); }catch(e){}
   location.reload();
 }
 
@@ -2036,27 +2170,49 @@ function calc(){
   $('c-phDone').textContent = [...shots].filter(c => c.checked).length;
 }
 
-const KEY = 'ebr-fiche-constat';
-const fields = () => [...document.querySelectorAll('#panel-c input,#panel-c select,#panel-c textarea')];
+const fields = () => [...document.querySelectorAll('#panel-c input,#panel-c select,#panel-c textarea')]
+  .filter(el => el.id !== 'c-ficheSel');
+function KEY(){ return window.EBR2Multi.key('c', ($('c-nRef')||{}).value || ''); }
+
+function refreshFicheList(){
+  const sel = $('c-ficheSel'); if(!sel) return;
+  const cur = sel.value;
+  const items = window.EBR2Multi.list('c');
+  sel.innerHTML = '<option value="">— Nouvelle fiche vierge —</option>' +
+    items.map(x => '<option value="'+x.ref.replace(/"/g,'&quot;')+'">'+x.ref+(x.client?' — '+x.client:'')+'</option>').join('');
+  if(items.some(x => x.ref === cur)) sel.value = cur;
+}
+window.EBR2Load_c = function(){
+  const ref = $('c-ficheSel').value;
+  if(!ref) return;
+  try{
+    const d = JSON.parse(localStorage.getItem(window.EBR2Multi.key('c', ref)) || 'null');
+    if(!d){ alert('Fiche introuvable.'); return; }
+    const f = fields();
+    if(d.length === f.length) f.forEach((el,i) => { if(el.type === 'checkbox') el.checked = d[i]; else el.value = d[i]; });
+    calc();
+  }catch(e){ alert('Impossible d\'ouvrir cette fiche.'); }
+};
 
 function save(){
   try{
-    localStorage.setItem(KEY, JSON.stringify(fields().map(f => f.type === 'checkbox' ? f.checked : f.value)));
+    localStorage.setItem(KEY(), JSON.stringify(fields().map(f => f.type === 'checkbox' ? f.checked : f.value)));
+    window.EBR2Multi.touch('c', ($('c-nRef')||{}).value, ($('c-nClient')||{}).value);
+    refreshFicheList();
     $('c-saved').textContent = 'Enregistré ' + new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
   }catch(e){}
 }
 function load(){
   try{
-    const d = JSON.parse(localStorage.getItem(KEY) || 'null');
-    if(!d) return;
+    const d = JSON.parse(localStorage.getItem(KEY()) || 'null');
     const f = fields();
-    if(d.length !== f.length) return;
-    f.forEach((el,i) => { if(el.type === 'checkbox') el.checked = d[i]; else el.value = d[i]; });
+    if(d && d.length === f.length) f.forEach((el,i) => { if(el.type === 'checkbox') el.checked = d[i]; else el.value = d[i]; });
   }catch(e){}
+  refreshFicheList();
 }
 function wipe(){
   if(!askWipe()) return;
-  try{ localStorage.removeItem(KEY); }catch(e){}
+  try{ localStorage.removeItem(KEY()); }catch(e){}
   location.reload();
 }
 
@@ -2090,27 +2246,49 @@ function calc(){
   $('r-phDone').textContent = [...shots].filter(c => c.checked).length;
 }
 
-const KEY = 'ebr-fiche-rapport-technique';
-const fields = () => [...document.querySelectorAll('#panel-r input,#panel-r select,#panel-r textarea')];
+const fields = () => [...document.querySelectorAll('#panel-r input,#panel-r select,#panel-r textarea')]
+  .filter(el => el.id !== 'r-ficheSel');
+function KEY(){ return window.EBR2Multi.key('r', ($('r-nRef')||{}).value || ''); }
+
+function refreshFicheList(){
+  const sel = $('r-ficheSel'); if(!sel) return;
+  const cur = sel.value;
+  const items = window.EBR2Multi.list('r');
+  sel.innerHTML = '<option value="">— Nouvelle fiche vierge —</option>' +
+    items.map(x => '<option value="'+x.ref.replace(/"/g,'&quot;')+'">'+x.ref+(x.client?' — '+x.client:'')+'</option>').join('');
+  if(items.some(x => x.ref === cur)) sel.value = cur;
+}
+window.EBR2Load_r = function(){
+  const ref = $('r-ficheSel').value;
+  if(!ref) return;
+  try{
+    const d = JSON.parse(localStorage.getItem(window.EBR2Multi.key('r', ref)) || 'null');
+    if(!d){ alert('Fiche introuvable.'); return; }
+    const f = fields();
+    if(d.length === f.length) f.forEach((el,i) => { if(el.type === 'checkbox') el.checked = d[i]; else el.value = d[i]; });
+    calc();
+  }catch(e){ alert('Impossible d\'ouvrir cette fiche.'); }
+};
 
 function save(){
   try{
-    localStorage.setItem(KEY, JSON.stringify(fields().map(f => f.type === 'checkbox' ? f.checked : f.value)));
+    localStorage.setItem(KEY(), JSON.stringify(fields().map(f => f.type === 'checkbox' ? f.checked : f.value)));
+    window.EBR2Multi.touch('r', ($('r-nRef')||{}).value, ($('r-nClient')||{}).value);
+    refreshFicheList();
     $('r-saved').textContent = 'Enregistré ' + new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
   }catch(e){}
 }
 function load(){
   try{
-    const d = JSON.parse(localStorage.getItem(KEY) || 'null');
-    if(!d) return;
+    const d = JSON.parse(localStorage.getItem(KEY()) || 'null');
     const f = fields();
-    if(d.length !== f.length) return;
-    f.forEach((el,i) => { if(el.type === 'checkbox') el.checked = d[i]; else el.value = d[i]; });
+    if(d && d.length === f.length) f.forEach((el,i) => { if(el.type === 'checkbox') el.checked = d[i]; else el.value = d[i]; });
   }catch(e){}
+  refreshFicheList();
 }
 function wipe(){
   if(!askWipe()) return;
-  try{ localStorage.removeItem(KEY); }catch(e){}
+  try{ localStorage.removeItem(KEY()); }catch(e){}
   location.reload();
 }
 
@@ -4264,29 +4442,61 @@ window.devisClearSig = function(){
 };
 
 /* ------------------------------ persistance --------------------------------- */
-const KEY = 'ebr-devis';
 // champs "cabinet" (SIRET, adresse) : mémorisés à part, indépendants du devis en cours
 const fields = () => [...document.querySelectorAll('#panel-devis input,#panel-devis select,#panel-devis textarea')]
-  .filter(el => !el.dataset.cabinet);
+  .filter(el => !el.dataset.cabinet && el.id !== 'devis-ficheSel');
+function KEY(){ return window.EBR2Multi.key('devis', ($('devis-nRef')||{}).value || ''); }
+
+function refreshFicheList(){
+  const sel = $('devis-ficheSel'); if(!sel) return;
+  const cur = sel.value;
+  const items = window.EBR2Multi.list('devis');
+  sel.innerHTML = '<option value="">— Nouveau devis vierge —</option>' +
+    items.map(x => '<option value="'+x.ref.replace(/"/g,'&quot;')+'">'+x.ref+(x.client?' — '+x.client:'')+'</option>').join('');
+  if(items.some(x => x.ref === cur)) sel.value = cur;
+}
+window.EBR2Load_devis = function(){
+  const ref = $('devis-ficheSel').value;
+  if(!ref) return;
+  try{
+    const d = JSON.parse(localStorage.getItem(window.EBR2Multi.key('devis', ref)) || 'null');
+    if(!d){ alert('Devis introuvable.'); return; }
+    const f = fields();
+    if (d.f && d.f.length === f.length){
+      f.forEach((el,i) => { if (el.type === 'checkbox' || el.type === 'radio') el.checked = d.f[i]; else el.value = d.f[i]; });
+    }
+    hasSig = false;
+    if (d.sig){
+      hasSig = true;
+      const c = sigCanvas(), ctx = c.getContext('2d');
+      const im = new Image();
+      im.onload = () => { const w = parseInt(c.style.width) || c.width; ctx.drawImage(im, 0, 0, w, 160); };
+      im.src = d.sig;
+    } else { sizeCanvas(); }
+    devisTouch();
+  }catch(e){ alert('Impossible d\'ouvrir ce devis.'); }
+};
+
 function save(){
   try{
     const data = {
       f: fields().map(f => f.type === 'checkbox' || f.type === 'radio' ? f.checked : f.value),
       sig: hasSig ? sigCanvas().toDataURL('image/png') : ''
     };
-    localStorage.setItem(KEY, JSON.stringify(data));
+    localStorage.setItem(KEY(), JSON.stringify(data));
+    window.EBR2Multi.touch('devis', ($('devis-nRef')||{}).value, ($('devis-client')||{}).value);
+    refreshFicheList();
     $('devis-saved').textContent = 'Enregistré ' + new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
   }catch(e){}
 }
 function load(){
   try{
-    const d = JSON.parse(localStorage.getItem(KEY) || 'null');
-    if (!d) return;
+    const d = JSON.parse(localStorage.getItem(KEY()) || 'null');
     const f = fields();
-    if (d.f && d.f.length === f.length){
+    if (d && d.f && d.f.length === f.length){
       f.forEach((el,i) => { if (el.type === 'checkbox' || el.type === 'radio') el.checked = d.f[i]; else el.value = d.f[i]; });
     }
-    if (d.sig){
+    if (d && d.sig){
       hasSig = true;
       const c = sigCanvas(), ctx = c.getContext('2d');
       const im = new Image();
@@ -4294,6 +4504,7 @@ function load(){
       im.src = d.sig;
     }
   }catch(e){}
+  refreshFicheList();
 }
 const CAB_KEY = 'ebr-cabinet';
 function saveCabinet(){
@@ -4665,7 +4876,7 @@ function initGis(){
         setStatus('Connecté à Google Drive.');
         const btn = document.getElementById('drv-connect');
         if (btn) btn.textContent = 'Reconnecter';
-        driveBackupNow();
+        onConnected();
       }
     }
   });
@@ -4688,6 +4899,59 @@ function ensureToken(){
     };
     try{ tokenClient.requestAccessToken({ prompt: '' }); }catch(e){ reject(e); }
   });
+}
+
+/* --------------- sécurité anti-écrasement : ne jamais sauvegarder un
+   appareil "vide" par-dessus une sauvegarde Drive qui contient des dossiers,
+   quelle que soit la prestation (visite technique, constat, rapport technique, devis).
+   Chaque fiche/dossier client est indexée dans 'ebr2:index' (dossiers photo) et
+   'ebr2:fiches:index' (fiches et devis, un par n° de dossier) — voir EBR2Multi. --------------- */
+function hasFicheContent(getLs){
+  try{
+    const idx = JSON.parse(getLs('ebr2:fiches:index') || '[]');
+    return Array.isArray(idx) && idx.length > 0;
+  }catch(e){ return false; }
+}
+function isLocalEmpty(){
+  try{
+    const idx = JSON.parse(localStorage.getItem('ebr2:index') || '[]');
+    if (Array.isArray(idx) && idx.length > 0) return false;
+  }catch(e){}
+  for (let i=0; i<localStorage.length; i++){
+    if (localStorage.key(i).indexOf('ebr2:dossier:') === 0) return false;
+  }
+  if (hasFicheContent(k => localStorage.getItem(k))) return false;
+  return true;
+}
+function remoteHasDossiers(j){
+  try{
+    const idx = JSON.parse((j.ls || {})['ebr2:index'] || '[]');
+    if (Array.isArray(idx) && idx.length > 0) return true;
+  }catch(e){}
+  if (hasFicheContent(k => (j.ls || {})[k])) return true;
+  return false;
+}
+async function onConnected(){
+  // à la connexion : si cet appareil est vide, on ne sauvegarde jamais
+  // automatiquement — on propose plutôt de restaurer, pour ne pas
+  // écraser une sauvegarde Drive qui contient déjà des dossiers.
+  if (isLocalEmpty()){
+    try{
+      const token = await ensureToken();
+      const id = await findFileId();
+      if (id){
+        const res = await fetch('https://www.googleapis.com/drive/v3/files/' + id + '?alt=media', {
+          headers: { Authorization: 'Bearer ' + token }
+        });
+        const j = await res.json();
+        if (remoteHasDossiers(j)){
+          setStatus('Connecté à Google Drive — une sauvegarde existe déjà mais cet appareil est vide. Cliquez "Restaurer depuis Drive" pour la récupérer (aucune sauvegarde automatique tant que rien n\'est restauré, pour ne rien écraser — cela vaut pour tous les types : visite technique, constat, rapport technique, dossiers photo).');
+          return;
+        }
+      }
+    }catch(e){}
+  }
+  driveBackupNow();
 }
 
 /* ------------------------ collecte des données locales ------------------------ */
@@ -4737,7 +5001,26 @@ async function findFileId(){
   return null;
 }
 
-window.drvBackupNow = driveBackupNow;
+window.drvBackupNow = async function(){
+  if (isLocalEmpty()){
+    try{
+      const token = await ensureToken();
+      const id0 = await findFileId();
+      if (id0){
+        const res0 = await fetch('https://www.googleapis.com/drive/v3/files/' + id0 + '?alt=media', {
+          headers: { Authorization: 'Bearer ' + token }
+        });
+        const j0 = await res0.json();
+        if (remoteHasDossiers(j0)){
+          const ok = confirm("Cet appareil ne contient aucune fiche ni dossier (visite technique, constat, rapport technique ou photo), mais une sauvegarde Drive existante en contient. Sauvegarder maintenant EFFACERAIT cette sauvegarde. Voulez-vous plutôt restaurer l'existant (Annuler = ne rien faire) ?");
+          if (ok) window.drvRestore();
+          return;
+        }
+      }
+    }catch(e){}
+  }
+  driveBackupNow();
+};
 async function driveBackupNow(){
   try{
     setStatus('Sauvegarde en cours…');
@@ -4807,7 +5090,7 @@ localStorage.setItem = function(k, v){
   origSet(k, v);
   if (k.indexOf('ebr') === 0 || k.indexOf('EBR') === 0){
     clearTimeout(backupTimer);
-    backupTimer = setTimeout(() => { if (accessToken) driveBackupNow(); }, 4000);
+    backupTimer = setTimeout(() => { if (accessToken && !isLocalEmpty()) driveBackupNow(); }, 4000);
   }
 };
 
