@@ -1878,6 +1878,11 @@ h1:first-child{margin-top:0}
     <h2><b>4</b> Tous les clichés du dossier</h2>
     <div class="body">
       <button class="ph-btn o" onclick="phFree()">+ Cliché hors plan</button>
+      <div style="display:flex;gap:8px;align-items:center;margin-top:10px;flex-wrap:wrap;padding:10px;background:#fcfbf7;border:1px solid var(--line);border-radius:6px">
+        <button class="ph-btn o" onclick="phSortByPlan()">⇅ Remettre dans l'ordre du plan</button>
+        <button class="ph-btn o" onclick="phToggleReorder()" id="ph-reorderBtn">↕ Réordonner à la main</button>
+        <span class="hint" style="flex:1;min-width:200px">Les photos sont prises dans l'ordre du chantier ; ce tri les remet dans l'ordre logique du rapport (phases A à H) et renumérote les clichés de 1 à N.</span>
+      </div>
       <div id="ph-items" style="margin-top:12px"><p class="ph-empty">Aucun cliché pour l'instant.</p></div>
     </div>
   </section>
@@ -3859,15 +3864,85 @@ function phDelDesGo(id){
 };
 
 /* --------------------------- liste des clichés -------------------------- */
+/* ---------------------- remise en ordre des clichés -----------------------
+   Sur le terrain on photographie dans l'ordre du chantier ; le rapport, lui,
+   suit l'ordre du plan de prise de vue (phases A à H). Ces fonctions
+   réordonnent les clichés puis les renumérotent de 1 à N sans rien perdre :
+   repères, dessins, textes et légendes suivent leur cliché. */
+let reorderMode = false;
+
+/* rang d'un cliché dans le plan : phase, puis position dans la phase.
+   Les clichés hors plan passent à la fin, dans leur ordre d'origine. */
+function planRank(p){
+  if(!p.shot) return { a: 9999, b: 9999 };
+  for(let fi = 0; fi < plan.length; fi++){
+    const f = plan[fi];
+    for(let si = 0; si < f.s.length; si++){
+      if(f.s[si].id === p.shot) return { a: fi, b: si };
+    }
+  }
+  return { a: 9998, b: 9998 };
+}
+function renumberAll(){
+  D.planches.forEach((p, i) => { p.num = i + 1; });
+  D.next = D.planches.length + 1;
+}
+window.phSortByPlan = function(){
+  if(!D || !D.planches || D.planches.length < 2){ return; }
+  ask('Remettre les clichés dans l\'ordre du plan ?',
+      'Les '+D.planches.length+' clichés seront réordonnés selon les phases A à H du plan de prise de vue, puis renumérotés de 1 à '+D.planches.length+'. Les clichés hors plan sont placés à la fin.\n\nAttention : si vous avez déjà reporté des numéros de clichés dans une fiche, ils devront être reportés à nouveau (bouton « Reporter les n° dans la fiche »).',
+      'Réordonner', () => {
+    const orig = D.planches.map((p,i) => i);
+    D.planches.sort((x,y) => {
+      const rx = planRank(x), ry = planRank(y);
+      if(rx.a !== ry.a) return rx.a - ry.a;
+      if(rx.b !== ry.b) return rx.b - ry.b;
+      return (x.num||0) - (y.num||0);   /* même case du plan : ordre de prise */
+    });
+    renumberAll();
+    persist(); renderItems(); renderPhases(); renderControl();
+  });
+};
+window.phToggleReorder = function(){
+  reorderMode = !reorderMode;
+  const b = $('ph-reorderBtn');
+  if(b){
+    b.textContent = reorderMode ? '✓ Terminer le réordonnancement' : '↕ Réordonner à la main';
+    b.style.fontWeight = reorderMode ? '700' : '400';
+  }
+  renderItems();
+};
+window.phMoveItem = function(i, dir){
+  const j = i + dir;
+  if(j < 0 || j >= D.planches.length) return;
+  const tmp = D.planches[i];
+  D.planches[i] = D.planches[j];
+  D.planches[j] = tmp;
+  renumberAll();
+  persist(); renderItems();
+};
+
 function renderItems(){
   const el = $('ph-items');
   if(!D.planches.length){ el.innerHTML = '<p class="ph-empty">Aucun cliché pour l\'instant.</p>'; return; }
-  el.innerHTML = [...D.planches].sort((a,b)=>a.num-b.num).map(p => {
-    const i = D.planches.indexOf(p);
+  /* en mode réordonnancement on suit l'ordre réel du dossier (pas le tri par n°),
+     pour que les flèches déplacent bien ce que l'on voit */
+  const liste = reorderMode ? D.planches.map((p,i) => ({p, i}))
+                            : [...D.planches].sort((a,b)=>a.num-b.num).map(p => ({p, i: D.planches.indexOf(p)}));
+  el.innerHTML = liste.map(({p, i}, rang) => {
     const sub = [ p.shot ? shotLabel(p.shot) : 'hors plan',
                   desList(p).length ? desList(p).join(', ') + (serieList(p).length ? ' ('+serieList(p).join(',')+'/5)' : '') : '',
                   p.pins.length ? p.pins.length+' repère'+(p.pins.length>1?'s':'') : '' ].filter(Boolean).join(' · ');
+    const fleches = reorderMode
+      ? '<div style="display:flex;flex-direction:column;gap:2px;margin-right:6px">'+
+          '<button class="ph-btn o" style="padding:2px 8px;font-size:13px;line-height:1.1"'+
+            (rang === 0 ? ' disabled' : '')+' onclick="phMoveItem('+i+',-1)" title="Monter">▲</button>'+
+          '<button class="ph-btn o" style="padding:2px 8px;font-size:13px;line-height:1.1"'+
+            (rang === liste.length-1 ? ' disabled' : '')+' onclick="phMoveItem('+i+',1)" title="Descendre">▼</button>'+
+        '</div>'
+      : '';
     return '<div class="ph-item">'+
+      fleches +
       '<span class="n">'+pad(p.num)+'</span>'+
       (p.thumb? '<img src="'+p.thumb+'" alt="">' : '<span style="width:74px;height:56px;background:#0e1c2f;border-radius:4px;flex:0 0 auto"></span>')+
       '<div class="i" onclick="phOpenPlanche('+i+')">'+
