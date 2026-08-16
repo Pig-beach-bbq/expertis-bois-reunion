@@ -220,6 +220,7 @@ h1:first-child{margin-top:0}
   <button class="tab" data-p="c">Rapport de constat<span>890 €</span></button>
   <button class="tab" data-p="r">Rapport technique<span>2 500 €</span></button>
   <button class="tab" data-p="ph">Relevé photo<span>terrain · numéroté</span></button>
+  <button class="tab" data-p="suivi">Suivi<span>devis · factures</span></button>
 </div>
 
 <div class="panel on" id="panel-home">
@@ -520,7 +521,9 @@ h1:first-child{margin-top:0}
       <tr><td class="lab">Photos n°</td><td><input class="cell"></td><td><input class="cell"></td></tr>
     </table>
     <div class="ref"><b>Méthode</b> — sonder en priorité les abouts d'appui encastrés dans la maçonnerie : c'est là que se cumulent humidité, absence de ventilation et attaque biologique, et c'est là que la ruine commence. Le poinçon s'enfonce sans effort dans le bois altéré ; noter la profondeur sur chaque face pour reconstituer la section saine réelle.</div>
-    <div class="f" style="margin-top:12px"><label>Observations complémentaires</label><textarea></textarea></div>
+    <div class="f" style="margin-top:12px"><label>Observations complémentaires</label>
+      <select id="v-obsCompLib" onchange="window.EBRInsertPhrase('v-obsComp', this.value); this.value=''" style="margin-bottom:6px"></select>
+      <textarea id="v-obsComp"></textarea></div>
   </div>
 </section>
 
@@ -874,7 +877,9 @@ h1:first-child{margin-top:0}
       <tr><td class="lab">Cause présumée<small>À confirmer au bureau</small></td><td><input class="cell"></td><td><input class="cell"></td><td><input class="cell"></td><td><input class="cell"></td></tr>
       <tr><td class="lab">Photos n°</td><td><input class="cell"></td><td><input class="cell"></td><td><input class="cell"></td><td><input class="cell"></td></tr>
     </table>
-    <div class="f" style="margin-top:12px"><label>Désordres complémentaires ou observations</label><textarea></textarea></div>
+    <div class="f" style="margin-top:12px"><label>Désordres complémentaires ou observations</label>
+      <select id="c-obsCompLib" onchange="window.EBRInsertPhrase('c-obsComp', this.value); this.value=''" style="margin-bottom:6px"></select>
+      <textarea id="c-obsComp"></textarea></div>
 
     <h3>Conditions du jour</h3>
     <div class="grid g4">
@@ -1220,7 +1225,9 @@ h1:first-child{margin-top:0}
       <label><input type="checkbox"> Test d'écoulement / mise en eau</label>
       <label><input type="checkbox"> Prélèvement pour identification</label>
     </div>
-    <div class="f" style="margin-top:10px"><label>Résultat des investigations — ce qui a été mis au jour</label><textarea></textarea></div>
+    <div class="f" style="margin-top:10px"><label>Résultat des investigations — ce qui a été mis au jour</label>
+      <select id="r-investLib" onchange="window.EBRInsertPhrase('r-invest', this.value); this.value=''" style="margin-bottom:6px"></select>
+      <textarea id="r-invest"></textarea></div>
 
     <h3>Conditions du jour</h3>
     <div class="grid g4">
@@ -1447,13 +1454,15 @@ h1:first-child{margin-top:0}
   <h2><b>12</b> Préconisations envisagées</h2>
   <div class="body">
     <div class="hint">Orientations arrêtées sur site, à consolider au bureau. Ne rien chiffrer oralement.</div>
+    <div class="f" style="margin-bottom:8px"><label>Phrase type de préconisation — insère dans la première ligne vide ci-dessous</label>
+      <select id="r-precoLib" onchange="window.EBRInsertPreco(this.value); this.value=''"></select></div>
     <table>
       <tr><th style="width:8%">N°</th><th>Action préconisée</th><th style="width:16%">Urgence</th><th style="width:18%">Préalable / condition</th></tr>
-      <tr><td class="lab ctr">P1</td><td><input class="cell"></td><td class="ctr"><select><option></option><option>Immédiate</option><option>Court terme</option><option>Programmable</option><option>Surveillance</option></select></td><td><input class="cell"></td></tr>
-      <tr><td class="lab ctr">P2</td><td><input class="cell"></td><td class="ctr"><select><option></option><option>Immédiate</option><option>Court terme</option><option>Programmable</option><option>Surveillance</option></select></td><td><input class="cell"></td></tr>
-      <tr><td class="lab ctr">P3</td><td><input class="cell"></td><td class="ctr"><select><option></option><option>Immédiate</option><option>Court terme</option><option>Programmable</option><option>Surveillance</option></select></td><td><input class="cell"></td></tr>
-      <tr><td class="lab ctr">P4</td><td><input class="cell"></td><td class="ctr"><select><option></option><option>Immédiate</option><option>Court terme</option><option>Programmable</option><option>Surveillance</option></select></td><td><input class="cell"></td></tr>
-      <tr><td class="lab ctr">P5</td><td><input class="cell"></td><td class="ctr"><select><option></option><option>Immédiate</option><option>Court terme</option><option>Programmable</option><option>Surveillance</option></select></td><td><input class="cell"></td></tr>
+      <tr><td class="lab ctr">P1</td><td><input class="cell r-precoCell"></td><td class="ctr"><select><option></option><option>Immédiate</option><option>Court terme</option><option>Programmable</option><option>Surveillance</option></select></td><td><input class="cell"></td></tr>
+      <tr><td class="lab ctr">P2</td><td><input class="cell r-precoCell"></td><td class="ctr"><select><option></option><option>Immédiate</option><option>Court terme</option><option>Programmable</option><option>Surveillance</option></select></td><td><input class="cell"></td></tr>
+      <tr><td class="lab ctr">P3</td><td><input class="cell r-precoCell"></td><td class="ctr"><select><option></option><option>Immédiate</option><option>Court terme</option><option>Programmable</option><option>Surveillance</option></select></td><td><input class="cell"></td></tr>
+      <tr><td class="lab ctr">P4</td><td><input class="cell r-precoCell"></td><td class="ctr"><select><option></option><option>Immédiate</option><option>Court terme</option><option>Programmable</option><option>Surveillance</option></select></td><td><input class="cell"></td></tr>
+      <tr><td class="lab ctr">P5</td><td><input class="cell r-precoCell"></td><td class="ctr"><select><option></option><option>Immédiate</option><option>Court terme</option><option>Programmable</option><option>Surveillance</option></select></td><td><input class="cell"></td></tr>
 
     </table>
     <div class="chk" style="margin-top:12px">
@@ -1731,6 +1740,7 @@ h1:first-child{margin-top:0}
   <span class="saved" id="devis-saved"></span>
   <div class="sp"></div>
   <button class="ghost" onclick="devisPrintDevis()">Devis (PDF)</button>
+  <button class="ghost" onclick="devisEmailClient()">Envoyer par e-mail</button>
   <button class="ghost" onclick="devisPrintFacture()">Facture d'acompte (PDF)</button>
   <button onclick="devisValidate()">Valider → créer le dossier</button>
 </div>
@@ -1845,6 +1855,12 @@ h1:first-child{margin-top:0}
         <div class="f"><label>&nbsp;</label><button class="ph-btn o full" onclick="phAddElem()">Créer <span id="ph-nextE">E1</span></button></div>
       </div>
 
+      <div class="f" style="margin-bottom:10px">
+        <label>Désordre courant (bibliothèque charpente / ossature / plancher / termites)</label>
+        <select id="ph-desLib" onchange="phPickDesLib()">
+          <option value="">— Choisir dans la liste pour préremplir, puis compléter si besoin —</option>
+        </select>
+      </div>
       <div class="ph-grid2" style="margin-bottom:12px">
         <div class="f"><label>Ajouter un désordre — intitulé court</label>
           <input type="text" id="ph-desLabel" placeholder="Ex. : flèche excessive poutre P3"
@@ -1960,6 +1976,7 @@ h1:first-child{margin-top:0}
       <div style="display:flex;gap:8px;align-items:center;margin-top:10px;flex-wrap:wrap">
         <button type="button" class="ph-btn o" id="ph-modePin" onclick="phSetMode('pin')" style="font-weight:700">📍 Repères</button>
         <button type="button" class="ph-btn o" id="ph-modeDraw" onclick="phSetMode('draw')">✏️ Dessiner à la main</button>
+        <button type="button" class="ph-btn o" id="ph-modeText" onclick="phSetMode('text')">T Texte tapé</button>
         <span style="width:1px;height:22px;background:var(--line);margin:0 2px"></span>
         <span style="font-size:11.5px;color:var(--muted)">Couleur :</span>
         <button type="button" onclick="phDrawColor('#e21b1b')" title="Rouge" style="width:22px;height:22px;border-radius:50%;background:#e21b1b;border:2px solid #0e1c2f;cursor:pointer"></button>
@@ -1974,7 +1991,10 @@ h1:first-child{margin-top:0}
         <input type="file" id="ph-repIn"    accept="image/*" capture="environment" style="display:none" onchange="phReplace(event)">
         <input type="file" id="ph-repGalIn" accept="image/*" style="display:none" onchange="phReplace(event)">
         <button class="ph-btn d" onclick="phClearPins()">Effacer les repères</button>
-        <button class="ph-btn d" onclick="phClearDrawing()">Effacer le dessin à la main</button>
+        <button class="ph-btn o" onclick="phUndoStroke()">↩ Annuler le dernier trait</button>
+        <button class="ph-btn o" onclick="phUndoText()">↩ Annuler le dernier texte</button>
+        <button class="ph-btn d" onclick="phClearDrawing()">Effacer tout le dessin</button>
+        <button class="ph-btn d" onclick="phClearTexts()">Effacer tous les textes</button>
       </div>
     </div>
   </section>
@@ -1987,6 +2007,7 @@ h1:first-child{margin-top:0}
   <section>
     <h2><b>5</b> Observation</h2>
     <div class="body">
+      <select id="ph-obsLib" onchange="window.EBRInsertPhrase('ph-fObs', this.value); this.value=''; phTouch(0)" style="margin-bottom:6px"></select>
       <textarea id="ph-fObs" placeholder="Contexte, mesures relevées, étendue, hypothèse retenue…" oninput="phTouch(0)"></textarea>
       <div class="ph-grid2" style="margin-top:10px">
         <button class="ph-btn g" onclick="phExportPlanche()">Enregistrer la planche annotée (PNG)</button>
@@ -2065,6 +2086,8 @@ window.EBR2Multi = (function(){
   function nextSeq(){
     // le numéro séquentiel ne dépend jamais du nom du client : il continue
     // toujours à la suite, quel que soit le client concerné.
+    // Si aucun dossier n'existe encore (appareil neuf), on démarre à 1001
+    // pour rester cohérent avec la série historique du cabinet.
     const refs = allRefs();
     let best = 0, width = 4;
     refs.forEach(r => {
@@ -2073,6 +2096,7 @@ window.EBR2Multi = (function(){
       const n = parseInt(m[1], 10);
       if(n > best){ best = n; width = m[1].length; }
     });
+    if(best === 0) return { n: 1001, width: 4 };
     return { n: best + 1, width: Math.max(width, 4) };
   }
   function slugClient(name){
@@ -2087,7 +2111,36 @@ window.EBR2Multi = (function(){
     const slug = slugClient(clientName);
     return 'EBR-' + (slug ? slug + '-' : '') + year + '-' + num;
   }
-  return { key, touch, list, remove, nextRef };
+  /* ---------------- numérotation légale et suivi des factures ----------------
+     Numéro séquentiel, continu, sans trou, par ordre chronologique d'émission —
+     indépendant du numéro de dossier client (conforme à l'obligation de
+     numérotation continue des factures, art. 242 nonies A du CGI).
+     Un même dossier + type (acompte/solde/unique) ne reçoit jamais deux numéros :
+     si la facture existe déjà, on renvoie toujours le même numéro (réimpression). */
+  function factureIdxKey(){ return 'ebr2:factures:index'; }
+  function loadFactures(){ try{ return JSON.parse(localStorage.getItem(factureIdxKey()) || '[]'); }catch(e){ return []; } }
+  function saveFactures(list){ try{ localStorage.setItem(factureIdxKey(), JSON.stringify(list)); }catch(e){} }
+  function issueFacture(type, ref, client, montant){
+    const list = loadFactures();
+    const existing = list.find(f => f.ref === ref && f.type === type);
+    if(existing) return existing;
+    const year = new Date().getFullYear();
+    const seqKey = 'ebr2:factureSeq:' + year;
+    let n = parseInt(localStorage.getItem(seqKey) || '0', 10) + 1;
+    try{ localStorage.setItem(seqKey, String(n)); }catch(e){}
+    const num = year + '-' + String(n).padStart(4, '0');
+    const entry = { num, year, seq: n, type, ref: ref || '', client: client || '', montant: montant || 0,
+                     date: new Date().toISOString(), paid: false };
+    list.push(entry);
+    saveFactures(list);
+    return entry;
+  }
+  function markFacturePaid(num, paid){
+    const list = loadFactures();
+    const f = list.find(x => x.num === num);
+    if(f){ f.paid = !!paid; saveFactures(list); }
+  }
+  return { key, touch, list, remove, nextRef, issueFacture, loadFactures, markFacturePaid };
 })();
 window.EBR2FillNext = function(fieldId, clientFieldId){
   const el = document.getElementById(fieldId);
@@ -2128,6 +2181,413 @@ window.EBR2RecoverOld = function(type, oldKey, ref, client, fieldsFn, calcFn){
     return true;
   }catch(e){ alert('Récupération impossible.'); return false; }
 };
+
+/* ============================================================================
+   Bibliothèque de phrases type — observations, causes probables, préconisations.
+   Se retrouvent constamment d'un dossier à l'autre : on les insère en un clic,
+   modifiables ensuite comme n'importe quel texte.
+   ============================================================================ */
+const PHRASES_OBS = [
+  "Aucun désordre apparent constaté sur les parties visibles et accessibles.",
+  "Désordre localisé, sans caractère évolutif apparent au jour de la visite.",
+  "Désordre actif nécessitant une intervention rapide.",
+  "Parties non visibles non examinées (bois encastrés, sous plancher, sous revêtement).",
+  "Aucun sondage destructif n'a été réalisé lors de cette visite.",
+  "Le client indique que le désordre est apparu récemment.",
+  "Le client indique que le désordre évolue progressivement depuis plusieurs mois.",
+  "Traces d'humidité anciennes, sans signe d'activité récente.",
+  "Signes d'une intervention antérieure non documentée.",
+  "Désordre compatible avec le vieillissement normal de l'ouvrage.",
+];
+const PHRASES_CAUSES = [
+  "Le désordre est vraisemblablement imputable à une infiltration d'eau en toiture.",
+  "Le désordre est vraisemblablement imputable à une attaque d'insectes xylophages.",
+  "Le désordre est vraisemblablement imputable à un défaut de ventilation de la charpente.",
+  "Le désordre est vraisemblablement imputable à un sous-dimensionnement d'origine de l'ouvrage.",
+  "Le désordre est vraisemblablement imputable à un défaut d'entretien dans le temps.",
+  "Le désordre est vraisemblablement imputable à une malfaçon lors de la construction ou de la rénovation.",
+  "La cause exacte ne peut être déterminée sans investigation destructive complémentaire.",
+];
+const PHRASES_PRECO = [
+  "Traiter la cause du désordre avant toute reprise de finition.",
+  "Faire réaliser un traitement curatif des bois contre les insectes xylophages par une entreprise spécialisée.",
+  "Remplacer les éléments de charpente atteints par des bois neufs, de même section, classe d'emploi adaptée.",
+  "Renforcer la section de l'élément par doublage (sistering).",
+  "Améliorer la ventilation de la charpente ou du vide sanitaire pour limiter les remontées d'humidité.",
+  "Reprendre l'étanchéité en toiture au droit du désordre constaté.",
+  "Mettre en place une surveillance avec témoins de fissuration ou repères métriques.",
+  "Faire réaliser un diagnostic termites réglementaire par un diagnostiqueur certifié.",
+  "Étayer provisoirement la zone concernée avant toute intervention définitive.",
+  "Faire réaliser une note de calcul de structure par un bureau d'études qualifié.",
+  "Prévoir une visite de contrôle à 6 mois pour vérifier l'évolution du désordre.",
+];
+function fillSelectOptions(id, groups){
+  const sel = document.getElementById(id);
+  if(!sel) return;
+  let h = '<option value="">— Insérer une phrase type —</option>';
+  groups.forEach(g => {
+    h += '<optgroup label="'+g.label+'">';
+    g.items.forEach(t => { h += '<option value="'+t.replace(/&/g,'&amp;').replace(/"/g,'&quot;')+'">'+t+'</option>'; });
+    h += '</optgroup>';
+  });
+  sel.innerHTML = h;
+}
+function fillPhraseSelects(){
+  fillSelectOptions('v-obsCompLib', [{ label:'Observations / constats', items: PHRASES_OBS }]);
+  fillSelectOptions('c-obsCompLib', [{ label:'Observations / constats', items: PHRASES_OBS }]);
+  fillSelectOptions('r-investLib',  [{ label:'Observations / constats', items: PHRASES_OBS },
+                                      { label:'Causes probables', items: PHRASES_CAUSES }]);
+  fillSelectOptions('r-precoLib',   [{ label:'Préconisations courantes', items: PHRASES_PRECO }]);
+  fillSelectOptions('ph-obsLib',    [{ label:'Observations / constats', items: PHRASES_OBS },
+                                      { label:'Causes probables', items: PHRASES_CAUSES }]);
+}
+if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', fillPhraseSelects);
+else fillPhraseSelects();
+
+// insère (ajoute à la suite) une phrase dans un champ texte, sans écraser ce qui y est déjà
+window.EBRInsertPhrase = function(fieldId, text){
+  const el = document.getElementById(fieldId);
+  if(!el || !text) return;
+  el.value = (el.value && el.value.trim()) ? (el.value.trim() + ' ' + text) : text;
+  el.dispatchEvent(new Event('input', { bubbles: true }));
+  el.dispatchEvent(new Event('change', { bubbles: true }));
+  el.focus();
+};
+// préconisations : insère dans la première ligne P1-P5 encore vide
+window.EBRInsertPreco = function(text){
+  if(!text) return;
+  const cells = [...document.querySelectorAll('.r-precoCell')];
+  const empty = cells.find(c => !c.value.trim());
+  const target = empty || cells[cells.length - 1];
+  if(!target) return;
+  target.value = text;
+  target.dispatchEvent(new Event('input', { bubbles: true }));
+  target.dispatchEvent(new Event('change', { bubbles: true }));
+  target.focus();
+};
+
+/* ============================================================================
+   CONFORT DE SAISIE
+   1. Carnet clients : autocomplétion sur le nom, remplit les champs liés
+   2. Sections pliables avec compteur de champs remplis
+   3. Boutons rapides : heure « maintenant », météo
+   4. Reprise des infos d'un dossier déjà saisi dans une autre fiche
+   5. Contrôle de complétion avant génération
+   ============================================================================ */
+(function(){
+'use strict';
+
+/* --- champs d'identité communs aux 3 fiches, repérés par leur libellé --- */
+const IDENT = [
+  { keys:['client','commanditaire'], slot:'client' },
+  { keys:['téléphone'],              slot:'tel' },
+  { keys:['e-mail'],                 slot:'email' },
+  { keys:['qualité'],                slot:'qualite' },
+  { keys:['adresse du chantier'],    slot:'adresse' },
+  { keys:['commune'],                slot:'commune' },
+  { keys:['année de construction'],  slot:'annee' },
+];
+function fieldByLabel(panel, keys){
+  const blocs = [...document.querySelectorAll('#panel-'+panel+' .f')];
+  const f = blocs.find(x => {
+    const l = x.querySelector('label');
+    if(!l) return false;
+    const t = l.textContent.trim().toLowerCase();
+    return keys.some(k => t.startsWith(k));
+  });
+  return f ? f.querySelector('input,select,textarea') : null;
+}
+function readIdent(panel){
+  const o = {};
+  IDENT.forEach(d => { const el = fieldByLabel(panel, d.keys); if(el) o[d.slot] = (el.value||'').trim(); });
+  return o;
+}
+function writeIdent(panel, data){
+  IDENT.forEach(d => {
+    const el = fieldByLabel(panel, d.keys);
+    if(el && data[d.slot] && !(el.value||'').trim()){
+      el.value = data[d.slot];
+      el.dispatchEvent(new Event('input', { bubbles:true }));
+      el.dispatchEvent(new Event('change', { bubbles:true }));
+    }
+  });
+}
+
+/* ---------------------------- 1. carnet clients --------------------------- */
+const CK = 'ebr2:carnet';
+function carnet(){ try{ return JSON.parse(localStorage.getItem(CK) || '[]'); }catch(e){ return []; } }
+function saveCarnet(l){ try{ localStorage.setItem(CK, JSON.stringify(l)); }catch(e){} }
+window.EBRSaveClient = function(panel){
+  const d = readIdent(panel);
+  if(!d.client){ alert("Indiquez le nom du client avant de l'enregistrer au carnet."); return; }
+  const l = carnet();
+  const i = l.findIndex(x => (x.client||'').toLowerCase() === d.client.toLowerCase());
+  if(i >= 0) l[i] = Object.assign({}, l[i], d); else l.push(d);
+  saveCarnet(l);
+  refreshCarnetLists();
+  alert('Client « '+d.client+' » enregistré au carnet. Il sera proposé automatiquement dans toutes les fiches.');
+};
+function refreshCarnetLists(){
+  const l = carnet();
+  let dl = document.getElementById('ebr-carnet-list');
+  if(!dl){
+    dl = document.createElement('datalist');
+    dl.id = 'ebr-carnet-list';
+    document.body.appendChild(dl);
+  }
+  dl.innerHTML = l.map(c => '<option value="'+(c.client||'').replace(/"/g,'&quot;')+'">').join('');
+}
+function bindCarnet(panel){
+  const el = fieldByLabel(panel, ['client','commanditaire']);
+  if(!el) return;
+  el.setAttribute('list', 'ebr-carnet-list');
+  el.addEventListener('change', () => {
+    const v = (el.value||'').trim().toLowerCase();
+    if(!v) return;
+    const c = carnet().find(x => (x.client||'').toLowerCase() === v);
+    if(c) writeIdent(panel, c);
+  });
+}
+
+/* ------------------- 4. reprise des infos d'un autre dossier --------------- */
+window.EBRReprendreDossier = function(panel){
+  if(!window.EBR2Multi) return;
+  const M = window.EBR2Multi;
+  const refs = {};
+  ['devis','v','c','r'].forEach(t => M.list(t).forEach(x => { refs[x.ref] = refs[x.ref] || x; }));
+  const list = Object.keys(refs).sort();
+  if(!list.length){ alert("Aucun dossier déjà enregistré à reprendre."); return; }
+  const txt = list.map((r,i) => (i+1)+'. '+r+(refs[r].client? ' — '+refs[r].client : '')).join('\n');
+  const rep = prompt("Reprendre les informations client de quel dossier ?\n(indiquez le numéro de la ligne)\n\n"+txt);
+  const n = parseInt(rep, 10);
+  if(!n || n < 1 || n > list.length) return;
+  const ref = list[n-1];
+  const c = carnet().find(x => (x.client||'').toLowerCase() === (refs[ref].client||'').toLowerCase());
+  if(c){ writeIdent(panel, c); alert('Informations de « '+c.client+' » reprises.'); }
+  else {
+    const el = fieldByLabel(panel, ['client','commanditaire']);
+    if(el && refs[ref].client){ el.value = refs[ref].client;
+      el.dispatchEvent(new Event('input',{bubbles:true})); el.dispatchEvent(new Event('change',{bubbles:true})); }
+    alert("Nom du client repris. Les autres informations n'étaient pas au carnet — pensez à « Enregistrer au carnet » pour la prochaine fois.");
+  }
+};
+
+/* -------------------- 3. boutons rapides heure et météo ------------------- */
+function addQuickButtons(panel){
+  /* heures : bouton « maintenant » */
+  [...document.querySelectorAll('#panel-'+panel+' input[type=time]')].forEach(inp => {
+    if(inp.dataset.qb) return;
+    inp.dataset.qb = '1';
+    const b = document.createElement('button');
+    b.type = 'button'; b.textContent = 'Maintenant';
+    b.style.cssText = 'margin-top:4px;font-size:11px;padding:3px 8px;border:1px solid var(--line);background:#fcfbf7;border-radius:4px;cursor:pointer;color:var(--muted)';
+    b.onclick = () => {
+      const d = new Date();
+      inp.value = String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
+      inp.dispatchEvent(new Event('input',{bubbles:true}));
+      inp.dispatchEvent(new Event('change',{bubbles:true}));
+    };
+    if(inp.parentNode) inp.parentNode.appendChild(b);
+  });
+  /* météo : boutons rapides */
+  const METEO = ['Ensoleillé','Couvert','Pluie','Vent','Après pluie'];
+  [...document.querySelectorAll('#panel-'+panel+' .f')].forEach(f => {
+    const l = f.querySelector('label');
+    if(!l || !l.textContent.trim().toLowerCase().startsWith('météo')) return;
+    const inp = f.querySelector('input[type=text]');
+    if(!inp || inp.dataset.qb) return;
+    inp.dataset.qb = '1';
+    const wrap = document.createElement('div');
+    wrap.style.cssText = 'display:flex;gap:4px;flex-wrap:wrap;margin-top:4px';
+    METEO.forEach(m => {
+      const b = document.createElement('button');
+      b.type = 'button'; b.textContent = m;
+      b.style.cssText = 'font-size:11px;padding:3px 8px;border:1px solid var(--line);background:#fcfbf7;border-radius:4px;cursor:pointer;color:var(--muted)';
+      b.onclick = () => { inp.value = m;
+        inp.dispatchEvent(new Event('input',{bubbles:true})); inp.dispatchEvent(new Event('change',{bubbles:true})); };
+      wrap.appendChild(b);
+    });
+    f.appendChild(wrap);
+  });
+}
+
+/* ---------------- 2. sections pliables + compteur de remplissage ---------- */
+function sectionStats(sec){
+  const els = [...sec.querySelectorAll('input,select,textarea')]
+    .filter(e => e.type !== 'button' && e.type !== 'file' && !e.dataset.cabinet);
+  let total = 0, filled = 0;
+  els.forEach(e => {
+    if(e.type === 'checkbox' || e.type === 'radio'){ if(e.checked) filled++; total++; }
+    else { total++; if((e.value||'').trim()) filled++; }
+  });
+  return { total, filled };
+}
+function refreshBadges(panel){
+  [...document.querySelectorAll('#panel-'+panel+' section')].forEach(sec => {
+    const b = sec.querySelector('.ebr-badge');
+    if(!b) return;
+    const s = sectionStats(sec);
+    b.textContent = s.filled + '/' + s.total;
+    b.style.background = s.filled === 0 ? '#f2efe7' : (s.filled >= s.total*0.8 ? '#dff3e3' : '#fdf3d8');
+  });
+}
+function makeCollapsible(panel){
+  [...document.querySelectorAll('#panel-'+panel+' section')].forEach(sec => {
+    const h = sec.querySelector('h2');
+    const body = sec.querySelector('.body');
+    if(!h || !body || h.dataset.coll) return;
+    h.dataset.coll = '1';
+    h.style.cursor = 'pointer';
+    const badge = document.createElement('span');
+    badge.className = 'ebr-badge';
+    badge.style.cssText = 'margin-left:auto;font-size:11px;font-weight:600;padding:2px 8px;border-radius:10px;background:#f2efe7;color:#6b7280';
+    const arrow = document.createElement('span');
+    arrow.className = 'ebr-arrow';
+    arrow.textContent = '▾';
+    arrow.style.cssText = 'margin-left:8px;font-size:12px;color:#9b8f7a';
+    h.style.display = 'flex'; h.style.alignItems = 'center';
+    h.appendChild(badge); h.appendChild(arrow);
+    h.addEventListener('click', ev => {
+      if(ev.target.tagName === 'INPUT' || ev.target.tagName === 'SELECT') return;
+      const hidden = body.style.display === 'none';
+      body.style.display = hidden ? '' : 'none';
+      arrow.textContent = hidden ? '▾' : '▸';
+    });
+  });
+  refreshBadges(panel);
+}
+
+/* ------------- 5. contrôle de complétion avant de produire un document ----- */
+window.EBRCheckFiche = function(panel){
+  const manquants = [];
+  const need = [
+    { keys:['n° dossier'],           nom:'N° dossier' },
+    { keys:['client','commanditaire'], nom:'Client' },
+    { keys:['adresse du chantier'],  nom:'Adresse du chantier' },
+    { keys:['date de visite'],       nom:'Date de visite' },
+  ];
+  need.forEach(n => {
+    const el = fieldByLabel(panel, n.keys);
+    if(!el || !(el.value||'').trim()) manquants.push(n.nom);
+  });
+  const secs = [...document.querySelectorAll('#panel-'+panel+' section')];
+  let vides = 0;
+  secs.forEach(s => { if(sectionStats(s).filled === 0) vides++; });
+  let msg = manquants.length
+    ? '⚠ Champs essentiels non renseignés :\n· ' + manquants.join('\n· ')
+    : '✅ Tous les champs essentiels sont renseignés.';
+  if(vides) msg += '\n\n' + vides + ' section(s) entièrement vide(s) — vérifiez qu\'aucune n\'a été oubliée.';
+  alert(msg);
+};
+
+/* ---- profils type : cochent d'un coup les cases habituelles d'un type de mission ---- */
+const PROFILS = {
+  'Expertise termites / xylophages': [
+    'Autorisation de photographier accordée','Sondages non destructifs autorisés',
+    'Sondage au poinçon','Sondage à la vis','Prélèvement pour identification',
+    'Traiter la cause avant toute reprise','Traitement curatif des bois',
+    'Plan photo parcouru en entier','Série de cinq photos par désordre',
+    'Objet et mission','Description de l\'ouvrage','Constatations et relevés',
+    'Analyse et recherche des causes','Préconisations','Réserves et limites','Annexe photographique',
+  ],
+  'Expertise charpente / structure': [
+    'Autorisation de photographier accordée','Sondages non destructifs autorisés',
+    'Accès toiture / hauteur possible','Sondage au poinçon',
+    'Contrôle des fixations et ancrages','Mesures et repères E1 à E4 relevés','Croquis coté réalisé',
+    'Renforcement structurel','Remplacement d\'éléments',
+    'Objet et mission','Description de l\'ouvrage','Constatations et relevés',
+    'Analyse et recherche des causes','Confrontation aux règles applicables',
+    'Préconisations','Réserves et limites','Annexe photographique','Annexe notes de calcul',
+  ],
+  'Expertise humidité / infiltration': [
+    'Autorisation de photographier accordée','Sondages non destructifs autorisés',
+    'Hygrométrie multi-points','Test d\'écoulement / mise en eau','Sondage au poinçon',
+    'Traiter la cause avant toute reprise','Amélioration de la ventilation','Reprise d\'un détail constructif',
+    'Plan photo parcouru en entier','Objet et mission','Description de l\'ouvrage',
+    'Constatations et relevés','Analyse et recherche des causes','Préconisations',
+    'Réserves et limites','Annexe photographique',
+  ],
+  'Expertise avant achat immobilier': [
+    'Avant travaux / faisabilité','Autorisation de photographier accordée',
+    'Sondages non destructifs autorisés','Sondage au poinçon',
+    'Plan photo parcouru en entier','Objet et mission','Description de l\'ouvrage',
+    'Constatations et relevés','Préconisations','Réserves et limites','Annexe photographique',
+  ],
+  'Expertise après sinistre / assurance': [
+    'Après sinistre','Missionné par un assureur','Contradictoire — parties convoquées',
+    'Autorisation de photographier accordée','Sondages non destructifs autorisés',
+    'Sondage destructif localisé','Sondages photographiés avant, pendant, après',
+    'Documents obtenus ou réclamés par écrit','Traiter la cause avant toute reprise',
+    'Objet et mission','Description de l\'ouvrage','Documents examinés','Constatations et relevés',
+    'Analyse et recherche des causes','Confrontation aux règles applicables',
+    'Préconisations','Réserves et limites','Annexe photographique','Annexe documents du client',
+  ],
+};
+function applyProfil(nom){
+  const wanted = PROFILS[nom];
+  if(!wanted) return;
+  let n = 0;
+  [...document.querySelectorAll('#panel-r label')].forEach(l => {
+    const cb = l.querySelector('input[type=checkbox]');
+    if(!cb) return;
+    const txt = l.textContent.trim();
+    if(wanted.some(w => txt === w)){ if(!cb.checked){ cb.checked = true; n++; } }
+  });
+  const p = document.getElementById('panel-r');
+  if(p){ p.dispatchEvent(new Event('change', { bubbles:true })); }
+  alert('Profil « '+nom+' » appliqué : '+n+' case(s) cochée(s).\nVous pouvez décocher ou compléter librement.');
+}
+
+/* -------- barre d'outils insérée en tête de chaque fiche (v, c, r) -------- */
+function addToolbar(panel){
+  const wrap = document.querySelector('#panel-'+panel+' .wrap');
+  if(!wrap || wrap.dataset.tb) return;
+  wrap.dataset.tb = '1';
+  const bar = document.createElement('div');
+  bar.className = 'noprint';
+  bar.style.cssText = 'display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:10px 0 4px;padding:10px 12px;background:#fff;border:1px solid var(--line);border-radius:6px';
+  const mk = (txt, fn) => {
+    const b = document.createElement('button');
+    b.type='button'; b.textContent = txt;
+    b.style.cssText = 'font-size:12px;padding:5px 10px;border:1px solid var(--line);background:#fcfbf7;border-radius:4px;cursor:pointer;color:var(--ink)';
+    b.onclick = fn; return b;
+  };
+  bar.appendChild(mk('👤 Enregistrer le client au carnet', () => window.EBRSaveClient(panel)));
+  bar.appendChild(mk('📋 Reprendre un dossier existant',  () => window.EBRReprendreDossier(panel)));
+  bar.appendChild(mk('✓ Vérifier ce qui manque',          () => window.EBRCheckFiche(panel)));
+  if(panel === 'r'){
+    const sel = document.createElement('select');
+    sel.style.cssText = 'font-size:12px;padding:5px 8px;border:1px solid var(--line);background:#fcfbf7;border-radius:4px;cursor:pointer';
+    sel.innerHTML = '<option value="">⚡ Profil type d\'expertise…</option>' +
+      Object.keys(PROFILS).map(k => '<option value="'+k+'">'+k+'</option>').join('');
+    sel.onchange = () => { if(sel.value){ applyProfil(sel.value); sel.value = ''; } };
+    bar.appendChild(sel);
+  }
+  bar.appendChild(mk('⊟ Tout replier / déplier',          () => {
+    const bodies = [...document.querySelectorAll('#panel-'+panel+' section .body')];
+    const anyOpen = bodies.some(b => b.style.display !== 'none');
+    bodies.forEach(b => b.style.display = anyOpen ? 'none' : '');
+    [...document.querySelectorAll('#panel-'+panel+' .ebr-arrow')].forEach(a => a.textContent = anyOpen ? '▸' : '▾');
+  }));
+  wrap.insertBefore(bar, wrap.firstChild);
+}
+
+function initPanel(p){
+  addToolbar(p);
+  bindCarnet(p);
+  addQuickButtons(p);
+  makeCollapsible(p);
+  const panel = document.getElementById('panel-'+p);
+  if(panel) panel.addEventListener('input', () => refreshBadges(p));
+  if(panel) panel.addEventListener('change', () => refreshBadges(p));
+}
+function boot(){
+  refreshCarnetLists();
+  ['v','c','r'].forEach(initPanel);
+}
+if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
+else boot();
+})();
 </script>
 
 <script>
@@ -2353,6 +2813,78 @@ window.wipe_r = wipe;
 })();
 </script>
 
+<div class="panel" id="panel-suivi">
+<div class="wrap">
+  <section>
+    <h2><b>&#128203;</b> Tableau de suivi — devis, factures, dossiers</h2>
+    <div class="body">
+      <div style="display:flex;gap:10px;align-items:center;margin-bottom:12px;flex-wrap:wrap">
+        <button type="button" class="ph-btn o" onclick="renderSuivi()">Actualiser</button>
+        <span style="font-size:11.5px;color:var(--muted)">Reconstruit à partir de tous les dossiers enregistrés sur cet appareil (et restaurés depuis Drive).</span>
+      </div>
+      <div id="suivi-table" style="overflow-x:auto"></div>
+    </div>
+  </section>
+</div>
+</div>
+
+<script>
+function suEsc(s){ return (s||'').toString().replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function suEur(n){ return (isNaN(n)?0:n).toLocaleString('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function renderSuivi(){
+  const box = document.getElementById('suivi-table');
+  if(!box || !window.EBR2Multi) return;
+  const M = window.EBR2Multi;
+  const refs = {};
+  ['devis','v','c','r'].forEach(t => {
+    M.list(t).forEach(x => {
+      refs[x.ref] = refs[x.ref] || {};
+      refs[x.ref][t] = x;
+      if (x.client) refs[x.ref].client = x.client;
+    });
+  });
+  try{
+    const ph = JSON.parse(localStorage.getItem('ebr2:index') || '[]');
+    ph.forEach(x => {
+      if (!x.ref) return;
+      refs[x.ref] = refs[x.ref] || {};
+      refs[x.ref].ph = x;
+      if (x.nom && !refs[x.ref].client) refs[x.ref].client = x.nom;
+    });
+  }catch(e){}
+  const factures = M.loadFactures();
+  const list = Object.keys(refs).sort();
+  if (!list.length){ box.innerHTML = '<p class="ph-empty">Aucun dossier enregistré pour l\'instant — dès que vous créez un devis, une fiche ou un dossier photo avec un n° de dossier, il apparaîtra ici.</p>'; return; }
+  const cell = fac => fac
+    ? ('N° '+suEsc(fac.num)+'<br><span style="color:var(--muted)">'+suEur(fac.montant)+' €</span><br>'+
+       '<label style="font-size:11px"><input type="checkbox" '+(fac.paid?'checked':'')+
+       ' onchange="window.EBR2Multi.markFacturePaid(\''+fac.num.replace(/'/g,"\\'")+'\', this.checked); renderSuivi()"> réglée</label>')
+    : '<span style="color:var(--muted)">—</span>';
+  let h = '<table class="rec"><tr><th>N° dossier</th><th>Client</th><th>Devis</th><th>Visite</th><th>Constat</th>'+
+          '<th>Rapport</th><th>Photos</th><th>Facture acompte</th><th>Facture solde</th></tr>';
+  list.forEach(ref => {
+    const r = refs[ref];
+    const facAc = factures.find(f => f.ref === ref && f.type === 'acompte');
+    const facSo = factures.find(f => f.ref === ref && (f.type === 'solde' || f.type === 'unique'));
+    const ok = v => v ? '✅' : '<span style="color:var(--muted)">—</span>';
+    h += '<tr>'+
+      '<td><b>'+suEsc(ref)+'</b></td>'+
+      '<td>'+suEsc(r.client || '—')+'</td>'+
+      '<td>'+ok(r.devis)+'</td>'+
+      '<td>'+ok(r.v)+'</td>'+
+      '<td>'+ok(r.c)+'</td>'+
+      '<td>'+ok(r.r)+'</td>'+
+      '<td>'+(r.ph ? '✅' : '<span style="color:var(--muted)">—</span>')+'</td>'+
+      '<td>'+cell(facAc)+'</td>'+
+      '<td>'+cell(facSo)+'</td>'+
+    '</tr>';
+  });
+  h += '</table>';
+  box.innerHTML = h;
+}
+window.renderSuivi = renderSuivi;
+</script>
+
 <script>
 function go(p){
   document.querySelectorAll('.panel').forEach(el => el.classList.remove('on'));
@@ -2361,6 +2893,7 @@ function go(p){
     b.classList.toggle('on', b.dataset.p === p));
   window.scrollTo(0, 0);
   try{ localStorage.setItem('ebr-onglet', p); }catch(e){}
+  if (p === 'suivi' && window.renderSuivi) renderSuivi();
 }
 document.querySelectorAll('.tabs .tab').forEach(b => b.onclick = () => go(b.dataset.p));
 
@@ -3137,6 +3670,91 @@ function desCard(d){
     '</div>';
   }
 }
+/* --------------- bibliothèque des désordres courants, par famille -------------- */
+const DES_LIB = [
+  { cat: 'Charpente bois', items: [
+    "Assemblage défaillant / désassemblé",
+    "Attaque de termites",
+    "Attaque d'insectes xylophages (capricorne, vrillette)",
+    "Pourriture / champignon (mérule, coniophore)",
+    "Flèche / déformation de panne ou chevron",
+    "Section insuffisante (sous-dimensionnement)",
+    "Fissuration importante d'une pièce porteuse",
+    "Trace d'humidité / infiltration en toiture",
+    "About de pièce pourri / désolidarisé",
+    "Fixation métallique corrodée (sabot, étrier, boulon)",
+    "Entrait retroussé fissuré",
+    "Poteau bois moisi",
+  ]},
+  { cat: 'Ossature bois (maison, extension)', items: [
+    "Ossature exposée aux intempéries, non protégée",
+    "Pare-pluie déchiré ou absent",
+    "Trace d'humidité en pied d'ossature",
+    "Attaque de termites en pied de montant",
+    "Assemblage d'angle désolidarisé",
+    "Lisse basse en contact direct avec le sol",
+    "Isolant tassé ou humide",
+    "Bardage bois dégradé / non ventilé",
+  ]},
+  { cat: 'Plancher bois', items: [
+    "Solive fléchie ou fissurée",
+    "Trace d'humidité sous le plancher",
+    "Attaque de termites sur le solivage",
+    "Section de solive insuffisante",
+    "Déformation du plancher au passage",
+    "Fixation des lambourdes défaillante",
+    "Ventilation du vide sanitaire insuffisante",
+  ]},
+  { cat: 'Terrasse bois / deck / caillebotis', items: [
+    "Lame de terrasse fendue ou pourrie",
+    "Lambourde en contact direct avec le sol",
+    "Fixation métallique corrodée",
+    "Lame d'air / ventilation sous terrasse insuffisante",
+    "Attaque de termites sur la structure de terrasse",
+    "Caillebotis instable, jeu excessif",
+    "Bois non adapté à la classe d'emploi extérieure (classe 4)",
+  ]},
+  { cat: 'Termites et insectes xylophages', items: [
+    "Galeries de termites visibles",
+    "Cordonnets de termites en façade ou en soubassement",
+    "Bois vermoulu (petite vrillette)",
+    "Trous d'envol de capricorne des maisons",
+    "Sciure caractéristique au sol (vermoulure)",
+    "Bois sonnant creux au test au marteau",
+    "Attaque active non traitée",
+  ]},
+  { cat: 'Humidité et champignons', items: [
+    "Trace d'humidité / auréole",
+    "Mérule (mycélium blanc à gris)",
+    "Coniophore des caves",
+    "Condensation en sous-face de toiture",
+    "Défaut d'étanchéité identifié",
+    "Absence de ventilation de la charpente",
+  ]},
+  { cat: 'Pergola / structure bois extérieure', items: [
+    "Poteau en contact direct avec le sol",
+    "Assemblage rouillé ou corrodé",
+    "Bois non traité classe 4 en extérieur",
+    "Fissuration liée à l'exposition UV",
+  ]},
+];
+function fillDesLib(){
+  const sel = $('ph-desLib'); if(!sel) return;
+  let h = '<option value="">— Choisir dans la liste pour préremplir, puis compléter si besoin —</option>';
+  DES_LIB.forEach(g => {
+    h += '<optgroup label="'+esc(g.cat)+'">';
+    g.items.forEach(it => { h += '<option value="'+esc(it)+'">'+esc(it)+'</option>'; });
+    h += '</optgroup>';
+  });
+  sel.innerHTML = h;
+}
+window.phPickDesLib = function(){
+  const sel = $('ph-desLib');
+  if(!sel || !sel.value) return;
+  $('ph-desLabel').value = sel.value;
+  sel.value = '';
+  $('ph-desLabel').focus();
+};
 window.phAddDes = function(){
   const lab = $('ph-desLabel').value.trim();
   const el  = $('ph-desElem');
@@ -3433,6 +4051,7 @@ function openPlanche(i, data){
     $('ph-fOrient').value= P.orient || '';
     $('ph-fObs').value   = P.obs || '';
     $('ph-gpsSt').textContent = '';
+    ensurePinNums();
     draw(); renderPins(); show('ph-v3'); save();
   };
   im.src = data;
@@ -3520,6 +4139,40 @@ const DEFAUTS = ["Humidité / trace d'infiltration","Fissuration","Flèche / dé
   "Assemblage défaillant","Section insuffisante","Corrosion de ferrure","Défaut de mise en œuvre",
   "Point de mesure","Repère de désordre (D1, D2…)","Autre (préciser)"];
 
+/* texte tapé incrusté sur la photo : fond sombre translucide pour rester
+   lisible quelle que soit la photo, taille proportionnelle à l'image */
+function drawText(ctx, t, W, H){
+  const txt = String(t.txt || '').trim();
+  if(!txt) return;
+  const fs = Math.max(13, (t.size || 26) * (W/1000));
+  const pad = fs * 0.4;
+  ctx.save();
+  ctx.font = '700 ' + fs + 'px Helvetica, Arial, sans-serif';
+  ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+  const lines = txt.split('\n');
+  const wMax = Math.max(...lines.map(l => ctx.measureText(l).width));
+  const lh = fs * 1.25;
+  let x = t.x * W, y = t.y * H;
+  x = Math.min(Math.max(x, pad), W - wMax - pad*2);
+  y = Math.min(Math.max(y, pad), H - lines.length*lh - pad*2);
+  ctx.fillStyle = 'rgba(14,28,47,0.72)';
+  const r = pad*0.6;
+  const bw = wMax + pad*2, bh = lines.length*lh + pad*1.4;
+  ctx.beginPath();
+  ctx.moveTo(x-pad+r, y-pad*0.7);
+  ctx.lineTo(x-pad+bw-r, y-pad*0.7);
+  ctx.quadraticCurveTo(x-pad+bw, y-pad*0.7, x-pad+bw, y-pad*0.7+r);
+  ctx.lineTo(x-pad+bw, y-pad*0.7+bh-r);
+  ctx.quadraticCurveTo(x-pad+bw, y-pad*0.7+bh, x-pad+bw-r, y-pad*0.7+bh);
+  ctx.lineTo(x-pad+r, y-pad*0.7+bh);
+  ctx.quadraticCurveTo(x-pad, y-pad*0.7+bh, x-pad, y-pad*0.7+bh-r);
+  ctx.lineTo(x-pad, y-pad*0.7+r);
+  ctx.quadraticCurveTo(x-pad, y-pad*0.7, x-pad+r, y-pad*0.7);
+  ctx.closePath(); ctx.fill();
+  ctx.fillStyle = t.color || '#ffffff';
+  lines.forEach((l,i) => ctx.fillText(l, x, y + i*lh));
+  ctx.restore();
+}
 function draw(){
   if(!imgEl) return;
   const c = cv(), ctx = c.getContext('2d');
@@ -3538,10 +4191,31 @@ function draw(){
     ctx.stroke();
     ctx.restore();
   });
+  (P.texts||[]).forEach(t => drawText(ctx, t, c.width, c.height));
   P.pins.forEach((p,i) => drawPin(ctx, p.x*c.width, p.y*c.height, pinLab(p,i), Math.max(c.width,c.height)));
 }
-/* libellé affiché d'un repère : libre s'il est saisi, sinon son rang */
-function pinLab(p,i){ return (p && p.lab && String(p.lab).trim()) ? String(p.lab).trim() : String(i+1); }
+/* libellé affiché d'un repère : libre s'il est saisi, sinon son numéro FIXE
+   attribué à la création. Ce numéro ne bouge jamais, même si un repère
+   précédent est supprimé : les renvois du rapport restent exacts. */
+function pinLab(p,i){
+  if(p && p.lab && String(p.lab).trim()) return String(p.lab).trim();
+  if(p && p.n) return String(p.n);
+  return String(i+1);
+}
+/* prochain numéro libre pour ce cliché : max des numéros déjà attribués + 1 */
+function nextPinNum(){
+  if(!P || !P.pins) return 1;
+  let max = 0;
+  P.pins.forEach((p,i) => { const n = p.n || (i+1); if(n > max) max = n; });
+  return max + 1;
+}
+/* anciens clichés : les repères sans numéro fixe en reçoivent un, une fois */
+function ensurePinNums(){
+  if(!P || !P.pins) return false;
+  let changed = false;
+  P.pins.forEach((p,i) => { if(!p.n){ p.n = i+1; changed = true; } });
+  return changed;
+}
 function drawPin(c,x,y,n,ref){
   n = String(n);
   const r = Math.max(15, ref*0.021);
@@ -3572,24 +4246,41 @@ let canvasBound = false;
 let phMode = 'pin', phColor = '#e21b1b', phWidth = 5, curStroke = null;
 window.phSetMode = function(m){
   phMode = m;
-  const bp = $('ph-modePin'), bd = $('ph-modeDraw'), note = $('ph-modeNote');
-  if(bp) bp.style.fontWeight = (m==='pin') ? '700' : '400';
+  const bp = $('ph-modePin'), bd = $('ph-modeDraw'), bt = $('ph-modeText'), note = $('ph-modeNote');
+  if(bp) bp.style.fontWeight = (m==='pin')  ? '700' : '400';
   if(bd) bd.style.fontWeight = (m==='draw') ? '700' : '400';
-  if(note) note.textContent = (m==='draw')
-    ? 'Dessinez au doigt ou au stylet directement sur la photo (flèche, cercle, texte libre…).'
-    : "Touchez la photo à l'endroit du désordre pour poser un repère numéroté. Les repères sont incrustés sur l'image exportée et repris dans la légende.";
+  if(bt) bt.style.fontWeight = (m==='text') ? '700' : '400';
+  if(note) note.textContent =
+    m === 'draw' ? 'Dessinez au doigt ou au stylet directement sur la photo (flèche, cercle, entourage…).' :
+    m === 'text' ? "Touchez la photo à l'endroit voulu pour y taper un texte. Le texte s'incruste sur l'image et se déplace ensuite au doigt." :
+    "Touchez la photo à l'endroit du désordre pour poser un repère numéroté. Les repères sont incrustés sur l'image exportée et repris dans la légende.";
 };
 window.phDrawColor = function(c){ phColor = c; };
 window.phDrawWidth = function(v){ phWidth = parseInt(v,10) || 5; };
+window.phUndoStroke = function(){
+  if(!P || !(P.draw||[]).length) return;
+  P.draw.pop();
+  draw(); save();
+};
 window.phClearDrawing = function(){
   if(!P || !(P.draw||[]).length) return;
-  ask('Effacer le dessin ?', 'Les traits dessinés à la main sur ce cliché seront retirés. La photo et les repères sont conservés.',
+  ask('Effacer le dessin ?', 'Les traits dessinés à la main sur ce cliché seront retirés. La photo, les textes et les repères sont conservés.',
       'Effacer', () => { P.draw = []; draw(); save(); });
+};
+window.phUndoText = function(){
+  if(!P || !(P.texts||[]).length) return;
+  P.texts.pop();
+  draw(); save();
+};
+window.phClearTexts = function(){
+  if(!P || !(P.texts||[]).length) return;
+  ask('Effacer les textes ?', 'Les textes tapés sur ce cliché seront retirés. La photo, le dessin et les repères sont conservés.',
+      'Effacer', () => { P.texts = []; draw(); save(); });
 };
 function bindCanvas(){
   const c = cv(); if(!c || canvasBound) return;
   canvasBound = true;
-  let drag = -1, moved = false;
+  let drag = -1, moved = false, dragText = -1;
   const rel = ev => { const b = c.getBoundingClientRect();
     return { x:(ev.clientX-b.left)/b.width, y:(ev.clientY-b.top)/b.height, b }; };
   /* rayon de saisie d'un repere, en fraction de l'image */
@@ -3603,6 +4294,17 @@ function bindCanvas(){
     });
     return (best >= 0 && Math.sqrt(bd) < 0.05) ? best : -1;
   }
+  /* rayon de saisie d'un texte tapé, en fraction de l'image */
+  function hitText(pt){
+    if(!P || !P.texts) return -1;
+    let best = -1, bd = 1e9;
+    P.texts.forEach((t,i) => {
+      const dx = (t.x-pt.x), dy = (t.y-pt.y);
+      const d = dx*dx + dy*dy;
+      if(d < bd){ bd = d; best = i; }
+    });
+    return (best >= 0 && Math.sqrt(bd) < 0.09) ? best : -1;
+  }
   c.style.touchAction = 'none';
   c.addEventListener('pointerdown', ev => {
     if(!imgEl || !P) return;
@@ -3610,6 +4312,11 @@ function bindCanvas(){
     if(phMode === 'draw'){
       curStroke = { color: phColor, w: phWidth, pts: [{x:pt.x,y:pt.y}] };
       c.setPointerCapture(ev.pointerId); ev.preventDefault();
+      return;
+    }
+    if(phMode === 'text'){
+      dragText = hitText(pt); moved = false;
+      if(dragText >= 0){ c.setPointerCapture(ev.pointerId); ev.preventDefault(); }
       return;
     }
     drag = hit(pt); moved = false;
@@ -3626,6 +4333,13 @@ function bindCanvas(){
       curStroke.pts.forEach((p,i)=>{ const x=p.x*c.width,y=p.y*c.height; if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y); });
       ctx.stroke(); ctx.restore();
       ev.preventDefault();
+      return;
+    }
+    if(phMode === 'text' && dragText >= 0){
+      const pt = rel(ev);
+      P.texts[dragText].x = Math.min(1, Math.max(0, pt.x));
+      P.texts[dragText].y = Math.min(1, Math.max(0, pt.y));
+      moved = true; draw(); ev.preventDefault();
       return;
     }
     if(drag < 0 || !P) return;
@@ -3646,6 +4360,12 @@ function bindCanvas(){
       draw();
       return;
     }
+    if(phMode === 'text' && dragText >= 0){
+      if(moved) save();
+      dragText = -1; moved = false;
+      try{ c.releasePointerCapture(ev.pointerId); }catch(e){}
+      return;
+    }
     if(drag < 0) return;
     if(moved){ save(); }
     drag = -1; moved = false;
@@ -3657,8 +4377,25 @@ function bindCanvas(){
     if(phMode === 'draw') return;
     if(!imgEl || !P) return;
     const pt = rel(ev);
+    if(phMode === 'text'){
+      const i = hitText(pt);
+      if(i >= 0){
+        /* clic sur un texte existant : on le modifie (vider = supprimer) */
+        const v = prompt('Modifier le texte (laisser vide pour le supprimer) :', P.texts[i].txt || '');
+        if(v === null) return;
+        if(!v.trim()) P.texts.splice(i,1); else P.texts[i].txt = v;
+        draw(); save();
+        return;
+      }
+      const v = prompt('Texte à écrire sur la photo :', '');
+      if(v === null || !v.trim()) return;
+      if(!P.texts) P.texts = [];
+      P.texts.push({ x:pt.x, y:pt.y, txt:v.trim(), color: phColor === '#ffffff' ? '#ffffff' : phColor, size: 26 });
+      draw(); save();
+      return;
+    }
     if(hit(pt) >= 0) return;           /* clic sur un repere existant : on ne cree pas de doublon */
-    P.pins.push({ x:pt.x, y:pt.y, type:DEFAUTS[0], note:'', lab:'' });
+    P.pins.push({ x:pt.x, y:pt.y, type:DEFAUTS[0], note:'', lab:'', n: nextPinNum() });
     draw(); renderPins(); save();
   });
 }
@@ -3674,7 +4411,7 @@ window.phPinNote= function(i,v){ P.pins[i].note = v; phTouch(0); };
 window.phPinLab = function(i,v){
   P.pins[i].lab = v;
   const badge = document.querySelectorAll('#ph-pins .ph-pin .num')[i];
-  if(badge) badge.textContent = (v && v.trim()) ? v.trim() : String(i+1);
+  if(badge) badge.textContent = (v && v.trim()) ? v.trim() : String(P.pins[i].n || (i+1));
   draw(); phTouch(0);
 };
 function renderPins(){
@@ -3682,7 +4419,7 @@ function renderPins(){
   if(!P.pins.length){ el.innerHTML = '<p class="ph-empty">Aucun repère posé.</p>'; return; }
   el.innerHTML = P.pins.map((p,i) =>
     '<div class="ph-pin"><div class="num">'+esc(pinLab(p,i))+'</div><div class="bd">'+
-      '<input type="text" class="ph-piniD" placeholder="Numéro affiché — ex. D3 (vide = '+(i+1)+')" value="'+esc(p.lab||'')+'" oninput="phPinLab('+i+',this.value)">'+
+      '<input type="text" class="ph-piniD" placeholder="Numéro affiché — ex. D3 (vide = '+(p.n||i+1)+')" value="'+esc(p.lab||'')+'" oninput="phPinLab('+i+',this.value)">'+
       '<select onchange="phPinType('+i+',this.value)">'+
         DEFAUTS.map(d => '<option'+(d===p.type?' selected':'')+'>'+esc(d)+'</option>').join('')+
       '</select>'+
@@ -3946,6 +4683,13 @@ window.phContact = async function(){
           o.stroke();
           o.restore();
         });
+        (p.texts||[]).forEach(t => {
+          const sub = { x:t.x, y:t.y, txt:t.txt, color:t.color, size:(t.size||26)*0.55 };
+          o.save();
+          o.translate(cx+(CELL-w)/2, cy+(ih-h)/2);
+          drawText(o, sub, w, h);
+          o.restore();
+        });
         p.pins.forEach((pin,k) => drawPin(o, cx+(CELL-w)/2+pin.x*w, cy+(ih-h)/2+pin.y*h, pinLab(pin,k), CELL));
       } else { o.fillStyle = '#f2efe7'; o.fillRect(cx,cy,CELL,ih); }
       o.strokeStyle = '#d8d2c4'; o.lineWidth = 1; o.strokeRect(cx+.5,cy+.5,CELL-1,ih-1);
@@ -3982,7 +4726,7 @@ window.phPrintAnnexe = async function(){
 
   for(const p of list){
     const data = await IMG.get(p.pid);
-    const img = data ? await stamp(data, p.pins, p.draw) : '';
+    const img = data ? await stamp(data, p.pins, p.draw, p.texts) : '';
     h += '<div class="blk"><div class="h"><b>PHOTO N° '+pad(p.num)+'</b>'+
       '<span>'+esc([p.shot? 'plan '+p.shot : 'hors plan', desTxt(p)? desTxt(p)+(serieTxt(p)?' — '+serieTxt(p):'') : '',
                     p.elem? elemLabel(p.elem) : '', p.cam? 'fichier '+p.cam : ''].filter(Boolean).join(' · '))+'</span></div>'+
@@ -4004,9 +4748,9 @@ window.phPrintAnnexe = async function(){
   document.body.classList.add('ph-printing');
   setTimeout(() => { window.print(); setTimeout(()=>document.body.classList.remove('ph-printing'), 400); }, 250);
 };
-function stamp(src, pins, strokes){
+function stamp(src, pins, strokes, texts){
   return new Promise(res => {
-    if((!pins || !pins.length) && (!strokes || !strokes.length)){ res(src); return; }
+    if((!pins || !pins.length) && (!strokes || !strokes.length) && (!texts || !texts.length)){ res(src); return; }
     const i = new Image();
     i.onload = () => {
       const c = document.createElement('canvas');
@@ -4024,6 +4768,7 @@ function stamp(src, pins, strokes){
         x.stroke();
         x.restore();
       });
+      (texts||[]).forEach(t => drawText(x, t, c.width, c.height));
       (pins||[]).forEach((p,k) => drawPin(x, p.x*c.width, p.y*c.height, pinLab(p,k), Math.max(c.width,c.height)));
       res(c.toDataURL('image/jpeg',0.85));
     };
@@ -4066,6 +4811,7 @@ function boot(){
     document.body.appendChild(d);
   }
   bindCanvas();
+  fillDesLib();
   const dt = $('ph-nDate');
   if(dt && !dt.value) dt.valueAsDate = new Date();
   try{ migrate(); }catch(e){}
@@ -4772,6 +5518,24 @@ function buildDevisHtml(){
 window.devisPrintDevis = function(){
   doPrint(buildDevisHtml());
 };
+window.devisEmailClient = function(){
+  const ref = fieldVal('devis-nRef') || 'sans réf.';
+  const client = fieldVal('devis-client') || '';
+  const email = fieldVal('devis-email');
+  if(!email){ alert("Indiquez d'abord l'e-mail du client (champ « E-mail » du devis) avant d'envoyer."); return; }
+  doPrint(buildDevisHtml());
+  const subject = encodeURIComponent('Devis Expertis Bois Réunion — dossier ' + ref);
+  const body = encodeURIComponent(
+    'Bonjour' + (client ? ' ' + client : '') + ',\n\n' +
+    'Vous trouverez ci-joint notre devis pour le dossier ' + ref + '.\n\n' +
+    "N'hésitez pas à me contacter pour toute question.\n\n" +
+    'Cordialement,\nFranck Guenebaut\nExpertis Bois Réunion\n06 93 40 80 11'
+  );
+  setTimeout(() => {
+    alert("L'aperçu du devis s'est ouvert : enregistrez-le en PDF (Imprimer → Enregistrer en PDF), puis joignez ce fichier au brouillon d'e-mail qui va s'ouvrir juste après. Le navigateur ne permet pas de joindre le fichier automatiquement.");
+    window.location.href = 'mailto:' + encodeURIComponent(email) + '?subject=' + subject + '&body=' + body;
+  }, 300);
+};
 
 /* --------------------------- facture d'acompte (PDF) -------------------------- */
 function buildFactureHtml(){
@@ -4781,13 +5545,15 @@ function buildFactureHtml(){
   const date = frDate(fieldVal('devis-date')) || new Date().toLocaleDateString('fr-FR');
   const siret = fieldVal('devis-cabSiret'), cabAdr = fieldVal('devis-cabAdr');
   const ac = num('devis-pAc'), tot = num('devis-pBase') + num('devis-qCalc')*num('devis-pCalc') + num('devis-pMaj') - num('devis-pRem');
-  const noFacture = 'FAC-' + (ref || 'SANS-REF') + '-ACOMPTE';
+  const fac = window.EBR2Multi.issueFacture('acompte', ref, client, ac);
+  const refInterne = 'FAC-' + (ref || 'SANS-REF') + '-ACOMPTE';
 
   let h = '<div class="pg">';
   h += '<div class="ttl"><div class="b">Expertis Bois Réunion</div>' +
-       '<div class="n">FACTURE D’ACOMPTE N° '+esc(noFacture)+'</div>' +
+       '<div class="n">FACTURE D’ACOMPTE N° '+esc(fac.num)+'</div>' +
        '<div class="s">Cabinet d\'expertise technique indépendant · '+esc(cabAdr||'Île de La Réunion · 974')+' · 06 93 40 80 11' +
-       (siret? ' · SIRET '+esc(siret) : '') + '</div></div>';
+       (siret? ' · SIRET '+esc(siret) : '') + '</div>' +
+       '<div class="s">Référence dossier : '+esc(refInterne)+'</div></div>';
 
   h += '<h3>Émetteur</h3>';
   h += '<div class="kv"><b>Expertis Bois Réunion</b></div>';
@@ -4845,13 +5611,15 @@ function buildFactureFicheHtml(p){
   const solde = tot - acompte;
   const hasAcompte = acompte > 0;
   const montant = hasAcompte ? solde : tot;
-  const noFacture = 'FAC-' + (ref || 'SANS-REF') + (hasAcompte ? '-SOLDE' : '');
+  const fac = window.EBR2Multi.issueFacture(hasAcompte ? 'solde' : 'unique', ref, client, montant);
+  const refInterne = 'FAC-' + (ref || 'SANS-REF') + (hasAcompte ? '-SOLDE' : '');
 
   let h = '<div class="pg">';
   h += '<div class="ttl"><div class="b">Expertis Bois Réunion</div>' +
-       '<div class="n">'+(hasAcompte ? 'FACTURE DE SOLDE' : 'FACTURE') + ' N° '+esc(noFacture)+'</div>' +
+       '<div class="n">'+(hasAcompte ? 'FACTURE DE SOLDE' : 'FACTURE') + ' N° '+esc(fac.num)+'</div>' +
        '<div class="s">Cabinet d\'expertise technique indépendant · '+esc(cabAdr||'Île de La Réunion · 974')+' · 06 93 40 80 11' +
-       (siret? ' · SIRET '+esc(siret) : '') + '</div></div>';
+       (siret? ' · SIRET '+esc(siret) : '') + '</div>' +
+       '<div class="s">Référence dossier : '+esc(refInterne)+'</div></div>';
 
   h += '<h3>Émetteur</h3>';
   h += '<div class="kv"><b>Expertis Bois Réunion</b></div>';
@@ -4865,7 +5633,10 @@ function buildFactureFicheHtml(p){
   h += '<h3>Détail</h3>';
   const rows = [];
   rows.push(['Prestation — '+esc(NOMS[p])+' — dossier '+esc(ref)+', visite du '+esc(date), eur(tot)+' €']);
-  if (hasAcompte) rows.push(['Acompte déjà réglé (facture FAC-'+esc(ref)+'-ACOMPTE)', '−'+eur(acompte)+' €']);
+  if (hasAcompte){
+    const facAc = window.EBR2Multi.loadFactures().find(f => f.ref === ref && f.type === 'acompte');
+    rows.push(['Acompte déjà réglé (facture N° '+esc(facAc ? facAc.num : 'FAC-'+ref+'-ACOMPTE')+')', '−'+eur(acompte)+' €']);
+  }
   h += '<table class="rec"><tr><th>Désignation</th><th>Montant</th></tr>' +
     rows.map(r => '<tr><td>'+r[0]+'</td><td>'+r[1]+'</td></tr>').join('') +
     '<tr class="tot"><td>TOTAL À RÉGLER'+(hasAcompte?' (solde)':'')+'</td><td>'+eur(montant)+' €</td></tr>' +
