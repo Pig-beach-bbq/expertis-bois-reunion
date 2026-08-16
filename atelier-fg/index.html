@@ -1871,6 +1871,26 @@ h1:first-child{margin-top:0}
       <button class="ph-btn o full" style="margin-bottom:12px" onclick="phAddDes()">Créer <span id="ph-nextD">D1</span></button>
 
       <div id="ph-desList"></div>
+      <datalist id="ph-risques">
+        <option>Infiltrations</option>
+        <option>Chute d'éléments</option>
+        <option>Effondrement / ruine partielle</option>
+        <option>Risque pour la sécurité des personnes</option>
+        <option>Aggravation du désordre</option>
+        <option>Dégradation progressive de l'ouvrage</option>
+        <option>Atteinte à la salubrité</option>
+        <option>Perte de portance</option>
+        <option>Aucun risque immédiat identifié</option>
+      </datalist>
+      <div style="margin-top:14px;padding:10px 12px;background:#fcfbf7;border:1px solid var(--line);border-radius:6px">
+        <div style="font-size:11px;letter-spacing:.06em;color:var(--muted);font-weight:600;margin-bottom:7px">ÉCHELLE DE GRAVITÉ</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;font-size:11.5px">
+          <span style="background:#e21b1b;color:#fff;padding:3px 9px;border-radius:4px"><b>1</b> Mauvais — traitement immédiat</span>
+          <span style="background:#f2a23c;color:#1c2430;padding:3px 9px;border-radius:4px"><b>2</b> Non satisfaisant — court terme</span>
+          <span style="background:#f4dd4c;color:#1c2430;padding:3px 9px;border-radius:4px"><b>3</b> Partiellement satisfaisant — moyen terme</span>
+          <span style="background:#5cb85c;color:#fff;padding:3px 9px;border-radius:4px"><b>4</b> Satisfaisant — pas de mesure</span>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -1888,7 +1908,21 @@ h1:first-child{margin-top:0}
   </section>
 
   <section>
-    <h2><b>5</b> Exports</h2>
+    <h2><b>5</b> Générer le rapport</h2>
+    <div class="body">
+      <div class="ph-note">À la fin du relevé, un seul bouton reprend tout ce dossier photo dans la fiche :
+        client, n° de dossier, adresse, date, désordres relevés et numéros de clichés. Plus besoin de
+        repasser par le devis ni de ressaisir quoi que ce soit.</div>
+      <div class="ph-grid2" style="margin-top:12px">
+        <button class="ph-btn g" onclick="phBuildFiche('r')">→ Établir le RAPPORT TECHNIQUE</button>
+        <button class="ph-btn g" onclick="phBuildFiche('c')">→ Établir le RAPPORT DE CONSTAT</button>
+      </div>
+      <div id="ph-buildInfo" style="margin-top:10px;font-size:11.5px;color:var(--muted)"></div>
+    </div>
+  </section>
+
+  <section>
+    <h2><b>6</b> Exports</h2>
     <div class="body">
       <div class="ph-grid2">
         <button class="ph-btn g" onclick="phPrintAnnexe()">Annexe photographique — imprimer / PDF</button>
@@ -1903,7 +1937,7 @@ h1:first-child{margin-top:0}
   </section>
 
   <section>
-    <h2><b>6</b> Sauvegarde du dossier</h2>
+    <h2><b>7</b> Sauvegarde du dossier</h2>
     <div class="body">
       <div class="ph-note">Le fichier de sauvegarde contient <b>tout</b> le dossier : fiche, désordres,
         repères et photos. Il permet de changer de version du classeur ou de tablette sans rien perdre.
@@ -1990,6 +2024,10 @@ h1:first-child{margin-top:0}
         <button type="button" onclick="phDrawColor('#ffffff')" title="Blanc" style="width:22px;height:22px;border-radius:50%;background:#ffffff;border:2px solid #0e1c2f;cursor:pointer"></button>
         <span style="font-size:11.5px;color:var(--muted);margin-left:6px">Épaisseur :</span>
         <input type="range" id="ph-drawWidth" min="2" max="14" value="5" style="width:80px" oninput="phDrawWidth(this.value)">
+        <span style="width:1px;height:22px;background:var(--line);margin:0 2px"></span>
+        <label style="font-size:11.5px;color:var(--ink);display:flex;align-items:center;gap:5px;cursor:pointer">
+          <input type="checkbox" id="ph-straight" checked onchange="phStraight(this.checked)"> Trait droit
+        </label>
       </div>
       <div class="ph-grid2" style="margin-top:12px">
         <button class="ph-btn o" onclick="phReplacePick()">Remplacer la photo</button>
@@ -3651,18 +3689,42 @@ function renderDes(){
     return '<div class="ph-elem">'+tete+'<div class="ph-elem-bd">'+corps+'</div></div>';
   }).join('');
 }
+/* ---- échelle de gravité : hiérarchise les constats et oriente le budget travaux ---- */
+const GRAVITE = {
+  1: { lab: 'Mauvais — traitement immédiat',      c: '#e21b1b', t: '#fff' },
+  2: { lab: 'Non satisfaisant — court terme',     c: '#f2a23c', t: '#1c2430' },
+  3: { lab: 'Partiellement satisfaisant — moyen terme', c: '#f4dd4c', t: '#1c2430' },
+  4: { lab: 'Satisfaisant — pas de mesure',       c: '#5cb85c', t: '#fff' }
+};
+const RISQUES = ['Infiltrations','Chute d\'éléments','Effondrement / ruine partielle',
+  'Risque pour la sécurité des personnes','Aggravation du désordre','Dégradation progressive de l\'ouvrage',
+  'Atteinte à la salubrité','Perte de portance','Aucun risque immédiat identifié'];
+
 function desCard(d){
   {
     const st = serieState(d.id), got = st.filter(Boolean).length;
     const nums = D.planches.filter(p => desList(p).indexOf(d.id) >= 0).map(p => p.num).sort((a,b)=>a-b);
-    return '<div class="ph-des">'+
+    const g = d.grav ? GRAVITE[d.grav] : null;
+    return '<div class="ph-des"'+(g? ' style="border-left:5px solid '+g.c+'"':'')+'>'+
       '<div class="hd"><span class="id">'+esc(d.id)+'</span>'+
         '<input class="lb ph-deslab" type="text" value="'+esc(d.lab||'')+'" placeholder="désordre non intitulé" '+
           'oninput="phRenameDes(\''+d.id+'\',this.value)">'+
+        (g? '<span style="background:'+g.c+';color:'+g.t+';font-weight:700;font-size:12px;padding:2px 9px;border-radius:11px;margin-right:6px">'+d.grav+'</span>' : '')+
         '<span class="st'+(got===5?' ok':'')+'">'+got+'/5</span>'+
         '<button class="ph-x" onclick="phDelDes(\''+d.id+'\')" title="Supprimer">&times;</button></div>'+
       '<div class="ph-serie">'+st.map((v,i)=>'<div class="'+(v?'ok':'')+'">'+SERIE_LB[i]+'</div>').join('')+'</div>'+
       (nums.length? '<div style="margin-top:7px;font-size:11.5px;color:var(--muted)">Clichés : '+nums.map(pad).join(', ')+'</div>':'')+
+      '<div class="ph-grid2" style="margin-top:8px">'+
+        '<div class="f"><label style="font-size:11px">Gravité</label>'+
+          '<select onchange="phSetDesGrav(\''+d.id+'\',this.value)">'+
+            '<option value="">— à qualifier —</option>'+
+            [1,2,3,4].map(n => '<option value="'+n+'"'+(String(d.grav)===String(n)?' selected':'')+'>'+
+              n+' — '+GRAVITE[n].lab+'</option>').join('')+
+          '</select></div>'+
+        '<div class="f"><label style="font-size:11px">Risque encouru</label>'+
+          '<input type="text" list="ph-risques" value="'+esc(d.risque||'')+'" placeholder="conséquence si rien n\'est fait" '+
+            'oninput="phSetDesRisque(\''+d.id+'\',this.value)"></div>'+
+      '</div>'+
       '<div style="margin-top:8px"><button class="ph-btn g" style="padding:6px 11px;font-size:12.5px" '+
         'onclick="phCaptureDetail(\''+d.id+'\')">2 · Détail '+esc(d.id)+' — mètre et craie</button>'+
         '<button class="ph-btn o" style="padding:6px 11px;font-size:12.5px;margin-left:6px" '+
@@ -3675,6 +3737,14 @@ function desCard(d){
     '</div>';
   }
 }
+window.phSetDesGrav = function(id, v){
+  const d = D.des.find(x => x.id === id); if(!d) return;
+  d.grav = v ? parseInt(v,10) : null; persist(); renderDes();
+};
+window.phSetDesRisque = function(id, v){
+  const d = D.des.find(x => x.id === id); if(!d) return;
+  d.risque = v; persist();
+};
 /* --------------- bibliothèque des désordres courants, par famille -------------- */
 const DES_LIB = [
   { cat: 'Charpente bois', items: [
@@ -4318,7 +4388,8 @@ function drawPin(c,x,y,n,ref){
   c.fillText(n, x, y+r*0.04); c.restore();
 }
 let canvasBound = false;
-let phMode = 'pin', phColor = '#e21b1b', phWidth = 5, curStroke = null;
+let phMode = 'pin', phColor = '#e21b1b', phWidth = 5, curStroke = null, phStraightMode = true;
+window.phStraight = function(v){ phStraightMode = !!v; };
 window.phSetMode = function(m){
   phMode = m;
   const bp = $('ph-modePin'), bd = $('ph-modeDraw'), bt = $('ph-modeText'), note = $('ph-modeNote');
@@ -4326,7 +4397,7 @@ window.phSetMode = function(m){
   if(bd) bd.style.fontWeight = (m==='draw') ? '700' : '400';
   if(bt) bt.style.fontWeight = (m==='text') ? '700' : '400';
   if(note) note.textContent =
-    m === 'draw' ? 'Dessinez au doigt ou au stylet directement sur la photo (flèche, cercle, entourage…).' :
+    m === 'draw' ? 'Posez le doigt au départ du trait et relâchez à l’arrivée : le trait est tiré droit. Décochez « Trait droit » pour dessiner à main levée.' :
     m === 'text' ? "Touchez la photo à l'endroit voulu pour y taper un texte. Le texte s'incruste sur l'image et se déplace ensuite au doigt." :
     "Touchez la photo à l'endroit du désordre pour poser un repère numéroté. Les repères sont incrustés sur l'image exportée et repris dans la légende.";
 };
@@ -4400,12 +4471,18 @@ function bindCanvas(){
   c.addEventListener('pointermove', ev => {
     if(phMode === 'draw' && curStroke){
       const pt = rel(ev);
-      curStroke.pts.push({ x:Math.min(1,Math.max(0,pt.x)), y:Math.min(1,Math.max(0,pt.y)) });
+      const x = Math.min(1,Math.max(0,pt.x)), y = Math.min(1,Math.max(0,pt.y));
+      if(phStraightMode){
+        /* trait droit : on ne conserve que le départ et le point courant */
+        curStroke.pts = [curStroke.pts[0], { x, y }];
+      } else {
+        curStroke.pts.push({ x, y });
+      }
       draw();
       const ctx = c.getContext('2d');
       ctx.save(); ctx.strokeStyle = curStroke.color; ctx.lineWidth = curStroke.w*(c.width/1000);
       ctx.lineCap='round'; ctx.lineJoin='round'; ctx.beginPath();
-      curStroke.pts.forEach((p,i)=>{ const x=p.x*c.width,y=p.y*c.height; if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y); });
+      curStroke.pts.forEach((p,i)=>{ const px=p.x*c.width,py=p.y*c.height; if(i===0) ctx.moveTo(px,py); else ctx.lineTo(px,py); });
       ctx.stroke(); ctx.restore();
       ev.preventDefault();
       return;
@@ -4583,6 +4660,121 @@ window.phRestore = function(ev){
 };
 
 /* ---------------- report des numéros dans la fiche ---------------------- */
+/* ================= génération de la fiche depuis le dossier photo =================
+   Reprend en une fois, dans la fiche Constat ou Rapport technique :
+   identité du client, n° de dossier, adresse, date, désordres relevés,
+   observations des clichés et numéros de photos du plan de prise de vue.
+   Évite de repasser par le devis et de tout ressaisir. */
+function setFicheField(p, keys, val){
+  if(!val) return false;
+  const panel = $('panel-'+p); if(!panel) return false;
+  const blocs = [...panel.querySelectorAll('.f')];
+  const f = blocs.find(x => {
+    const l = x.querySelector('label'); if(!l) return false;
+    const t = l.textContent.trim().toLowerCase();
+    return keys.some(k => t.startsWith(k));
+  });
+  if(!f) return false;
+  const el = f.querySelector('input,select,textarea');
+  if(!el) return false;
+  el.value = val;
+  el.dispatchEvent(new Event('input',{bubbles:true}));
+  el.dispatchEvent(new Event('change',{bubbles:true}));
+  return true;
+}
+window.phBuildFiche = function(p){
+  if(!D){ alert("Ouvrez d'abord un dossier photo."); return; }
+  const nom = (p === 'r') ? 'Rapport technique' : 'Rapport de constat';
+  if(!D.ref){ alert("Ce dossier photo n'a pas de n° de dossier : renseignez-le avant de générer la fiche."); return; }
+
+  ask('Établir le ' + nom + ' ?',
+      'Les informations de ce dossier photo vont être reportées dans la fiche ' + nom + ' :\n' +
+      '· client, n° de dossier, adresse, date de visite\n' +
+      '· ' + (D.des ? D.des.length : 0) + ' désordre(s) relevé(s)\n' +
+      '· les numéros de clichés du plan de prise de vue\n\n' +
+      'Les champs déjà remplis dans la fiche ne sont pas écrasés, sauf l’identification.',
+      'Établir la fiche', () => {
+
+    /* 1 — identification */
+    let n = 0;
+    if(setFicheField(p, ['n° dossier'], D.ref)) n++;
+    if(setFicheField(p, ['date de visite'], D.date)) n++;
+    if(setFicheField(p, ['client','commanditaire'], D.client)) n++;
+    if(setFicheField(p, ['adresse du chantier'], D.adresse)) n++;
+
+    /* 2 — désordres relevés, repris dans la zone d'observations */
+    const lignes = [];
+    (D.des || []).forEach(d => {
+      const clichés = D.planches.filter(pl => desList(pl).indexOf(d.id) >= 0)
+                                .sort((a,b)=>a.num-b.num).map(pl => pad(pl.num));
+      const el = (D.elems || []).find(e => e.id === d.elem);
+      lignes.push(d.id + ' — ' + (d.lab || 'désordre non intitulé')
+        + (el ? ' (' + el.lab + ')' : '')
+        + (d.grav ? ' — gravité ' + d.grav + ' (' + GRAVITE[d.grav].lab + ')' : '')
+        + (d.risque ? ' — risque : ' + d.risque : '')
+        + (clichés.length ? ' — photos n° ' + clichés.join(', ') : ''));
+    });
+    /* synthèse par niveau de gravité, pour hiérarchiser d'un coup d'œil */
+    const parGrav = [1,2,3,4].map(n => {
+      const l = (D.des||[]).filter(d => d.grav === n);
+      return l.length ? 'Gravité ' + n + ' (' + GRAVITE[n].lab + ') : ' + l.map(d => d.id).join(', ') : null;
+    }).filter(Boolean);
+    /* observations saisies sur les clichés */
+    const obs = D.planches.filter(pl => (pl.obs || '').trim())
+                          .sort((a,b)=>a.num-b.num)
+                          .map(pl => 'Photo n° ' + pad(pl.num) + ' : ' + pl.obs.trim());
+
+    const bloc = []
+      .concat(lignes.length ? ['DÉSORDRES RELEVÉS AU RELEVÉ PHOTO :'].concat(lignes) : [])
+      .concat(parGrav.length ? ['', 'HIÉRARCHISATION PAR GRAVITÉ :'].concat(parGrav) : [])
+      .concat(obs.length ? ['', 'OBSERVATIONS PORTÉES SUR LES CLICHÉS :'].concat(obs) : [])
+      .join('\n');
+
+    if(bloc){
+      const cible = (p === 'r')
+        ? ['résultat des investigations']
+        : ['désordres complémentaires'];
+      const panel = $('panel-'+p);
+      const f = [...panel.querySelectorAll('.f')].find(x => {
+        const l = x.querySelector('label'); if(!l) return false;
+        return cible.some(k => l.textContent.trim().toLowerCase().startsWith(k));
+      });
+      const ta = f ? f.querySelector('textarea') : null;
+      if(ta){
+        ta.value = (ta.value && ta.value.trim()) ? (ta.value.trim() + '\n\n' + bloc) : bloc;
+        ta.dispatchEvent(new Event('input',{bubbles:true}));
+        ta.dispatchEvent(new Event('change',{bubbles:true}));
+        n++;
+      }
+    }
+
+    /* 3 — numéros de clichés dans le plan de prise de vue de la fiche */
+    D.presta = p;
+    persist();
+    let np = 0;
+    try{
+      setPlan();
+      plan.forEach(f2 => f2.s.forEach(s => {
+        const nums = shotNums(s.id);
+        if(!nums.length) return;
+        if(s.inp){ s.inp.value = nums.map(pad).join(', '); np++; }
+        if(s.cb) s.cb.checked = true;
+      }));
+      document.dispatchEvent(new Event('change',{bubbles:true}));
+    }catch(e){}
+
+    /* 4 — on bascule sur la fiche, prête à compléter */
+    const info = $('ph-buildInfo');
+    if(info) info.textContent = nom + ' établi le ' +
+      new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}) +
+      ' — ' + n + ' champ(s) renseigné(s), ' + np + ' ligne(s) du plan photo reportée(s).';
+    if(window.go) go(p);
+    alert(nom + ' pré-rempli.\n\n' + n + ' champ(s) d’identification et d’observation renseignés, ' +
+          np + ' ligne(s) du plan de prise de vue reportées.\n\n' +
+          'Complétez maintenant les parties d’analyse (causes, DTU, préconisations) qui relèvent de votre expertise.');
+  });
+};
+
 window.phSyncFiche = function(){
   if(!wb){ alert("La visite technique ne comporte pas de plan de prise de vue à renseigner."); return; }
   let n = 0;
@@ -4798,6 +4990,29 @@ window.phPrintAnnexe = async function(){
        list.map(p => '<tr><td><b>'+pad(p.num)+'</b></td><td>'+esc(p.lieu||'—')+'</td><td>'+
          esc(p.shot? shotLabel(p.shot) : 'hors plan')+'</td><td>'+
          esc(desList(p).length ? desList(p).join(', ')+(serieList(p).length? ' ('+serieList(p).join(',')+'/5)' : '') : '—')+'</td></tr>').join('')+'</table>';
+
+  /* synthèse des désordres, hiérarchisée par gravité — se lit avant les clichés */
+  if((D.des||[]).length){
+    const ordre = [...D.des].sort((a,b) => (a.grav||9) - (b.grav||9));
+    h += '<h3 style="margin:18px 0 8px;font-size:13px;letter-spacing:.06em;color:#0e1c2f">DÉSORDRES RELEVÉS — PAR ORDRE DE GRAVITÉ</h3>'+
+      '<table class="rec"><tr><th style="width:46px">N°</th><th>Désordre</th>'+
+      '<th style="width:22%">Risque encouru</th><th style="width:70px">Clichés</th><th style="width:46px">Grav.</th></tr>'+
+      ordre.map(d => {
+        const g = d.grav ? GRAVITE[d.grav] : null;
+        const el = (D.elems||[]).find(e => e.id === d.elem);
+        const nums = D.planches.filter(p => desList(p).indexOf(d.id) >= 0)
+                               .sort((a,b)=>a.num-b.num).map(p => pad(p.num));
+        return '<tr><td><b>'+esc(d.id)+'</b></td>'+
+          '<td>'+esc(d.lab || '—')+(el? ' <span style="color:#6b7280">('+esc(el.lab)+')</span>' : '')+'</td>'+
+          '<td>'+esc(d.risque || '—')+'</td>'+
+          '<td>'+(nums.length? esc(nums.join(', ')) : '—')+'</td>'+
+          '<td style="text-align:center'+(g? ';background:'+g.c+';color:'+g.t+';font-weight:700' : '')+'">'+
+            (d.grav || '—')+'</td></tr>';
+      }).join('')+'</table>'+
+      '<div style="margin:6px 0 14px;font-size:10.5px;color:#6b7280">'+
+        'Échelle : <b>1</b> mauvais, traitement immédiat · <b>2</b> non satisfaisant, court terme · '+
+        '<b>3</b> partiellement satisfaisant, moyen terme · <b>4</b> satisfaisant, pas de mesure.</div>';
+  }
 
   for(const p of list){
     const data = await IMG.get(p.pid);
