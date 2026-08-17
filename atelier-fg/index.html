@@ -1675,6 +1675,15 @@ h1:first-child{margin-top:0}
         <td><span class="out" id="devis-sCalc">0,00</span> €</td>
       </tr>
       <tr>
+        <td><label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+          <input type="checkbox" id="devis-optBudget" onchange="devisOptBudget(this.checked)">
+          <span>Option — estimation budgétaire des travaux de reprise
+            <span style="font-weight:400;font-size:11.5px;color:var(--muted);display:block">
+              Enveloppe indicative par lot, à joindre au rapport. Ne vaut pas devis d'entreprise.</span></span>
+        </label></td>
+        <td><input type="number" id="devis-pBudget" value="0" step="50"> €</td>
+      </tr>
+      <tr>
         <td><input type="text" id="devis-lMaj" placeholder="Majoration éventuelle (distance, urgence, accès difficile…)"></td>
         <td><input type="number" id="devis-pMaj" value="0" step="10"> €</td>
       </tr>
@@ -1907,7 +1916,13 @@ h1:first-child{margin-top:0}
   <section>
     <h2><b>4</b> Tous les clichés du dossier</h2>
     <div class="body">
-      <button class="ph-btn o" onclick="phFree()">+ Cliché hors plan</button>
+      <div class="ph-grid2">
+        <button class="ph-btn g" onclick="phCroquis()">✏️ Croquis de situation — plan d'ensemble</button>
+        <button class="ph-btn o" onclick="phFree()">+ Cliché hors plan</button>
+      </div>
+      <div class="hint" style="margin-top:6px">Le croquis situe l'ouvrage pour un lecteur non technicien —
+        avocat, assureur, juge : murs extérieurs, cloisons, charpente. À faire en début de visite ; il est
+        placé en tête de l'annexe photographique.</div>
       <div style="display:flex;gap:8px;align-items:center;margin-top:10px;flex-wrap:wrap;padding:10px;background:#fcfbf7;border:1px solid var(--line);border-radius:6px">
         <button class="ph-btn o" onclick="phSortByPlan()">⇅ Remettre dans l'ordre du plan</button>
         <button class="ph-btn o" onclick="phToggleReorder()" id="ph-reorderBtn">↕ Réordonner à la main</button>
@@ -4153,6 +4168,7 @@ let reorderMode = false;
 /* rang d'un cliché dans le plan : phase, puis position dans la phase.
    Les clichés hors plan passent à la fin, dans leur ordre d'origine. */
 function planRank(p){
+  if(p.croquis) return { a: -1, b: -1 };      /* le croquis d'ensemble ouvre le dossier */
   if(!p.shot) return { a: 9999, b: 9999 };
   for(let fi = 0; fi < plan.length; fi++){
     const f = plan[fi];
@@ -4209,7 +4225,7 @@ function renderItems(){
   const liste = reorderMode ? D.planches.map((p,i) => ({p, i}))
                             : [...D.planches].sort((a,b)=>a.num-b.num).map(p => ({p, i: D.planches.indexOf(p)}));
   el.innerHTML = liste.map(({p, i}, rang) => {
-    const sub = [ p.shot ? shotLabel(p.shot) : 'hors plan',
+    const sub = [ p.croquis ? 'croquis de situation' : (p.shot ? shotLabel(p.shot) : 'hors plan'),
                   desList(p).length ? desList(p).join(', ') + (serieList(p).length ? ' ('+serieList(p).join(',')+'/5)' : '') : '',
                   p.pins.length ? p.pins.length+' repère'+(p.pins.length>1?'s':'') : '' ].filter(Boolean).join(' · ');
     const fleches = reorderMode
@@ -4270,6 +4286,58 @@ function pick(titre, mode){
   $('ph-src').style.display = 'flex';
 }
 window.phSrcClose = function(){ $('ph-src').style.display = 'none'; };
+/* ------------------------- croquis de situation ---------------------------
+   Un plan schématique dessiné à la main en début de visite : murs extérieurs,
+   cloisons, charpente. Il donne au lecteur du rapport — avocat, assureur, juge —
+   une vue d'ensemble de l'ouvrage avant d'entrer dans le détail des clichés.
+   Techniquement c'est une planche comme une autre, avec un fond quadrillé
+   au lieu d'une photo : tous les outils (trait droit, texte, repères) s'appliquent. */
+function fondCroquis(w, h){
+  const c = document.createElement('canvas');
+  c.width = w; c.height = h;
+  const x = c.getContext('2d');
+  x.fillStyle = '#ffffff'; x.fillRect(0,0,w,h);
+  /* quadrillage léger, pour dessiner droit sans gêner la lecture */
+  const pas = Math.round(w/40);
+  x.strokeStyle = '#e8e4da'; x.lineWidth = 1;
+  for(let i=pas; i<w; i+=pas){ x.beginPath(); x.moveTo(i,0); x.lineTo(i,h); x.stroke(); }
+  for(let j=pas; j<h; j+=pas){ x.beginPath(); x.moveTo(0,j); x.lineTo(w,j); x.stroke(); }
+  x.strokeStyle = '#cfc8b8'; x.lineWidth = 2;
+  for(let i=pas*5; i<w; i+=pas*5){ x.beginPath(); x.moveTo(i,0); x.lineTo(i,h); x.stroke(); }
+  for(let j=pas*5; j<h; j+=pas*5){ x.beginPath(); x.moveTo(0,j); x.lineTo(w,j); x.stroke(); }
+  /* cartouche */
+  x.fillStyle = '#0e1c2f'; x.fillRect(0,0,w,Math.round(h*0.055));
+  x.fillStyle = '#ffffff';
+  x.font = '600 ' + Math.round(h*0.028) + 'px Helvetica, Arial, sans-serif';
+  x.textBaseline = 'middle';
+  x.fillText('CROQUIS DE SITUATION — ' + (D.ref || '') , Math.round(w*0.015), Math.round(h*0.0275));
+  x.fillStyle = '#b8963f';
+  x.font = Math.round(h*0.022) + 'px Helvetica, Arial, sans-serif';
+  const lg = 'murs extérieurs · cloisons · charpente';
+  x.fillText(lg, w - x.measureText(lg).width - Math.round(w*0.015), Math.round(h*0.0275));
+  return c.toDataURL('image/jpeg', 0.92);
+}
+window.phCroquis = async function(){
+  if(!D){ alert("Ouvrez d'abord un dossier photo."); return; }
+  const num = D.next++;
+  const pid = D.id+'-croquis-'+num+'-'+Date.now();
+  const data = fondCroquis(1600, 1100);
+  await IMG.put(pid, data);
+  const p = { pid, num, shot:'', des:'', desList:[], serie:0, series:[], elem:'', cam:'',
+              lieu:'Croquis de situation — vue d\'ensemble de l\'ouvrage',
+              gps:'', orient:'', obs:'', pins:[], thumb:'', croquis:true, draw:[], texts:[] };
+  D.planches.push(p);
+  persist(); renderItems(); renderControl();
+  phOpenPlanche(D.planches.length-1);
+  setTimeout(() => {
+    phSetMode('draw');
+    alert('Croquis de situation créé.\n\nDessinez le plan schématique : murs extérieurs, cloisons, charpente.\n' +
+          '· « Trait droit » est actif : posez le doigt au départ, relâchez à l\'arrivée\n' +
+          '· « T Texte tapé » pour nommer les pièces et les orientations (Nord, Sud…)\n' +
+          '· Les couleurs permettent de distinguer murs, cloisons et charpente');
+  }, 400);
+};
+
 window.phFree = function(){
   pending = { shot:'', des:'', serie:0, elem:'' };
   pick('Cliché hors plan');
@@ -5813,13 +5881,22 @@ function cardInfo(p){
 /* ------------------------------- calcul ----------------------------------- */
 function calc(){
   const sCalc = num('devis-qCalc') * num('devis-pCalc');
-  const tot = num('devis-pBase') + sCalc + num('devis-pMaj') - num('devis-pRem');
+  const budget = ($('devis-optBudget') && $('devis-optBudget').checked) ? num('devis-pBudget') : 0;
+  const tot = num('devis-pBase') + sCalc + budget + num('devis-pMaj') - num('devis-pRem');
   const solde = tot - num('devis-pAc');
   $('devis-sCalc').textContent = eur(sCalc);
   $('devis-tot').textContent = eur(tot);
   $('devis-solde').textContent = eur(solde);
   $('devis-barTtc').textContent = eur(tot);
 }
+/* Option estimation budgétaire : proposée seulement si le client la demande,
+   facturée, et jamais incluse d'office dans la mission de base. */
+window.devisOptBudget = function(on){
+  const p = $('devis-pBudget');
+  if(p && on && !num('devis-pBudget')) p.value = 350;   /* montant de départ, ajustable */
+  if(p) p.disabled = !on;
+  calc(); devisTouch();
+};
 function onPrestaChange(){
   const r = document.querySelector('input[name=devisPresta]:checked');
   if (!r) return;
@@ -6066,6 +6143,9 @@ function buildDevisHtml(){
 
   const rows = [['Prestation — '+esc(NOMS[p]), eur(num('devis-pBase'))+' €']];
   if (qc) rows.push(['Note de calcul — '+qc+' élément(s) × '+eur(num('devis-pCalc'))+' €', eur(qc*num('devis-pCalc'))+' €']);
+  if ($('devis-optBudget') && $('devis-optBudget').checked && num('devis-pBudget'))
+    rows.push(['Option — estimation budgétaire des travaux de reprise (enveloppe indicative par lot, jointe au rapport ; ne vaut pas devis d\'entreprise)',
+               eur(num('devis-pBudget'))+' €']);
   if (num('devis-pMaj')) rows.push([esc(fieldVal('devis-lMaj')||'Majoration'), eur(num('devis-pMaj'))+' €']);
   if (num('devis-pRem')) rows.push(['Remise commerciale', '−'+eur(num('devis-pRem'))+' €']);
   h += '<table class="rec"><tr><th>Détail</th><th>Montant</th></tr>' +
