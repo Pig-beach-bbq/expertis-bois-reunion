@@ -4152,6 +4152,13 @@ function phDelDesGo(id){
   D.planches.forEach(p => {
     const l = desList(p);
     if(l.length) setDesList(p, l.map(x => map[x] || x));
+    /* les repères posés sur les photos suivent aussi : un repère qui pointait D5
+       doit afficher son nouveau numéro, et celui du désordre supprimé est détaché */
+    (p.pins||[]).forEach(pin => {
+      if(!pin.des) return;
+      if(pin.des === id){ pin.des = ''; pin.lab = ''; return; }
+      if(map[pin.des]){ pin.des = map[pin.des]; pin.lab = pin.des; }
+    });
   });
   D.des.forEach(d => { d.id = d._n; delete d._n; });
   persist(); renderDossier();
