@@ -2039,6 +2039,11 @@ h1:first-child{margin-top:0}
         <label style="font-size:11.5px;color:var(--ink);display:flex;align-items:center;gap:5px;cursor:pointer">
           <input type="checkbox" id="ph-straight" checked onchange="phStraight(this.checked)"> Trait droit
         </label>
+        <span style="width:1px;height:22px;background:var(--line);margin:0 2px"></span>
+        <label style="font-size:11.5px;color:var(--ink);display:flex;align-items:center;gap:5px;cursor:pointer"
+               title="Décochez pour faire défiler la page en glissant sur la photo">
+          <input type="checkbox" id="ph-lock" onchange="phLock(this.checked)"> ✋ Déplacer les repères
+        </label>
       </div>
       <div class="ph-grid2" style="margin-top:12px">
         <button class="ph-btn o" onclick="phReplacePick()">Remplacer la photo</button>
@@ -3437,7 +3442,7 @@ function kitReset(){ kBoxes().forEach(c => c.checked = false); kitRefresh(); }
 .ph-elem-hd.orph{background:#6b7280}
 .ph-elem-hd .eid{background:var(--gold);color:#12203a;font-weight:700;font-size:12px;border-radius:3px;padding:3px 9px}
 .ph-elem-hd input.elab{flex:1;min-width:0;font-size:13.5px;font-weight:600;color:#fff;
-  background:transparent;border:1px solid transparent;border-radius:4px;padding:4px 6px}
+  background:rgba(255,255,255,.07);border:1px dashed #4a5d77;border-radius:4px;padding:4px 6px;cursor:text}
 .ph-elem-hd input.elab::placeholder{color:#8fa0b5}
 .ph-elem-hd input.elab:hover{border-color:#3a4d67}
 .ph-elem-hd input.elab:focus{border-color:var(--gold);background:#12203a;outline:none}
@@ -3876,7 +3881,8 @@ function renderDes(){
     const complets = g.list.filter(d => serieState(d.id).filter(Boolean).length === 5).length;
     const tete = g.e
       ? '<div class="ph-elem-hd"><span class="eid">'+esc(g.e.id)+'</span>'+
-          '<input class="elab" type="text" value="'+esc(g.e.lab||'')+'" placeholder="élément non intitulé" '+
+          '<input class="elab" type="text" value="'+esc(g.e.lab||'')+'" placeholder="élément non intitulé — touchez pour renommer" '+
+            'title="Touchez pour renommer cet élément" '+
             'oninput="phRenameElem(\''+g.e.id+'\',this.value)">'+
           '<span class="ecnt">'+nD+' désordre'+(nD>1?'s':'')+(nD? ' · '+complets+'/'+nD+' complet'+(complets>1?'s':'') : '')+'</span>'+
           '<button class="ph-x" onclick="phDelElem(\''+g.e.id+'\')" title="Supprimer l\'élément">&times;</button></div>'+
@@ -4400,6 +4406,7 @@ function openPlanche(i, data){
     $('ph-fObs').value   = P.obs || '';
     $('ph-gpsSt').textContent = '';
     ensurePinNums();
+    applyTouch();
     draw(); renderPins(); show('ph-v3'); save();
   };
   im.src = data;
@@ -4607,6 +4614,16 @@ function drawPin(c,x,y,n,ref){
 let canvasBound = false;
 let phMode = 'pin', phColor = '#e21b1b', phWidth = 5, curStroke = null, phStraightMode = true;
 window.phStraight = function(v){ phStraightMode = !!v; };
+/* Défilement : par défaut, glisser le doigt sur la photo fait défiler la page.
+   On ne bloque le défilement que lorsque c'est nécessaire — dessin, texte,
+   ou déplacement de repère explicitement demandé. */
+let phLockMode = false;
+window.phLock = function(v){ phLockMode = !!v; applyTouch(); };
+function applyTouch(){
+  const c = cv(); if(!c) return;
+  const bloquer = (phMode === 'draw') || (phMode === 'text') || phLockMode;
+  c.style.touchAction = bloquer ? 'none' : 'pan-y';
+}
 window.phSetMode = function(m){
   phMode = m;
   const bp = $('ph-modePin'), bd = $('ph-modeDraw'), bt = $('ph-modeText'), note = $('ph-modeNote');
@@ -4617,6 +4634,7 @@ window.phSetMode = function(m){
     m === 'draw' ? 'Posez le doigt au départ du trait et relâchez à l’arrivée : le trait est tiré droit. Décochez « Trait droit » pour dessiner à main levée.' :
     m === 'text' ? "Touchez la photo à l'endroit voulu pour y taper un texte. Le texte s'incruste sur l'image et se déplace ensuite au doigt." :
     "Touchez la photo à l'endroit du désordre pour poser un repère. Rattachez ensuite chaque repère à un désordre (D1, D2…) dans la liste ci-dessous : c'est ce qui le fait remonter dans le rapport.";
+  applyTouch();
 };
 window.phDrawColor = function(c){ phColor = c; };
 window.phDrawWidth = function(v){ phWidth = parseInt(v,10) || 5; };
@@ -4668,7 +4686,7 @@ function bindCanvas(){
     });
     return (best >= 0 && Math.sqrt(bd) < 0.09) ? best : -1;
   }
-  c.style.touchAction = 'none';
+  applyTouch();
   c.addEventListener('pointerdown', ev => {
     if(!imgEl || !P) return;
     const pt = rel(ev);
@@ -4682,6 +4700,7 @@ function bindCanvas(){
       if(dragText >= 0){ c.setPointerCapture(ev.pointerId); ev.preventDefault(); }
       return;
     }
+    if(!phLockMode) return;          /* photo libre : on laisse la page défiler */
     drag = hit(pt); moved = false;
     if(drag >= 0){ c.setPointerCapture(ev.pointerId); ev.preventDefault(); }
   });
