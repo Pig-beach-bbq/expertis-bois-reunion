@@ -1842,18 +1842,14 @@ h1:first-child{margin-top:0}
   </section>
 
   <section>
-    <h2><b>3</b> Éléments et désordres</h2>
+    <h2><b>3</b> Désordres <span style="font-weight:400;font-size:13px;color:var(--muted)">— et regroupement par élément (facultatif)</span></h2>
     <div class="body">
-      <div class="note"><b>Élément</b> = la pièce ou l'ouvrage examiné (un mur, une solive, une panne).
-        <b>Désordre</b> = le défaut constaté dessus. Un même élément porte souvent plusieurs désordres.
-        Les E et les D se suivent sans jamais repartir à zéro dans le dossier.</div>
-
-      <div class="ph-grid2" style="margin:12px 0 4px">
-        <div class="f"><label>Ajouter un élément — où vous êtes</label>
-          <input type="text" id="ph-elemLabel" placeholder="Ex. : mur intérieur Est n° 2"
-                 onkeydown="if(event.key==='Enter'){event.preventDefault();phAddElem();}"></div>
-        <div class="f"><label>&nbsp;</label><button class="ph-btn o full" onclick="phAddElem()">Créer <span id="ph-nextE">E1</span></button></div>
-      </div>
+      <div class="note"><b>Allez au plus simple : créez directement vos désordres (D1, D2, D3…).</b>
+        C'est le désordre qui porte la série de cinq photos et qui remonte dans le rapport.<br>
+        L'<b>élément</b> (E1, E2…) est <b>facultatif</b> : il ne sert qu'à regrouper plusieurs désordres
+        situés sur un même support — un mur, une ferme, un plancher. Son seul avantage : une photo
+        d'ensemble prise une fois vaut « situation » pour tous les désordres du groupe, au lieu d'une
+        photo de situation par désordre. Utile sur un mur qui porte 4 défauts ; inutile pour un désordre isolé.</div>
 
       <div class="f" style="margin-bottom:10px">
         <label>Désordre courant (bibliothèque charpente / ossature / plancher / termites)</label>
@@ -1865,10 +1861,24 @@ h1:first-child{margin-top:0}
         <div class="f"><label>Ajouter un désordre — intitulé court</label>
           <input type="text" id="ph-desLabel" placeholder="Ex. : flèche excessive poutre P3"
                  onkeydown="if(event.key==='Enter'){event.preventDefault();phAddDes();}"></div>
-        <div class="f"><label>Sur quel élément</label>
+        <div class="f"><label>Sur quel élément — facultatif</label>
           <select id="ph-desElem"></select></div>
       </div>
-      <button class="ph-btn o full" style="margin-bottom:12px" onclick="phAddDes()">Créer <span id="ph-nextD">D1</span></button>
+      <button class="ph-btn g full" style="margin-bottom:16px" onclick="phAddDes()">Créer <span id="ph-nextD">D1</span></button>
+
+      <details style="margin-bottom:14px">
+        <summary style="cursor:pointer;font-size:12.5px;color:var(--muted);padding:6px 0">
+          Regrouper des désordres sur un même support (facultatif)
+        </summary>
+        <div class="ph-grid2" style="margin:8px 0 4px">
+          <div class="f"><label>Élément — un mur, une ferme, un plancher…</label>
+            <input type="text" id="ph-elemLabel" placeholder="Ex. : mur intérieur Est n° 2"
+                   onkeydown="if(event.key==='Enter'){event.preventDefault();phAddElem();}"></div>
+          <div class="f"><label>&nbsp;</label><button class="ph-btn o full" onclick="phAddElem()">Créer <span id="ph-nextE">E1</span></button></div>
+        </div>
+        <div class="hint">Une fois l'élément créé, rattachez-y vos désordres avec le menu « Sur quel élément ».
+          La photo d'ensemble de l'élément vaudra alors « situation » pour tous ses désordres.</div>
+      </details>
 
       <div id="ph-desList"></div>
       <datalist id="ph-risques">
@@ -2009,8 +2019,9 @@ h1:first-child{margin-top:0}
   <section>
     <h2><b>3</b> Cliché et repères</h2>
     <div class="body">
-      <div class="ph-note" id="ph-modeNote">Touchez la photo à l'endroit du désordre pour poser un repère numéroté.
-        Les repères sont incrustés sur l'image exportée et repris dans la légende.</div>
+      <div class="ph-note" id="ph-modeNote">Touchez la photo à l'endroit du désordre pour poser un repère.
+        Rattachez ensuite chaque repère à un désordre (D1, D2…) dans la liste ci-dessous : c'est ce qui
+        le fait remonter dans le rapport. Le cliché est alors rattaché automatiquement.</div>
       <div class="ph-stage"><canvas id="ph-canvas"></canvas></div>
       <div style="display:flex;gap:8px;align-items:center;margin-top:10px;flex-wrap:wrap">
         <button type="button" class="ph-btn o" id="ph-modePin" onclick="phSetMode('pin')" style="font-weight:700">📍 Repères</button>
@@ -2624,12 +2635,204 @@ function initPanel(p){
   if(panel) panel.addEventListener('input', () => refreshBadges(p));
   if(panel) panel.addEventListener('change', () => refreshBadges(p));
 }
-function boot(){
+function bootConfort(){
   refreshCarnetLists();
   ['v','c','r'].forEach(initPanel);
 }
+if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bootConfort);
+else bootConfort();
+})();
+</script>
+
+<script>
+/* ============================================================================
+   1. Menus déroulants automatiques
+      Beaucoup de champs proposent déjà des valeurs dans leur placeholder
+      (« Cryptomeria, tamarin, pin traité… »). On en fait de vraies listes
+      de choix, tout en laissant la saisie libre.
+   2. Reprise d'un rapport précédent comme modèle
+      Le hors-mission, les référentiels DTU, les réserves et les questions
+      types ne changent guère d'un dossier à l'autre : on les recopie
+      depuis un dossier déjà rédigé, sans toucher à l'identification
+      ni aux constats propres au nouveau chantier.
+   ============================================================================ */
+(function(){
+'use strict';
+
+/* ------------------ 1. listes de choix issues des placeholders ------------- */
+const LISTES_SUP = {
+  'essences et provenance': ['Cryptomeria','Tamarin des Hauts','Pin traité classe 4','Sapin importé',
+    'Lamellé-collé','Bois exotique (bangkiraï, ipé)','Douglas','Essence non identifiable'],
+  'classe d’emploi et traitement apparents': ['Classe 2 — intérieur sec','Classe 3 — extérieur abrité',
+    'Classe 4 — contact sol / humidification permanente','Classe non identifiable, aucun marquage',
+    'Traitement autoclave apparent','Aucun traitement apparent'],
+  'système': ['Fermes industrielles','Charpente traditionnelle','Chevrons porteurs','Pannes sur murs',
+    'Charpente réalisée sur chantier','Fermettes'],
+  'contreventement': ['Contreventement complet et continu','Contreventement partiel',
+    'Aucun dispositif de contreventement identifié','Palées de stabilité présentes'],
+  'couverture supportée': ['Bac acier / tôle nervurée','Tuiles','Shingle','Membrane bitumineuse',
+    'Toiture-terrasse béton','Bardeaux bois'],
+  'ventilation des combles': ['Ventilation continue en rives et faîtage','Ventilation partielle',
+    'Aucune ventilation identifiée','Non caractérisée, ouvrage non achevé'],
+  'pare-pluie': ['Présent et continu','Présent par endroits, continuité non assurée','Absent',
+    'Déchiré ou dégradé'],
+  'exposition': ['Au vent','Sous le vent','Zone d’embruns','Hors zone d’embruns','Ombre permanente',
+    'Site dégagé exposé aux vents cycloniques'],
+  'typologie': ['Maison à ossature bois','Charpente traditionnelle','Extension bois','Varangue',
+    'Terrasse / deck','Pergola','Plancher bois','Bardage','Caillebotis'],
+};
+function norm(s){ return (s||'').trim().toLowerCase().replace(/\s+/g,' ').replace(/[:*]/g,'').trim(); }
+function makeDatalists(panel){
+  const root = document.getElementById('panel-'+panel);
+  if(!root || root.dataset.dl) return;
+  root.dataset.dl = '1';
+  let n = 0;
+  [...root.querySelectorAll('.f')].forEach(f => {
+    const inp = f.querySelector('input[type=text]');
+    const lab = f.querySelector('label');
+    if(!inp || !lab || inp.getAttribute('list')) return;
+    const key = norm(lab.textContent);
+    let vals = LISTES_SUP[key];
+    if(!vals){
+      /* sinon : on découpe le placeholder s'il propose plusieurs valeurs */
+      const ph = inp.getAttribute('placeholder') || '';
+      if(/^ex\.?\s*:/i.test(ph)) return;                    /* « Ex. : … » est un exemple, pas une liste */
+      if(!(ph.includes(',') || ph.includes('·'))) return;
+      vals = ph.replace(/[…\.]+$/,'').split(/[,·]/).map(s => s.trim()).filter(s => s.length > 2);
+    }
+    if(!vals || vals.length < 2) return;
+    const id = 'dl-' + panel + '-' + (++n);
+    const dl = document.createElement('datalist');
+    dl.id = id;
+    dl.innerHTML = vals.map(v => '<option value="'+v.replace(/"/g,'&quot;')+'">').join('');
+    document.body.appendChild(dl);
+    inp.setAttribute('list', id);
+  });
+}
+
+/* ---- questions types Q1-Q5 : proposées en liste, adaptables ensuite ---- */
+const QUESTIONS = [
+  'Les ouvrages en ossature bois présentent-ils des défauts de conception, d’exécution ou d’assemblage susceptibles d’affecter leur stabilité ?',
+  'Les dispositions de contreventement, d’ancrage et de liaison permettent-elles d’assurer la stabilité de l’ouvrage ?',
+  'La charpente présente-t-elle des sections, portées, entraxes ou assemblages nécessitant une vérification structurelle ?',
+  'Les désordres constatés permettent-ils de conserver les ouvrages existants ou nécessitent-ils une reprise partielle ou complète ?',
+  'L’ouvrage présente-t-il un niveau de sécurité compatible avec son utilisation en l’état ?',
+  'Les bois sont-ils atteints par des agents biologiques (termites, insectes xylophages, champignons) ?',
+  'L’étendue de l’attaque biologique compromet-elle la capacité portante des éléments concernés ?',
+  'Les dispositions constructives sont-elles conformes aux règles de l’art et aux DTU applicables ?',
+  'La classe d’emploi des bois est-elle adaptée à leur exposition réelle ?',
+  'Les désordres relèvent-ils d’un défaut d’origine ou d’un défaut d’entretien ?',
+  'Quelle est l’origine des infiltrations constatées et quelles reprises s’imposent ?',
+  'Les travaux réalisés sont-ils conformes au devis et aux documents contractuels ?',
+];
+const REPONSES = [
+  'Identifier et qualifier les désordres structurels constatés.',
+  'Vérifier la cohérence et les insuffisances des dispositifs observés.',
+  'Identifier les éléments concernés et déterminer les vérifications et calculs nécessaires.',
+  'Déterminer l’étendue des reprises techniquement nécessaires.',
+  'Apprécier la gravité des désordres et déterminer les mesures conservatoires nécessaires.',
+  'Caractériser l’attaque, son étendue et son caractère actif ou non.',
+  'Confronter les dispositions relevées aux règles applicables.',
+  'Déterminer l’origine du désordre et les responsabilités techniques en jeu.',
+];
+function fillQuestions(panel){
+  const root = document.getElementById('panel-'+panel);
+  if(!root || root.dataset.q) return;
+  const tbl = [...root.querySelectorAll('table')].find(t =>
+    /question technique/i.test(t.textContent) && /réponse attendue/i.test(t.textContent));
+  if(!tbl) return;
+  root.dataset.q = '1';
+  const mk = (vals, pref) => {
+    const id = pref + '-' + panel;
+    if(!document.getElementById(id)){
+      const dl = document.createElement('datalist');
+      dl.id = id;
+      dl.innerHTML = vals.map(v => '<option value="'+v.replace(/"/g,'&quot;')+'">').join('');
+      document.body.appendChild(dl);
+    }
+    return id;
+  };
+  const idQ = mk(QUESTIONS, 'dl-quest'), idR = mk(REPONSES, 'dl-rep');
+  [...tbl.querySelectorAll('tr')].slice(1).forEach(tr => {
+    const inps = [...tr.querySelectorAll('input[type=text], input:not([type])')];
+    if(inps[0] && !inps[0].getAttribute('list')) inps[0].setAttribute('list', idQ);
+    if(inps[1] && !inps[1].getAttribute('list')) inps[1].setAttribute('list', idR);
+  });
+}
+
+/* ---------------- 2. reprise d'un rapport précédent comme modèle ----------- */
+/* champs à NE JAMAIS recopier : propres au chantier et au client */
+const NE_PAS_COPIER = ['n° dossier','date de visite','heure arrivée','heure départ',
+  'client','commanditaire','téléphone','e-mail','adresse du chantier','commune',
+  'personnes présentes','qualité','année de construction','surface ou linéaire',
+  'verticalité','équerrage','température','météo','résultat des investigations',
+  'désordres complémentaires','observations complémentaires','acompte'];
+function copiable(el){
+  const f = el.closest('.f');
+  const lab = f ? f.querySelector('label') : null;
+  const t = lab ? norm(lab.textContent) : '';
+  if(t && NE_PAS_COPIER.some(k => t.startsWith(k))) return false;
+  return true;
+}
+window.EBRModele = function(p){
+  const M = window.EBR2Multi;
+  if(!M){ return; }
+  const items = M.list(p);
+  if(!items.length){ alert('Aucun ' + (p==='r'?'rapport technique':'rapport de constat') +
+    ' déjà enregistré à reprendre comme modèle.'); return; }
+  const txt = items.map((x,i) => (i+1)+'. '+x.ref+(x.client? ' — '+x.client : '')).join('\n');
+  const rep = prompt('Reprendre quel dossier comme modèle ?\n' +
+    '(les parties récurrentes seront recopiées : hors-mission, questions types, référentiels DTU, ' +
+    'réserves, contenu du rapport — l’identification et les constats de CE chantier ne sont pas touchés)\n\n' + txt);
+  const n = parseInt(rep,10);
+  if(!n || n < 1 || n > items.length) return;
+  const ref = items[n-1].ref;
+  let data;
+  try{ data = JSON.parse(localStorage.getItem(M.key(p, ref)) || 'null'); }catch(e){}
+  if(!data){ alert('Modèle introuvable.'); return; }
+
+  const root = document.getElementById('panel-'+p);
+  const champs = [...root.querySelectorAll('input,select,textarea')]
+    .filter(el => el.id !== p+'-ficheSel' && !el.id.endsWith('Lib'));
+  if(data.length !== champs.length){
+    alert('Ce dossier a été enregistré avec une version différente de la fiche : reprise impossible.');
+    return;
+  }
+  let c = 0;
+  champs.forEach((el,i) => {
+    if(!copiable(el)) return;
+    const v = data[i];
+    if(el.type === 'checkbox' || el.type === 'radio'){
+      if(v && !el.checked){ el.checked = true; c++; }
+    } else if(!(el.value||'').trim() && v){
+      el.value = v; c++;
+    }
+  });
+  root.dispatchEvent(new Event('input',{bubbles:true}));
+  root.dispatchEvent(new Event('change',{bubbles:true}));
+  alert('Modèle « '+ref+' » repris : '+c+' champ(s) pré-rempli(s).\n\n' +
+        'Les champs déjà remplis et tout ce qui est propre à ce chantier (client, dates, mesures, constats) ' +
+        'n’ont pas été touchés. Relisez et adaptez avant remise.');
+};
+
+function boot(){
+  ['v','c','r','devis'].forEach(makeDatalists);
+  ['c','r'].forEach(fillQuestions);
+  /* bouton « modèle » dans la barre d'outils des fiches c et r */
+  ['c','r'].forEach(p => {
+    const bar = document.querySelector('#panel-'+p+' .wrap > div.noprint');
+    if(!bar || bar.dataset.mod) return;
+    bar.dataset.mod = '1';
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.textContent = '📄 Reprendre un rapport comme modèle';
+    b.style.cssText = 'font-size:12px;padding:5px 10px;border:1px solid var(--line);background:#fcfbf7;border-radius:4px;cursor:pointer;color:var(--ink)';
+    b.onclick = () => window.EBRModele(p);
+    bar.appendChild(b);
+  });
+}
 if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
-else boot();
+else setTimeout(boot, 60);
 })();
 </script>
 
@@ -3660,7 +3863,7 @@ function renderDes(){
   const el = $('ph-desList');
   fillElemSelects();
   if(!D.des.length && !(D.elems||[]).length){
-    el.innerHTML = '<p class="ph-empty">Aucun élément ni désordre. Créez d\'abord l\'élément où vous vous trouvez, puis ses désordres.</p>';
+    el.innerHTML = '<p class="ph-empty">Aucun désordre pour l\'instant. Créez votre premier désordre ci-dessus — le regroupement par élément est facultatif.</p>';
     return;
   }
   /* groupes : un par element, plus un groupe final pour les desordres non rattaches */
@@ -3681,7 +3884,7 @@ function renderDes(){
           '1 · Situation du mur — couvre les '+nD+' désordre'+(nD>1?'s':'')+'</button>'+
           '<span class="hint">Une seule photo d\'ensemble, repères posés dessus. Vaut situation et plan moyen.</span></div>'
       : '<div class="ph-elem-hd orph"><span class="eid">—</span>'+
-          '<span class="elab" style="font-weight:600;color:var(--navy)">Désordres non rattachés à un élément</span>'+
+          '<span class="elab" style="font-weight:600;color:var(--navy)">Désordres simples — sans regroupement</span>'+
           '<span class="ecnt">'+nD+'</span></div>';
     const corps = g.list.length
       ? g.list.map(d => desCard(d)).join('')
@@ -4354,11 +4557,25 @@ function nextPinNum(){
   P.pins.forEach((p,i) => { const n = p.n || (i+1); if(n > max) max = n; });
   return max + 1;
 }
-/* anciens clichés : les repères sans numéro fixe en reçoivent un, une fois */
+/* anciens clichés : les repères sans numéro fixe en reçoivent un, une fois.
+   On récupère aussi les rattachements saisis à la main avant l'ajout du menu :
+   un repère libellé « D3 » est rattaché au désordre D3 s'il existe. */
 function ensurePinNums(){
   if(!P || !P.pins) return false;
   let changed = false;
-  P.pins.forEach((p,i) => { if(!p.n){ p.n = i+1; changed = true; } });
+  P.pins.forEach((p,i) => {
+    if(!p.n){ p.n = i+1; changed = true; }
+    if(!p.des && p.lab){
+      const ref = String(p.lab).trim().toUpperCase();
+      if((D.des||[]).some(d => d.id.toUpperCase() === ref)){
+        p.des = (D.des||[]).find(d => d.id.toUpperCase() === ref).id;
+        p.lab = p.des;
+        if(!Array.isArray(P.desList)) P.desList = desList(P);
+        if(P.desList.indexOf(p.des) < 0) P.desList.push(p.des);
+        changed = true;
+      }
+    }
+  });
   return changed;
 }
 function drawPin(c,x,y,n,ref){
@@ -4399,7 +4616,7 @@ window.phSetMode = function(m){
   if(note) note.textContent =
     m === 'draw' ? 'Posez le doigt au départ du trait et relâchez à l’arrivée : le trait est tiré droit. Décochez « Trait droit » pour dessiner à main levée.' :
     m === 'text' ? "Touchez la photo à l'endroit voulu pour y taper un texte. Le texte s'incruste sur l'image et se déplace ensuite au doigt." :
-    "Touchez la photo à l'endroit du désordre pour poser un repère numéroté. Les repères sont incrustés sur l'image exportée et repris dans la légende.";
+    "Touchez la photo à l'endroit du désordre pour poser un repère. Rattachez ensuite chaque repère à un désordre (D1, D2…) dans la liste ci-dessous : c'est ce qui le fait remonter dans le rapport.";
 };
 window.phDrawColor = function(c){ phColor = c; };
 window.phDrawWidth = function(v){ phWidth = parseInt(v,10) || 5; };
@@ -4569,15 +4786,66 @@ window.phPinLab = function(i,v){
 function renderPins(){
   const el = $('ph-pins');
   if(!P.pins.length){ el.innerHTML = '<p class="ph-empty">Aucun repère posé.</p>'; return; }
-  el.innerHTML = P.pins.map((p,i) =>
+  const opts = d => (D.des||[]).map(x =>
+    '<option value="'+x.id+'"'+(d===x.id?' selected':'')+'>'+
+    esc(x.id + (x.lab? ' — '+x.lab : '')) + '</option>').join('');
+  const orphelins = P.pins.filter(p => !p.des).length;
+  const alerte = orphelins
+    ? '<div class="ph-note" style="border-left:4px solid #a32b25;margin-bottom:10px">'+
+      '<b>'+orphelins+' repère'+(orphelins>1?'s':'')+' sans désordre.</b> Un repère seul est une simple '+
+      'annotation sur l\'image : il ne remonte pas dans le rapport. Rattachez-le à un désordre '+
+      'ci-dessous pour qu\'il soit pris en compte — ou créez d\'abord le désordre depuis l\'écran Dossier.'+
+      ((D.des||[]).length && desList(P).length
+        ? '<div style="margin-top:8px"><button class="ph-btn o" style="padding:5px 10px;font-size:12px" '+
+          'onclick="phPinsFromDes()">Rattacher automatiquement aux désordres déjà cochés sur ce cliché</button></div>'
+        : '')+
+      '</div>'
+    : '';
+  el.innerHTML = alerte + P.pins.map((p,i) =>
     '<div class="ph-pin"><div class="num">'+esc(pinLab(p,i))+'</div><div class="bd">'+
-      '<input type="text" class="ph-piniD" placeholder="Numéro affiché — ex. D3 (vide = '+(p.n||i+1)+')" value="'+esc(p.lab||'')+'" oninput="phPinLab('+i+',this.value)">'+
+      '<select onchange="phPinDes('+i+',this.value)" title="Rattacher ce repère à un désordre">'+
+        '<option value="">— repère simple, sans désordre —</option>'+ opts(p.des||'') +
+      '</select>'+
       '<select onchange="phPinType('+i+',this.value)">'+
         DEFAUTS.map(d => '<option'+(d===p.type?' selected':'')+'>'+esc(d)+'</option>').join('')+
       '</select>'+
       '<input type="text" placeholder="Étendue, mesure relevée, gravité…" value="'+esc(p.note)+'" oninput="phPinNote('+i+',this.value)">'+
     '</div><button class="ph-x" onclick="phRmPin('+i+')" title="Supprimer">&times;</button></div>').join('');
 }
+/* Rattacher un repère à un désordre : le repère porte alors son identifiant (D5)
+   au lieu de son numéro, et le cliché est automatiquement rattaché à ce désordre —
+   c'est ce rattachement qui fait remonter le constat dans le rapport. */
+/* Cliché déjà rempli avant l'ajout du menu : on rattache les repères sans désordre
+   à ceux qui sont cochés sur ce cliché, dans l'ordre. */
+window.phPinsFromDes = function(){
+  const cibles = desList(P);
+  if(!cibles.length){ alert("Aucun désordre n'est coché sur ce cliché."); return; }
+  const libres = P.pins.filter(p => !p.des);
+  if(!libres.length) return;
+  const dispo = cibles.filter(id => !P.pins.some(p => p.des === id));
+  let n = 0;
+  libres.forEach((p,i) => {
+    const id = dispo[i] || (dispo.length ? null : cibles[Math.min(i, cibles.length-1)]);
+    if(!id) return;
+    p.des = id; p.lab = id; n++;
+  });
+  draw(); renderPins(); save();
+  alert(n ? n+' repère(s) rattaché(s). Vérifiez que chaque repère pointe bien le bon désordre et corrigez au besoin.'
+          : "Tous les désordres cochés sont déjà associés à un repère.");
+};
+
+window.phPinDes = function(i, v){
+  const p = P.pins[i]; if(!p) return;
+  p.des = v || '';
+  p.lab = v || '';                      /* le repère affiche D5 plutôt que son numéro */
+  if(v){
+    if(!Array.isArray(P.desList)) P.desList = desList(P);
+    if(P.desList.indexOf(v) < 0) P.desList.push(v);
+    const cb = document.querySelector('#ph-fDes input[value="'+v+'"]');
+    if(cb) cb.checked = true;
+  }
+  draw(); renderPins(); save();
+};
 window.phGPS = function(){
   const s = $('ph-gpsSt');
   if(!navigator.geolocation){ s.textContent = "Géolocalisation indisponible sur cet appareil."; return; }
