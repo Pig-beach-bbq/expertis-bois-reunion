@@ -2054,6 +2054,10 @@ h1:first-child{margin-top:0}
         <label style="font-size:11.5px;color:var(--ink);display:flex;align-items:center;gap:5px;cursor:pointer">
           <input type="checkbox" id="ph-straight" checked onchange="phStraight(this.checked)"> Trait droit
         </label>
+        <label style="font-size:11.5px;color:var(--ink);display:flex;align-items:center;gap:5px;cursor:pointer"
+               title="Les traits s'accrochent aux extrémités existantes, au quadrillage, et se calent à l'horizontale ou à la verticale">
+          <input type="checkbox" id="ph-snap" checked onchange="phSnap(this.checked)"> 🧲 Accrocher
+        </label>
         <span style="width:1px;height:22px;background:var(--line);margin:0 2px"></span>
         <label style="font-size:11.5px;color:var(--ink);display:flex;align-items:center;gap:5px;cursor:pointer"
                title="Décochez pour faire défiler la page en glissant sur la photo">
@@ -2066,6 +2070,7 @@ h1:first-child{margin-top:0}
         <input type="file" id="ph-repGalIn" accept="image/*" style="display:none" onchange="phReplace(event)">
         <button class="ph-btn d" onclick="phClearPins()">Effacer les repères</button>
         <button class="ph-btn o" onclick="phUndoStroke()">↩ Annuler le dernier trait</button>
+        <button class="ph-btn o" onclick="phNord()">🧭 Tourner le Nord (45°)</button>
         <button class="ph-btn o" onclick="phUndoText()">↩ Annuler le dernier texte</button>
         <button class="ph-btn d" onclick="phClearDrawing()">Effacer tout le dessin</button>
         <button class="ph-btn d" onclick="phClearTexts()">Effacer tous les textes</button>
@@ -4299,7 +4304,7 @@ window.phSrcClose = function(){ $('ph-src').style.display = 'none'; };
    une vue d'ensemble de l'ouvrage avant d'entrer dans le détail des clichés.
    Techniquement c'est une planche comme une autre, avec un fond quadrillé
    au lieu d'une photo : tous les outils (trait droit, texte, repères) s'appliquent. */
-function fondCroquis(w, h){
+function fondCroquis(w, h, nordDeg){
   const c = document.createElement('canvas');
   c.width = w; c.height = h;
   const x = c.getContext('2d');
@@ -4312,36 +4317,90 @@ function fondCroquis(w, h){
   x.strokeStyle = '#cfc8b8'; x.lineWidth = 2;
   for(let i=pas*5; i<w; i+=pas*5){ x.beginPath(); x.moveTo(i,0); x.lineTo(i,h); x.stroke(); }
   for(let j=pas*5; j<h; j+=pas*5){ x.beginPath(); x.moveTo(0,j); x.lineTo(w,j); x.stroke(); }
-  /* cartouche */
+
+  /* --- rose des vents, orientable par pas de 45° --- */
+  const cx = w - Math.round(w*0.075), cy = Math.round(h*0.155), R = Math.round(w*0.042);
+  const a = ((nordDeg||0) - 90) * Math.PI/180;
+  x.save();
+  x.fillStyle = '#ffffff'; x.strokeStyle = '#0e1c2f'; x.lineWidth = 2;
+  x.beginPath(); x.arc(cx, cy, R, 0, Math.PI*2); x.fill(); x.stroke();
+  /* aiguille : moitié pleine vers le Nord */
+  const px = cx + Math.cos(a)*R*0.82, py = cy + Math.sin(a)*R*0.82;
+  const qx = cx - Math.cos(a)*R*0.82, qy = cy - Math.sin(a)*R*0.82;
+  const ox = Math.cos(a+Math.PI/2)*R*0.20, oy = Math.sin(a+Math.PI/2)*R*0.20;
+  x.fillStyle = '#0e1c2f';
+  x.beginPath(); x.moveTo(px,py); x.lineTo(cx+ox,cy+oy); x.lineTo(cx-ox,cy-oy); x.closePath(); x.fill();
+  x.fillStyle = '#b8963f';
+  x.beginPath(); x.moveTo(qx,qy); x.lineTo(cx+ox,cy+oy); x.lineTo(cx-ox,cy-oy); x.closePath(); x.fill();
+  /* lettre N à la pointe */
+  x.fillStyle = '#0e1c2f';
+  x.font = '700 ' + Math.round(R*0.62) + 'px Helvetica, Arial, sans-serif';
+  x.textAlign = 'center'; x.textBaseline = 'middle';
+  x.fillText('N', cx + Math.cos(a)*R*1.30, cy + Math.sin(a)*R*1.30);
+  x.restore();
+
+  /* --- légende des couleurs --- */
+  const lx = Math.round(w*0.015), ly = h - Math.round(h*0.165), lh = Math.round(h*0.030);
+  const leg = [['#e21b1b','Murs porteurs / ossature'], ['#1b6ee2','Cloisons'],
+               ['#f4c430','Charpente'], ['#111111','Ouvertures, accès']];
+  x.save();
+  x.fillStyle = 'rgba(255,255,255,.88)';
+  x.fillRect(lx-8, ly-lh*0.9, Math.round(w*0.30), lh*leg.length + lh*0.5);
+  x.strokeStyle = '#d8d2c4'; x.lineWidth = 1;
+  x.strokeRect(lx-8, ly-lh*0.9, Math.round(w*0.30), lh*leg.length + lh*0.5);
+  x.font = Math.round(lh*0.62) + 'px Helvetica, Arial, sans-serif';
+  x.textAlign = 'left'; x.textBaseline = 'middle';
+  leg.forEach((L,i) => {
+    const y = ly + i*lh;
+    x.strokeStyle = L[0]; x.lineWidth = Math.max(3, lh*0.16);
+    x.beginPath(); x.moveTo(lx, y); x.lineTo(lx + lh*1.3, y); x.stroke();
+    x.fillStyle = '#1c2430';
+    x.fillText(L[1], lx + lh*1.7, y);
+  });
+  x.restore();
+
+  /* --- cartouche --- */
   x.fillStyle = '#0e1c2f'; x.fillRect(0,0,w,Math.round(h*0.055));
   x.fillStyle = '#ffffff';
+  x.textAlign = 'left'; x.textBaseline = 'middle';
   x.font = '600 ' + Math.round(h*0.028) + 'px Helvetica, Arial, sans-serif';
-  x.textBaseline = 'middle';
   x.fillText('CROQUIS DE SITUATION — ' + (D.ref || '') , Math.round(w*0.015), Math.round(h*0.0275));
   x.fillStyle = '#b8963f';
   x.font = Math.round(h*0.022) + 'px Helvetica, Arial, sans-serif';
-  const lg = 'murs extérieurs · cloisons · charpente';
+  const lg = 'schéma sans échelle — ne pas mesurer sur ce document';
   x.fillText(lg, w - x.measureText(lg).width - Math.round(w*0.015), Math.round(h*0.0275));
   return c.toDataURL('image/jpeg', 0.92);
 }
+/* Faire pivoter le Nord : régénère le fond en conservant dessins et textes. */
+window.phNord = async function(){
+  if(!P || !P.croquis) return;
+  P.nord = ((P.nord || 0) + 45) % 360;
+  const data = fondCroquis(1600, 1100, P.nord);
+  await IMG.put(P.pid, data);
+  imgEl = new Image();
+  imgEl.onload = () => { draw(); };
+  imgEl.src = data;
+  save();
+};
 window.phCroquis = async function(){
   if(!D){ alert("Ouvrez d'abord un dossier photo."); return; }
   const num = D.next++;
   const pid = D.id+'-croquis-'+num+'-'+Date.now();
-  const data = fondCroquis(1600, 1100);
+  const data = fondCroquis(1600, 1100, 0);
   await IMG.put(pid, data);
   const p = { pid, num, shot:'', des:'', desList:[], serie:0, series:[], elem:'', cam:'',
               lieu:'Croquis de situation — vue d\'ensemble de l\'ouvrage',
-              gps:'', orient:'', obs:'', pins:[], thumb:'', croquis:true, draw:[], texts:[] };
+              gps:'', orient:'', obs:'', pins:[], thumb:'', croquis:true, nord:0, draw:[], texts:[] };
   D.planches.push(p);
   persist(); renderItems(); renderControl();
   phOpenPlanche(D.planches.length-1);
   setTimeout(() => {
     phSetMode('draw');
     alert('Croquis de situation créé.\n\nDessinez le plan schématique : murs extérieurs, cloisons, charpente.\n' +
-          '· « Trait droit » est actif : posez le doigt au départ, relâchez à l\'arrivée\n' +
-          '· « T Texte tapé » pour nommer les pièces et les orientations (Nord, Sud…)\n' +
-          '· Les couleurs permettent de distinguer murs, cloisons et charpente');
+          '· « Trait droit » et « Accrocher » sont actifs : les angles se ferment tout seuls\n' +
+          '· Respectez les couleurs de la légende : rouge = porteurs, bleu = cloisons, jaune = charpente\n' +
+          '· « Tourner le Nord » oriente la boussole selon le terrain\n' +
+          '· « T Texte tapé » pour nommer les pièces');
   }, 400);
 };
 
@@ -4689,6 +4748,48 @@ function drawPin(c,x,y,n,ref){
 let canvasBound = false;
 let phMode = 'pin', phColor = '#e21b1b', phWidth = 5, curStroke = null, phStraightMode = true;
 window.phStraight = function(v){ phStraightMode = !!v; };
+/* ------------------------------- aimantage --------------------------------
+   Trois accroches, par ordre de priorité :
+   1. les extrémités des traits déjà tracés — pour fermer proprement les angles
+   2. le quadrillage du fond
+   3. l'horizontale et la verticale, quand le trait en est proche
+   Sans cela, un plan dessiné au doigt ne se referme jamais exactement. */
+let phSnapMode = true;
+window.phSnap = function(v){ phSnapMode = !!v; };
+const SNAP_PT = 0.022;      /* rayon d'accroche à une extrémité existante */
+const SNAP_GRID = 0.025;    /* pas du quadrillage, identique au fond */
+const SNAP_ANG = 0.030;     /* tolérance de calage horizontal / vertical */
+
+function snapToEnds(pt){
+  if(!P || !P.draw) return null;
+  let best = null, bd = SNAP_PT;
+  P.draw.forEach(s => {
+    if(!s.pts || !s.pts.length) return;
+    [s.pts[0], s.pts[s.pts.length-1]].forEach(e => {
+      const d = Math.hypot(e.x - pt.x, e.y - pt.y);
+      if(d < bd){ bd = d; best = { x: e.x, y: e.y }; }
+    });
+  });
+  return best;
+}
+function snapStart(pt){
+  if(!phSnapMode) return pt;
+  const e = snapToEnds(pt);
+  if(e) return e;
+  return { x: Math.round(pt.x / SNAP_GRID) * SNAP_GRID,
+           y: Math.round(pt.y / SNAP_GRID) * SNAP_GRID };
+}
+function snapEnd(from, pt){
+  if(!phSnapMode) return pt;
+  const e = snapToEnds(pt);
+  if(e) return e;
+  let x = Math.round(pt.x / SNAP_GRID) * SNAP_GRID;
+  let y = Math.round(pt.y / SNAP_GRID) * SNAP_GRID;
+  /* calage horizontal ou vertical si le trait en est proche */
+  if(Math.abs(y - from.y) < SNAP_ANG) y = from.y;
+  else if(Math.abs(x - from.x) < SNAP_ANG) x = from.x;
+  return { x, y };
+}
 /* Défilement : par défaut, glisser le doigt sur la photo fait défiler la page.
    On ne bloque le défilement que lorsque c'est nécessaire — dessin, texte,
    ou déplacement de repère explicitement demandé. */
@@ -4706,7 +4807,7 @@ window.phSetMode = function(m){
   if(bd) bd.style.fontWeight = (m==='draw') ? '700' : '400';
   if(bt) bt.style.fontWeight = (m==='text') ? '700' : '400';
   if(note) note.textContent =
-    m === 'draw' ? 'Posez le doigt au départ du trait et relâchez à l’arrivée : le trait est tiré droit. Décochez « Trait droit » pour dessiner à main levée.' :
+    m === 'draw' ? 'Posez le doigt au départ du trait et relâchez à l’arrivée : le trait est tiré droit et s’accroche aux angles déjà tracés et au quadrillage. Décochez « Trait droit » pour dessiner à main levée, « Accrocher » pour tracer libre.' :
     m === 'text' ? "Touchez la photo à l'endroit voulu pour y taper un texte. Le texte s'incruste sur l'image et se déplace ensuite au doigt." :
     "Touchez la photo à l'endroit du désordre pour poser un repère. Rattachez ensuite chaque repère à un désordre (D1, D2…) dans la liste ci-dessous : c'est ce qui le fait remonter dans le rapport.";
   applyTouch();
@@ -4766,7 +4867,8 @@ function bindCanvas(){
     if(!imgEl || !P) return;
     const pt = rel(ev);
     if(phMode === 'draw'){
-      curStroke = { color: phColor, w: phWidth, pts: [{x:pt.x,y:pt.y}] };
+      const s = snapStart({ x: Math.min(1,Math.max(0,pt.x)), y: Math.min(1,Math.max(0,pt.y)) });
+      curStroke = { color: phColor, w: phWidth, pts: [s] };
       c.setPointerCapture(ev.pointerId); ev.preventDefault();
       return;
     }
@@ -4782,10 +4884,11 @@ function bindCanvas(){
   c.addEventListener('pointermove', ev => {
     if(phMode === 'draw' && curStroke){
       const pt = rel(ev);
-      const x = Math.min(1,Math.max(0,pt.x)), y = Math.min(1,Math.max(0,pt.y));
+      let x = Math.min(1,Math.max(0,pt.x)), y = Math.min(1,Math.max(0,pt.y));
       if(phStraightMode){
-        /* trait droit : on ne conserve que le départ et le point courant */
-        curStroke.pts = [curStroke.pts[0], { x, y }];
+        /* trait droit : on ne conserve que le départ et le point courant, aimanté */
+        const e = snapEnd(curStroke.pts[0], { x, y });
+        curStroke.pts = [curStroke.pts[0], e];
       } else {
         curStroke.pts.push({ x, y });
       }
@@ -4814,6 +4917,11 @@ function bindCanvas(){
   const endDrag = ev => {
     if(phMode === 'draw' && curStroke){
       if(curStroke.pts.length > 1){
+        /* main levée : on aimante seulement le dernier point, pour fermer proprement */
+        if(!phStraightMode && phSnapMode){
+          const e = snapToEnds(curStroke.pts[curStroke.pts.length-1]);
+          if(e) curStroke.pts[curStroke.pts.length-1] = e;
+        }
         if(!P.draw) P.draw = [];
         P.draw.push(curStroke);
         save();
