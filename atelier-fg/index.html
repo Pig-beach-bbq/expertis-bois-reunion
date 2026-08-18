@@ -2086,6 +2086,18 @@ h1:first-child{margin-top:0}
   <section>
     <h2><b>5</b> Observation</h2>
     <div class="body">
+      <div class="f" style="margin-bottom:8px">
+        <label>Gravité observée sur ce cliché — facultatif</label>
+        <select id="ph-fGrav" onchange="phSetPlancheGrav(this.value)">
+          <option value="">— non qualifiée —</option>
+          <option value="1">1 — Mauvais, traitement immédiat</option>
+          <option value="2">2 — Non satisfaisant, court terme</option>
+          <option value="3">3 — Partiellement satisfaisant, moyen terme</option>
+          <option value="4">4 — Satisfaisant, pas de mesure</option>
+        </select>
+        <div class="hint">Note d'appréciation portée sur le cliché. La gravité qui fait foi dans le rapport
+          reste celle du désordre : renseignez-la sur la carte du désordre concerné.</div>
+      </div>
       <select id="ph-obsLib" onchange="window.EBRInsertPhrase('ph-fObs', this.value); this.value=''; phTouch(0)" style="margin-bottom:6px"></select>
       <textarea id="ph-fObs" placeholder="Contexte, mesures relevées, étendue, hypothèse retenue…" oninput="phTouch(0)"></textarea>
       <div class="ph-grid2" style="margin-top:10px">
@@ -3808,6 +3820,7 @@ function renderControl(){
     if(n) miss.push('phase '+f.k+' — '+n+' prise'+(n>1?'s':'')+' de vue manquante'+(n>1?'s':''));
   });
   D.des.forEach(d => {
+    if(!d.serie5) return;          /* seuls les désordres à démontrer entrent dans le suivi */
     const got = serieState(d.id).filter(Boolean).length;
     if(got < 5) miss.push('désordre '+d.id+' — série incomplète ('+got+'/5)');
   });
@@ -3817,7 +3830,7 @@ function renderControl(){
   if(!D.planches.length){ el.innerHTML = '<div class="ph-note">Aucun cliché. Déroulez le plan de prise de vue ci-dessous, phase par phase.</div>'; return; }
   el.innerHTML = miss.length
     ? '<div class="ph-miss"><b>Avant de quitter le chantier :</b> '+esc(miss.join(' · '))+'.</div>'
-    : '<div class="ph-ok"><b>Reportage complet.</b> Toutes les lignes du plan sont couvertes et chaque désordre dispose de sa série de cinq.</div>';
+    : '<div class="ph-ok"><b>Reportage complet.</b> Toutes les lignes du plan sont couvertes et chaque désordre à démontrer dispose de sa série de cinq.</div>';
 }
 
 /* ------------------------------ phases ---------------------------------- */
@@ -3939,9 +3952,15 @@ function desCard(d){
         '<input class="lb ph-deslab" type="text" value="'+esc(d.lab||'')+'" placeholder="désordre non intitulé" '+
           'oninput="phRenameDes(\''+d.id+'\',this.value)">'+
         (g? '<span style="background:'+g.c+';color:'+g.t+';font-weight:700;font-size:12px;padding:2px 9px;border-radius:11px;margin-right:6px">'+d.grav+'</span>' : '')+
-        '<span class="st'+(got===5?' ok':'')+'">'+got+'/5</span>'+
+        (d.serie5
+          ? '<span class="st'+(got===5?' ok':'')+'">'+got+'/5</span>'
+          : '<span class="st" style="background:#eee9dd;color:#6b7280" title="Ce désordre ne fait pas l\'objet d\'une série de cinq">'+nums.length+' cl.</span>')+
         '<button class="ph-x" onclick="phDelDes(\''+d.id+'\')" title="Supprimer">&times;</button></div>'+
-      '<div class="ph-serie">'+st.map((v,i)=>'<div class="'+(v?'ok':'')+'">'+SERIE_LB[i]+'</div>').join('')+'</div>'+
+      '<label style="display:flex;align-items:center;gap:6px;margin:6px 0 2px;font-size:11.5px;color:var(--ink);cursor:pointer" '+
+        'title="À cocher pour les désordres que vous devrez démontrer : situation, plan moyen, détail, détail avec échelle, repère écrit">'+
+        '<input type="checkbox" '+(d.serie5?'checked':'')+' onchange="phSetSerie5(\''+d.id+'\',this.checked)"> '+
+        'Série de cinq requise — désordre à démontrer</label>'+
+      (d.serie5 ? '<div class="ph-serie">'+st.map((v,i)=>'<div class="'+(v?'ok':'')+'">'+SERIE_LB[i]+'</div>').join('')+'</div>' : '')+
       (nums.length? '<div style="margin-top:7px;font-size:11.5px;color:var(--muted)">Clichés : '+nums.map(pad).join(', ')+'</div>':'')+
       '<div class="ph-grid2" style="margin-top:8px">'+
         '<div class="f"><label style="font-size:11px">Gravité</label>'+
@@ -3966,9 +3985,22 @@ function desCard(d){
     '</div>';
   }
 }
+window.phSetPlancheGrav = function(v){
+  if(!P) return;
+  P.grav = v ? parseInt(v,10) : null;
+  save(); renderItems();
+};
+window.phSetSerie5 = function(id, on){
+  const d = D.des.find(x => x.id === id); if(!d) return;
+  d.serie5 = !!on; persist(); renderDes(); renderControl(); renderPhases();
+};
 window.phSetDesGrav = function(id, v){
   const d = D.des.find(x => x.id === id); if(!d) return;
-  d.grav = v ? parseInt(v,10) : null; persist(); renderDes();
+  d.grav = v ? parseInt(v,10) : null;
+  /* un désordre grave doit pouvoir être démontré : la série est activée d'office,
+     et reste modifiable si l'expert en juge autrement */
+  if(d.grav === 1 || d.grav === 2){ if(d.serie5 === undefined || d.serie5 === false) d.serie5 = true; }
+  persist(); renderDes(); renderControl(); renderPhases();
 };
 window.phSetDesRisque = function(id, v){
   const d = D.des.find(x => x.id === id); if(!d) return;
@@ -4538,6 +4570,7 @@ function openPlanche(i, data){
     $('ph-fGps').value   = P.gps || '';
     $('ph-fOrient').value= P.orient || '';
     $('ph-fObs').value   = P.obs || '';
+    if($('ph-fGrav')) $('ph-fGrav').value = P.grav ? String(P.grav) : '';
     $('ph-gpsSt').textContent = '';
     ensurePinNums();
     applyTouch();
