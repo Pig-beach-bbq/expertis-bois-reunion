@@ -5376,11 +5376,17 @@ window.phPrintAnnexe = async function(){
     ' numéroté'+(list.length>1?'s':'')+' de '+pad(list[0].num)+' à '+pad(list[list.length-1].num)+
     (D.cam? ' · appareil : '+esc(D.cam):'')+(D.expert? ' · expert : '+esc(D.expert):'')+'</div></div>';
 
-  h += '<table class="rec"><tr><th style="width:46px">N°</th><th>Localisation</th>'+
-       '<th style="width:34%">Plan de prise de vue</th><th style="width:70px">Désordre</th></tr>'+
-       list.map(p => '<tr><td><b>'+pad(p.num)+'</b></td><td>'+esc(p.lieu||'—')+'</td><td>'+
-         esc(p.shot? shotLabel(p.shot) : 'hors plan')+'</td><td>'+
-         esc(desList(p).length ? desList(p).join(', ')+(serieList(p).length? ' ('+serieList(p).join(',')+'/5)' : '') : '—')+'</td></tr>').join('')+'</table>';
+  h += '<table class="rec"><tr><th style="width:46px">N°</th><th>Plan de prise de vue</th>'+
+       '<th style="width:30%">Localisation</th><th style="width:70px">Désordre</th></tr>'+
+       list.map(p => {
+         const ligne = p.shot ? shotLabel(p.shot) : 'hors plan';
+         const lieu = (p.lieu || '').trim();
+         const n = s => s.toLowerCase().replace(/[^a-zà-ÿ0-9]/gi,'');
+         const utile = lieu && n(lieu) !== n(ligne) && !n(ligne).includes(n(lieu)) && !n(lieu).includes(n(ligne));
+         return '<tr><td><b>'+pad(p.num)+'</b></td><td>'+esc(ligne)+'</td><td>'+
+           esc(utile ? lieu : '')+'</td><td>'+
+           esc(desList(p).length ? desList(p).join(', ')+(serieList(p).length? ' ('+serieList(p).join(',')+'/5)' : '') : '—')+'</td></tr>';
+       }).join('')+'</table>';
 
   /* synthèse des désordres, hiérarchisée par gravité — se lit avant les clichés */
   if((D.des||[]).length){
@@ -5408,12 +5414,19 @@ window.phPrintAnnexe = async function(){
   for(const p of list){
     const data = await IMG.get(p.pid);
     const img = data ? await stamp(data, p.pins, p.draw, p.texts) : '';
+    /* la localisation n'est affichée que si elle est renseignée et qu'elle
+       apporte autre chose que le libellé de la ligne de plan, déjà en tête */
+    const ligne = p.shot ? shotLabel(p.shot) : '';
+    const lieu = (p.lieu || '').trim();
+    const norm = s => s.toLowerCase().replace(/[^a-zà-ÿ0-9]/gi,'');
+    const lieuUtile = lieu && norm(lieu) !== norm(ligne) &&
+                      !norm(ligne).includes(norm(lieu)) && !norm(lieu).includes(norm(ligne));
     h += '<div class="blk"><div class="h"><b>PHOTO N° '+pad(p.num)+'</b>'+
-      '<span>'+esc([p.shot? 'plan '+p.shot : 'hors plan', desTxt(p)? desTxt(p)+(serieTxt(p)?' — '+serieTxt(p):'') : '',
+      '<span>'+esc([ligne || 'hors plan', desTxt(p)? desTxt(p)+(serieTxt(p)?' — '+serieTxt(p):'') : '',
                     p.elem? elemLabel(p.elem) : '', p.cam? 'fichier '+p.cam : ''].filter(Boolean).join(' · '))+'</span></div>'+
       (img ? '<img src="'+img+'">' : '<div style="padding:24px;font-size:11px;color:#a32b25">Image indisponible sur cet appareil.</div>')+
       '<div class="l"><dl>'+
-        '<dt>Localisation</dt><dd>'+esc(p.lieu||'non précisée')+'</dd>'+
+        (lieuUtile? '<dt>Localisation</dt><dd>'+esc(lieu)+'</dd>' : '')+
         (p.gps? '<dt>GPS</dt><dd>'+esc(p.gps)+'</dd>' : '')+
         (p.orient? '<dt>Prise de vue</dt><dd>'+esc(p.orient)+'</dd>' : '')+
         (p.obs? '<dt>Observation</dt><dd>'+esc(p.obs)+'</dd>' : '')+
