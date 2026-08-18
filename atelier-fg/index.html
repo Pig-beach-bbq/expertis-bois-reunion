@@ -2149,14 +2149,50 @@ window.EBR2Multi = (function(){
   function idxKey(){ return 'ebr2:fiches:index'; }
   function loadIndex(){ try{ return JSON.parse(localStorage.getItem(idxKey()) || '[]'); }catch(e){ return []; } }
   function saveIndex(idx){ try{ localStorage.setItem(idxKey(), JSON.stringify(idx)); }catch(e){} }
-  function touch(type, ref, client){
+  /* Le n° de dossier se tape caractère par caractère : sans délai, chaque frappe
+     créerait une fiche (« EBR », « EBR-2 », « EBR-20 »…). On n'indexe donc
+     qu'une fois la saisie stabilisée. */
+  let touchTimer = null, lastTouch = null;
+  function touchNow(type, ref, client){
     const r = ref && ref.trim();
-    if(!r) return; // les brouillons sans numéro ne sont pas listés
+    if(!r) return;
     const idx = loadIndex();
     const i = idx.findIndex(x => x.type === type && x.ref === r);
     const entry = { type, ref: r, client: client || '', updatedAt: new Date().toISOString() };
     if(i >= 0) idx[i] = entry; else idx.push(entry);
     saveIndex(idx);
+  }
+  function touch(type, ref, client, immediat){
+    const r = ref && ref.trim();
+    if(!r) return; // les brouillons sans numéro ne sont pas listés
+    if(immediat){ clearTimeout(touchTimer); lastTouch = null; touchNow(type, r, client); return; }
+    lastTouch = { type, ref: r, client };
+    clearTimeout(touchTimer);
+    touchTimer = setTimeout(() => {
+      if(lastTouch) touchNow(lastTouch.type, lastTouch.ref, lastTouch.client);
+    }, 1600);
+  }
+  /* Nettoyage : retire les fiches dont le n° n'est qu'un début d'un autre n°
+     et qui ne contiennent rien de plus — résidus de frappe. */
+  function cleanIndex(){
+    const idx = loadIndex();
+    const norm = s => (s||'').replace(/\s/g,'');
+    const taille = x => { try{ return (localStorage.getItem(key(x.type, x.ref)) || '').length; }catch(e){ return 0; } };
+    const garder = [], jetes = [];
+    idx.forEach(x => {
+      /* toutes les fiches dont le n° prolonge celui-ci */
+      const suites = idx.filter(y => y !== x && y.type === x.type &&
+        norm(y.ref).startsWith(norm(x.ref)) && norm(y.ref).length > norm(x.ref).length);
+      if(!suites.length){ garder.push(x); return; }
+      /* on compare à la plus remplie de la chaîne, pas à la première venue */
+      const maxSuite = Math.max(...suites.map(taille));
+      if(taille(x) < maxSuite * 0.5) jetes.push(x); else garder.push(x);
+    });
+    if(jetes.length){
+      saveIndex(garder);
+      jetes.forEach(x => { try{ localStorage.removeItem(key(x.type, x.ref)); }catch(e){} });
+    }
+    return jetes.length;
   }
   function list(type){
     return loadIndex().filter(x => x.type === type).sort((a,b) => b.updatedAt.localeCompare(a.updatedAt));
@@ -2231,8 +2267,16 @@ window.EBR2Multi = (function(){
     const f = list.find(x => x.num === num);
     if(f){ f.paid = !!paid; saveFactures(list); }
   }
-  return { key, touch, list, remove, nextRef, issueFacture, loadFactures, markFacturePaid };
+  return { key, touch, list, remove, nextRef, issueFacture, loadFactures, markFacturePaid, cleanIndex };
 })();
+/* Nettoyage au démarrage des fiches résiduelles créées caractère par caractère
+   avant la correction de la saisie différée. */
+try{
+  if(window.EBR2Multi && window.EBR2Multi.cleanIndex){
+    const n = window.EBR2Multi.cleanIndex();
+    if(n) console.info(n + ' fiche(s) résiduelle(s) supprimée(s).');
+  }
+}catch(e){}
 window.EBR2FillNext = function(fieldId, clientFieldId){
   const el = document.getElementById(fieldId);
   if(!el) return;
@@ -2249,6 +2293,9 @@ window.EBR2FillNext = function(fieldId, clientFieldId){
   el.value = window.EBR2Multi.nextRef(clientName);
   el.dispatchEvent(new Event('input', { bubbles: true }));
   el.dispatchEvent(new Event('change', { bubbles: true }));
+  /* numéro complet : on l'enregistre sans attendre le délai de frappe */
+  const type = fieldId.split('-')[0];
+  window.EBR2Multi.touch(type === 'devis' ? 'devis' : type, el.value, clientName, true);
 };
 // Récupération d'une ancienne fiche enregistrée avant la mise en place du
 // classement par client (elle dormait sous une clé fixe, non rattachée à un dossier).
@@ -3203,168 +3250,6 @@ function kitReset(){ kBoxes().forEach(c => c.checked = false); kitRefresh(); }
   if(document.getElementById('panel-' + p)) go(p);
 })();
 </script>
-<script>
-/* ---- Export du résumé : transforme la fiche remplie en texte structuré ---- */
-(function(){
-  const clean = s => (s || '').replace(/\s+/g, ' ').trim();
-  const txtOf = el => {
-    if(!el) return '';
-    const c = el.cloneNode(true);
-    c.querySelectorAll('small').forEach(s => s.remove());
-    return clean(c.textContent);
-  };
-
-  function buildSummary(p){
-    const out = [];
-    out.push(document.title.toUpperCase());
-    const d = document.getElementById(p + '-date');
-    if(d && d.value) out.push('Visite du ' + d.value.split('-').reverse().join('/'));
-
-    document.querySelectorAll('#panel-' + p + ' section').forEach(sec => {
-      const title = txtOf(sec.querySelector('h2'));
-      const lines = [];
-
-      /* champs simples */
-      sec.querySelectorAll('.f').forEach(f => {
-        const lab = txtOf(f.querySelector('label'));
-        f.querySelectorAll('input,select,textarea').forEach(el => {
-          if(el.type === 'checkbox') return;
-          const v = clean(el.value);
-          if(v) lines.push('- ' + lab + ' : ' + v);
-        });
-      });
-
-      /* cases à cocher en pastilles */
-      const chk = [...sec.querySelectorAll('.chk input[type=checkbox]')]
-        .filter(c => c.checked)
-        .map(c => txtOf(c.parentElement));
-      if(chk.length) lines.push('- Coché : ' + chk.join(' · '));
-
-      /* tableaux */
-      sec.querySelectorAll('table').forEach(tb => {
-        if(tb.classList.contains('money')) return;
-        const heads = [...tb.querySelectorAll('tr:first-child th')].map(t => txtOf(t));
-        [...tb.querySelectorAll('tr')].slice(1).forEach(tr => {
-          const labCell = tr.querySelector('td.lab');
-          const lab = txtOf(labCell);
-          [...tr.querySelectorAll('td')].forEach((td, i) => {
-            if(td.classList.contains('lab')) return;
-            const el = td.querySelector('input,select,textarea');
-            if(!el) return;
-            const col = heads[i] || '';
-            if(el.type === 'checkbox'){
-              if(el.checked) lines.push('- ' + lab + ' : retenu');
-              return;
-            }
-            const v = clean(el.value);
-            if(v) lines.push('- ' + lab + (col ? ' [' + col + ']' : '') + ' : ' + v);
-          });
-        });
-      });
-
-      /* plan photo */
-      const shots = [];
-      sec.querySelectorAll('.shots li').forEach(li => {
-        const box = li.querySelector('input[type=checkbox]');
-        const numEl = li.querySelector('.num input');
-        const num = numEl ? clean(numEl.value) : '';
-        const txtEl = li.querySelector('.txt');
-        const txt = clean(txtEl ? txtEl.childNodes[0].textContent : '');
-        if(box && box.checked || num){
-          shots.push('- [' + (box && box.checked ? 'x' : ' ') + '] ' + txt + (num ? ' — photos ' + num : ''));
-        }
-      });
-      if(shots.length) lines.push(...shots);
-
-      /* règlement */
-      if(sec.querySelector('.money')){
-        const g = id => { const e = document.getElementById(p + '-' + id); return e ? clean(e.textContent) : ''; };
-        const tot = g('ttc') || g('tot');
-        if(tot) lines.push('- TOTAL : ' + tot + ' € (TVA non applicable, art. 293 B du CGI)');
-        if(g('acompte')) lines.push('- Acompte : ' + g('acompte') + ' €');
-        if(g('solde')) lines.push('- Solde à la remise : ' + g('solde') + ' €');
-      }
-
-      if(lines.length){
-        out.push('');
-        out.push('== ' + title + ' ==');
-        out.push(...lines);
-      }
-    });
-    return out.join('\n');
-  }
-
-  function fileName(p){
-    const d = document.getElementById(p + '-date');
-    const date = d && d.value ? d.value : new Date().toISOString().slice(0, 10);
-    return 'resume-' + date + '.txt';
-  }
-
-  window.resume = function(p){
-    const txt = buildSummary(p);
-
-    const ov = document.createElement('div');
-    ov.style.cssText = 'position:fixed;inset:0;background:rgba(14,28,47,.72);z-index:200;' +
-      'display:flex;align-items:center;justify-content:center;padding:20px';
-    const bx = document.createElement('div');
-    bx.style.cssText = 'background:#fff;border-radius:8px;max-width:760px;width:100%;padding:16px;' +
-      'display:flex;flex-direction:column;gap:10px;max-height:88vh';
-    bx.innerHTML = '<div style="font-size:13px;letter-spacing:.08em;text-transform:uppercase;' +
-      'color:#0e1c2f;font-weight:700">Résumé de la fiche</div>' +
-      '<div style="font-size:12.5px;color:#6b7280">À coller dans le rapport. Si la copie automatique ' +
-      'est bloquée, le texte est déjà sélectionné ci-dessous.</div>';
-    const ta = document.createElement('textarea');
-    ta.value = txt;
-    ta.style.cssText = 'width:100%;flex:1;min-height:320px;font-family:ui-monospace,Menlo,Consolas,' +
-      'monospace;font-size:12.5px;line-height:1.5;border:1px solid #d8d2c4;border-radius:4px;padding:10px';
-    const row = document.createElement('div');
-    row.style.cssText = 'display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end';
-    const msg = document.createElement('span');
-    msg.style.cssText = 'flex:1;font-size:12.5px;color:#1f6b45;align-self:center';
-
-    const bCopy = document.createElement('button');
-    bCopy.textContent = 'Copier';
-    const bDl = document.createElement('button');
-    bDl.textContent = 'Télécharger .txt';
-    bDl.className = 'ghost';
-    bDl.style.color = '#0e1c2f';
-    const bClose = document.createElement('button');
-    bClose.textContent = 'Fermer';
-    bClose.className = 'ghost';
-    bClose.style.color = '#0e1c2f';
-
-    bCopy.onclick = () => {
-      ta.select();
-      const done = () => { msg.textContent = 'Copié dans le presse-papier.'; };
-      if(navigator.clipboard && navigator.clipboard.writeText){
-        navigator.clipboard.writeText(ta.value).then(done).catch(() => {
-          try{ document.execCommand('copy'); done(); }
-          catch(e){ msg.textContent = 'Copie automatique bloquée — le texte est sélectionné.'; }
-        });
-      }else{
-        try{ document.execCommand('copy'); done(); }
-        catch(e){ msg.textContent = 'Copie automatique bloquée — le texte est sélectionné.'; }
-      }
-    };
-    bDl.onclick = () => {
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(new Blob([ta.value], {type:'text/plain;charset=utf-8'}));
-      a.download = fileName(p);
-      a.click();
-      URL.revokeObjectURL(a.href);
-      msg.textContent = 'Fichier téléchargé.';
-    };
-    bClose.onclick = () => ov.remove();
-    ov.onclick = e => { if(e.target === ov) ov.remove(); };
-
-    row.append(msg, bDl, bCopy, bClose);
-    bx.append(ta, row);
-    ov.append(bx);
-    document.body.append(ov);
-    ta.select();
-  };
-})();
-</script>
 
 <style>
 /* ================= Relevé photo terrain — module intégré ================= */
@@ -3492,7 +3377,6 @@ function kitReset(){ kBoxes().forEach(c => c.checked = false); kitRefresh(); }
   border:1px solid transparent;border-radius:4px;background:transparent;padding:4px 6px}
 .ph-des input.ph-deslab:hover{border-color:var(--line);background:#fcfbf7}
 .ph-des input.ph-deslab:focus{border-color:var(--gold);background:#fff;outline:none}
-.ph-pin input.ph-piniD{font-weight:700;color:var(--navy);max-width:100%}
 .ph-pin .num{min-width:26px;padding:0 6px;width:auto}
 .ph-des .st{font-size:11.5px;font-weight:700;color:var(--red)}
 .ph-des .st.ok{color:#1d7a4c}
@@ -3524,8 +3408,6 @@ function kitReset(){ kBoxes().forEach(c => c.checked = false); kitRefresh(); }
 .ph-pin .bd{flex:1;min-width:0;display:grid;gap:6px}
 .ph-filebtn{display:block;text-align:center;background:#fff;color:var(--navy);border:1px solid var(--navy);
   border-radius:4px;padding:10px 16px;font-size:14px;font-weight:600;cursor:pointer}
-.ph-drop{border:2px dashed var(--line);border-radius:6px;background:#fff;padding:22px 18px;text-align:center;color:var(--muted)}
-.ph-drop strong{display:block;color:var(--navy);font-size:16px;margin-bottom:5px}
 .ph-saved{font-size:11.5px;color:var(--muted);text-align:center;padding:6px}
 .ph-miss{background:#fdf1f0;border-left:3px solid var(--red);padding:9px 11px;font-size:12.5px;
   color:#7d211c;border-radius:0 4px 4px 0;margin-bottom:10px}
@@ -3961,7 +3843,19 @@ function desCard(d){
         '<input type="checkbox" '+(d.serie5?'checked':'')+' onchange="phSetSerie5(\''+d.id+'\',this.checked)"> '+
         'Série de cinq requise — désordre à démontrer</label>'+
       (d.serie5 ? '<div class="ph-serie">'+st.map((v,i)=>'<div class="'+(v?'ok':'')+'">'+SERIE_LB[i]+'</div>').join('')+'</div>' : '')+
-      (nums.length? '<div style="margin-top:7px;font-size:11.5px;color:var(--muted)">Clichés : '+nums.map(pad).join(', ')+'</div>':'')+
+      (nums.length
+        ? '<div style="margin-top:7px;display:flex;gap:5px;flex-wrap:wrap;align-items:center">'+
+            '<span style="font-size:11px;color:var(--muted);font-weight:600">CLICHÉS :</span>'+
+            nums.map(n => {
+              const i = D.planches.findIndex(p => p.num === n);
+              return '<button type="button" onclick="phOpenPlanche('+i+')" '+
+                'title="Ouvrir le cliché n° '+pad(n)+'" '+
+                'style="background:var(--gold);color:#12203a;border:none;border-radius:4px;'+
+                'padding:3px 8px;font-size:11.5px;font-weight:700;cursor:pointer">'+pad(n)+'</button>';
+            }).join('')+
+          '</div>'
+        : '<div style="margin-top:7px;font-size:11.5px;color:#a32b25">'+
+          '⚠ Aucun cliché rattaché — ce désordre n\'aura aucune photo dans le rapport.</div>')+
       '<div class="ph-grid2" style="margin-top:8px">'+
         '<div class="f"><label style="font-size:11px">Gravité</label>'+
           '<select onchange="phSetDesGrav(\''+d.id+'\',this.value)">'+
@@ -5012,12 +4906,6 @@ window.phClearPins = function(){
 window.phRmPin  = function(i){ P.pins.splice(i,1); draw(); renderPins(); save(); };
 window.phPinType= function(i,v){ P.pins[i].type = v; phTouch(1); };
 window.phPinNote= function(i,v){ P.pins[i].note = v; phTouch(0); };
-window.phPinLab = function(i,v){
-  P.pins[i].lab = v;
-  const badge = document.querySelectorAll('#ph-pins .ph-pin .num')[i];
-  if(badge) badge.textContent = (v && v.trim()) ? v.trim() : String(P.pins[i].n || (i+1));
-  draw(); phTouch(0);
-};
 function renderPins(){
   const el = $('ph-pins');
   if(!P.pins.length){ el.innerHTML = '<p class="ph-empty">Aucun repère posé.</p>'; return; }
