@@ -221,6 +221,7 @@ h1:first-child{margin-top:0}
   <button class="tab" data-p="r">Rapport technique<span>2 500 €</span></button>
   <button class="tab" data-p="ph">Relevé photo<span>terrain · numéroté</span></button>
   <button class="tab" data-p="chif">Chiffrage<span>travaux de reprise</span></button>
+  <button class="tab" data-p="red">Rédaction<span>rapport généré</span></button>
   <button class="tab" data-p="dos">Dossier<span>montage · envoi</span></button>
   <button class="tab" data-p="suivi">Suivi<span>devis · factures</span></button>
 </div>
@@ -850,7 +851,6 @@ h1:first-child{margin-top:0}
       <li><input type="checkbox"><span class="txt">Photo de la présente fiche complétée et signée</span><span class="num"><input type="text" placeholder="n°"></span></li>
     </ul>
 
-
     <div class="grid g3" style="margin-top:14px">
       <div class="f"><label>Nombre total de photos</label><input type="number"></div>
       <div class="f"><label>Première et dernière photo (n°)</label><input type="text" placeholder="ex. 0142 → 0231"></div>
@@ -1431,7 +1431,6 @@ h1:first-child{margin-top:0}
       <li><input type="checkbox"><span class="txt">Relecture de ce plan photo, ligne par ligne</span><span class="num"><input type="text" placeholder="—"></span></li>
       <li><input type="checkbox"><span class="txt">Photo de la présente fiche complétée et signée</span><span class="num"><input type="text" placeholder="n°"></span></li>
     </ul>
-
 
     <div class="grid g3" style="margin-top:14px">
       <div class="f"><label>Nombre total de photos</label><input type="number"></div>
@@ -2269,7 +2268,48 @@ window.EBR2Multi = (function(){
     const f = list.find(x => x.num === num);
     if(f){ f.paid = !!paid; saveFactures(list); }
   }
-  return { key, touch, list, remove, nextRef, issueFacture, loadFactures, markFacturePaid, cleanIndex };
+  /* Suppression complète d'un dossier client : fiches, chiffrage, dossier photo,
+     factures. Irréversible — l'appelant doit avoir demandé confirmation. */
+  function removeDossier(ref){
+    const r = (ref || '').trim();
+    if(!r) return { fiches:0, photos:0, factures:0 };
+    let nf = 0, np = 0, nfac = 0;
+    ['v','c','r','devis','chif'].forEach(t => {
+      try{ if(localStorage.getItem(key(t, r))){ localStorage.removeItem(key(t, r)); nf++; } }catch(e){}
+    });
+    saveIndex(loadIndex().filter(x => (x.ref || '').trim() !== r));
+    /* dossiers photo : index 'ebr2:index' + données 'ebr2:dossier:<id>' */
+    try{
+      const idx = JSON.parse(localStorage.getItem('ebr2:index') || '[]');
+      const garde = [];
+      idx.forEach(x => {
+        if((x.ref || '').trim() === r){ try{ localStorage.removeItem('ebr2:dossier:' + x.id); }catch(e){} np++; }
+        else garde.push(x);
+      });
+      localStorage.setItem('ebr2:index', JSON.stringify(garde));
+    }catch(e){}
+    /* factures : conservées par défaut (numérotation légale continue) */
+    const facs = loadFactures();
+    nfac = facs.filter(f => (f.ref || '').trim() === r).length;
+    return { fiches:nf, photos:np, factures:nfac };
+  }
+  /* Suppression des factures d'un dossier — séparée, car la numérotation des
+     factures doit rester continue : à n'utiliser que pour une saisie erronée. */
+  function removeFactures(ref){
+    const r = (ref || '').trim();
+    const list = loadFactures();
+    const reste = list.filter(f => (f.ref || '').trim() !== r);
+    saveFactures(reste);
+    return list.length - reste.length;
+  }
+  /* Un dossier est considéré réglé lorsqu'il porte au moins une facture et que
+     toutes ses factures sont marquées réglées. */
+  function dossierRegle(ref){
+    const r = (ref || '').trim();
+    const f = loadFactures().filter(x => (x.ref || '').trim() === r);
+    return f.length > 0 && f.every(x => x.paid);
+  }
+  return { key, touch, list, remove, removeDossier, removeFactures, dossierRegle, nextRef, issueFacture, loadFactures, markFacturePaid, cleanIndex };
 })();
 /* Nettoyage au démarrage des fiches résiduelles créées caractère par caractère
    avant la correction de la saisie différée. */
@@ -3461,6 +3501,472 @@ window.chifRefreshList = refreshList;
 })();
 </script>
 
+<div class="panel" id="panel-red">
+<div class="wrap">
+
+  <section>
+    <h2><b>1</b> Dossier source</h2>
+    <div class="body">
+      <div class="grid g3">
+        <div class="f"><label>Dossier photo à exploiter</label>
+          <select id="red-src"><option value="">— Choisir —</option></select></div>
+        <div class="f"><label>Commanditaire</label><input type="text" id="red-client"></div>
+        <div class="f"><label>Adresse du chantier</label><input type="text" id="red-adr"></div>
+      </div>
+      <div class="grid g3" style="margin-top:4px">
+        <div class="f"><label>Date de la visite</label><input type="date" id="red-dateV"></div>
+        <div class="f"><label>Rapport établi le</label><input type="date" id="red-dateR"></div>
+        <div class="f"><label>Destinataire</label><input type="text" id="red-dest" placeholder="Avocat du commanditaire"></div>
+      </div>
+      <div style="margin-top:8px"><button type="button" class="ph-btn o" onclick="window.redCharger()">Charger les désordres</button></div>
+    </div>
+  </section>
+
+  <section>
+    <h2><b>2</b> Désordres à traiter</h2>
+    <div class="body">
+      <p style="font-size:12px;color:var(--muted);margin:0 0 10px">
+        Décochez ce qui ne doit pas figurer au rapport. L'analyse est rédigée par composant d'ouvrage,
+        avec les références normatives correspondantes.
+      </p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
+        <button type="button" class="ph-btn" style="background:#fff;border-color:var(--line);color:var(--muted)" onclick="window.redTout(true)">Tout cocher</button>
+        <button type="button" class="ph-btn" style="background:#fff;border-color:var(--line);color:var(--muted)" onclick="window.redTout(false)">Tout décocher</button>
+      </div>
+      <div id="red-liste"><p class="ph-empty">Choisissez un dossier photo, puis « Charger les désordres ».</p></div>
+    </div>
+  </section>
+
+  <section>
+    <h2><b>3</b> Contenu du rapport</h2>
+    <div class="body">
+      <div id="red-opts"></div>
+      <div class="f" style="margin-top:12px"><label>Mission — questions posées</label>
+        <textarea id="red-mission" rows="2">Déterminer l'état structurel de l'ouvrage, la gravité des malfaçons constatées et les travaux nécessaires à sa mise en sécurité et à sa remise en conformité.</textarea></div>
+      <div class="f"><label>Description de l'ouvrage</label>
+        <textarea id="red-ouvrage" rows="2" placeholder="Ouvrage à ossature bois comprenant…"></textarea></div>
+      <div class="f"><label>Documents examinés</label>
+        <textarea id="red-docs" rows="2" placeholder="Aucun document contractuel n'a été communiqué à l'expert au jour de la visite."></textarea></div>
+      <div class="f"><label>Réserve particulière (facultatif)</label>
+        <textarea id="red-reserve" rows="2" placeholder="Ex. : réserve sur un ouvrage hors compétence de l'expert (béton, électricité…)"></textarea></div>
+    </div>
+  </section>
+
+  <section>
+    <h2><b>4</b> Génération</h2>
+    <div class="body">
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button type="button" class="ph-btn g" onclick="window.redGenerer(false)">Aperçu du rapport</button>
+        <button type="button" class="ph-btn o" onclick="window.redGenerer(true)">Imprimer / PDF</button>
+        <span id="red-etat" style="font-size:12px;color:var(--muted);align-self:center"></span>
+      </div>
+      <div class="strip" style="border-left-color:var(--navy);margin-top:12px;font-size:12.5px">
+        Le texte produit est un <b>premier jet structuré</b> : constatations, analyse par composant, références
+        normatives et préconisations. Il doit être relu et complété — les appréciations propres au chantier
+        relèvent de l'expert et ne peuvent être générées automatiquement.
+      </div>
+      <div id="red-apercu" style="margin-top:14px"></div>
+    </div>
+  </section>
+
+</div>
+</div>
+<div id="red-print" style="display:none;background:#fff"></div>
+
+<script>
+(function(){
+const $ = id => document.getElementById(id);
+const esc = s => (s||'').toString().replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const frD = v => { const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(v||''); return m ? m[3]+'/'+m[2]+'/'+m[1] : (v||''); };
+const frLong = v => { const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(v||''); if(!m) return v||'';
+  const M=['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
+  return parseInt(m[3],10)+' '+M[parseInt(m[2],10)-1]+' '+m[1]; };
+const GRAV = { 1:{lab:'Mauvais — traitement immédiat',c:'#e21b1b',t:'#fff'},
+               2:{lab:'Non satisfaisant — court terme',c:'#f2a23c',t:'#1c2430'},
+               3:{lab:'Partiellement satisfaisant — moyen terme',c:'#f4dd4c',t:'#1c2430'},
+               4:{lab:'Satisfaisant — pas de mesure',c:'#5cb85c',t:'#fff'} };
+
+/* ---- familles de composants : rattachement, référence, texte d'analyse ---- */
+const FAM = [
+  { id:'charpente', titre:'Charpente et assemblages',
+    mots:['charpent','ferme','panne','arbalétr','arbaletr','poinçon','poincon','entrait','faîtage','faitage','chevron','toiture','couverture'],
+    ref:'NF EN 1995-1-1 (Eurocode 5)',
+    regle:"L'Eurocode 5 impose que tout assemblage structurel permette une transmission justifiée des efforts de traction, de compression et de soulèvement entre les pièces assemblées. Un simple appui, un moisage incomplet ou une liaison non dimensionnée ne satisfont pas à cette exigence.",
+    concl:"Les défauts relevés affectent la capacité de la charpente à transmettre les efforts jusqu'aux appuis et à résister aux actions de vent applicables au site." },
+  { id:'ossature', titre:'Ossature et contreventement des murs',
+    mots:['ossature','montant','lisse','osb','contrevent','voile','pignon','mur','panneau'],
+    ref:'NF DTU 31.2',
+    regle:"Le NF DTU 31.2 prescrit un entraxe des montants d'au plus 600 mm et impose que les panneaux de contreventement soient fixés sur toute leur périphérie, au droit de montants continus, avec un entraxe de fixation d'au plus 150 mm en périphérie et 300 mm en zone courante, au moyen d'organes adaptés (pointes ou agrafes pénétrant d'au moins 35 mm dans le bois d'ossature, vis d'au moins 25 mm).",
+    concl:"Le cumul de ces écarts prive le mur de sa fonction de voile travaillant, et donc de sa capacité à reprendre les efforts horizontaux de vent." },
+  { id:'ancrage', titre:'Ancrages, fixations et reprise du soulèvement',
+    mots:['ancrage','ancré','soulèvement','soulevement','équerre','equerre','feuillard','tige','boulon','vis','fixation','poteau','moise'],
+    ref:'NF EN 1995-1-1 (Eurocode 5)',
+    regle:"Tout point d'appui d'un ouvrage exposé au vent doit comporter un dispositif de reprise des efforts de soulèvement, dimensionné et justifié. En zone cyclonique, la dépression en toiture engendre des efforts de soulèvement déterminants pour la stabilité de l'ouvrage.",
+    concl:"L'absence de dispositif dédié en ces points constitue un point de vigilance majeur au regard des actions climatiques applicables à La Réunion." },
+  { id:'pied', titre:'Pied de mur, protection à l\'eau et ventilation',
+    mots:['pied de mur','garde au sol','bardage','tasseau','lame d\'air','ventilation','pare-pluie','dalle','béton','beton','humidit','infiltration','soubassement'],
+    ref:'NF DTU 31.2',
+    regle:"Le NF DTU 31.2 impose une garde au sol minimale de 20 cm entre le sol fini extérieur et les premiers éléments bois, une désolidarisation entre le bois et le support maçonné, ainsi qu'une lame d'air ventilée continue en pied de bardage.",
+    concl:"Ces écarts exposent durablement le pied de paroi au ruissellement et au rejaillissement d'eau, avec un risque d'humidification et de dégradation biologique des bois de structure à moyen terme." },
+  { id:'autres', titre:'Autres constatations', mots:[], ref:'Règles de l\'art applicables',
+    regle:"Les désordres ci-après ne se rattachent pas directement aux familles précédentes ; ils sont analysés au regard des règles de l'art applicables à la construction bois.",
+    concl:"" }
+];
+/* Le rattachement se fait au score et non au premier mot trouvé : un libellé
+   comme « garde au sol du bardage / pied de mur » contient « mur », mais relève
+   du pied de mur, pas de l'ossature. Les familles spécifiques sont légèrement
+   prioritaires pour départager les égalités. */
+const FAMPRIO = { pied:0.3, ancrage:0.2, charpente:0.1, ossature:0 };
+function famDe(d){
+  const t = ((d.lab||'')+' '+(d.elem||'')).toLowerCase();
+  let best = null, bestScore = 0;
+  FAM.forEach(f => {
+    if(!f.mots.length) return;
+    const n = f.mots.reduce((a,m) => a + (t.indexOf(m) >= 0 ? 1 : 0), 0);
+    if(!n) return;
+    const sc = n + (FAMPRIO[f.id] || 0);
+    if(sc > bestScore){ bestScore = sc; best = f.id; }
+  });
+  return best || 'autres';
+}
+
+let DOS = null, DES = [];
+
+/* ------------------------------ chargement ------------------------------- */
+function listeDossiers(){
+  try{ return JSON.parse(localStorage.getItem('ebr2:index') || '[]'); }catch(e){ return []; }
+}
+window.redRefresh = function(){
+  const sel = $('red-src'), cur = sel.value;
+  const items = listeDossiers();
+  sel.innerHTML = '<option value="">— Choisir —</option>' + items.map(x =>
+    '<option value="'+esc(x.id)+'">'+esc(x.ref||'sans n°')+(x.client||x.nom?' — '+esc(x.client||x.nom):'')+
+    ' ('+(x.n||0)+' clichés)</option>').join('');
+  if(items.some(x => x.id === cur)) sel.value = cur;
+};
+window.redCharger = function(){
+  const id = $('red-src').value;
+  if(!id){ alert('Choisissez un dossier photo.'); return; }
+  try{ DOS = JSON.parse(localStorage.getItem('ebr2:dossier:'+id) || 'null'); }catch(e){ DOS = null; }
+  if(!DOS){ alert('Dossier introuvable.'); return; }
+  DES = (DOS.des || []).slice();
+  if(!$('red-client').value) $('red-client').value = DOS.client || DOS.nom || '';
+  if(!$('red-adr').value)    $('red-adr').value    = DOS.adresse || '';
+  if(!$('red-dateV').value && DOS.date) $('red-dateV').value = DOS.date;
+  if(!$('red-dateR').value) $('red-dateR').valueAsDate = new Date();
+  renderListe();
+  $('red-etat').textContent = DES.length + ' désordre(s) chargé(s), ' + (DOS.planches||[]).length + ' cliché(s).';
+};
+function clichesDe(id){
+  return (DOS.planches||[]).filter(p => {
+    const l = p.des; 
+    if(Array.isArray(l)) return l.indexOf(id) >= 0;
+    return (l||'') === id || (l||'').split(/[,;\s]+/).indexOf(id) >= 0;
+  }).map(p => p.num).sort((a,b)=>a-b);
+}
+function renderListe(){
+  if(!DES.length){ $('red-liste').innerHTML = '<p class="ph-empty">Ce dossier ne comporte aucun désordre saisi.</p>'; return; }
+  $('red-liste').innerHTML = DES.map(d => {
+    const g = d.grav ? GRAV[d.grav] : null;
+    const nums = clichesDe(d.id);
+    return '<label style="display:flex;align-items:flex-start;gap:10px;padding:9px 11px;border:1px solid var(--line);'+
+      'border-radius:5px;margin-bottom:6px;background:#fff;cursor:pointer'+(g?';border-left:5px solid '+g.c:'')+'">'+
+      '<input type="checkbox" data-des="'+esc(d.id)+'" checked style="width:17px;height:17px;accent-color:var(--gold);margin:2px 0 0">'+
+      '<span style="flex:1;font-size:13px"><b>'+esc(d.id)+'</b> — '+esc(d.lab||'désordre non intitulé')+
+      (d.elem? '<br><span style="font-size:11.5px;color:var(--muted)">'+esc(d.elem)+'</span>':'')+
+      (nums.length? '<br><span style="font-size:11.5px;color:var(--muted)">clichés '+nums.map(n=>String(n).padStart(3,'0')).join(', ')+'</span>':'')+
+      '</span>'+
+      (g? '<span style="font-size:11px;background:'+g.c+';color:'+g.t+';padding:2px 7px;border-radius:3px;white-space:nowrap">gravité '+d.grav+'</span>':'')+
+      '</label>';
+  }).join('');
+}
+window.redTout = function(v){
+  document.querySelectorAll('#red-liste input[data-des]').forEach(c => c.checked = v);
+};
+
+/* --------------------------- options de contenu -------------------------- */
+const OPTS = [
+  ['garde','Page de garde',1], ['sommaire','Sommaire',1], ['ident','Identification et cadre de la mission',1],
+  ['mission','Mission — questions posées',1], ['ouvrage','Description de l\'ouvrage',1],
+  ['docs','Documents examinés',1], ['constat','Constatations et relevés (tableau)',1],
+  ['analyse','Analyse technique détaillée',1], ['imput','Imputabilité',1],
+  ['synth','Synthèse de la confrontation aux règles',1], ['preco','Préconisations',1],
+  ['chif','Évaluation du coût des travaux de reprise',1], ['reserves','Réserves et limites',1],
+  ['annexe','Renvoi à l\'annexe photographique',1], ['signature','Bloc signature',1]
+];
+$('red-opts').innerHTML = '<div style="display:flex;flex-wrap:wrap;gap:6px 18px">'+
+  OPTS.map(([k,l,on]) => '<label style="font-size:12.5px;display:flex;align-items:center;gap:6px">'+
+    '<input type="checkbox" data-opt="'+k+'"'+(on?' checked':'')+' style="accent-color:var(--gold)"> '+esc(l)+'</label>').join('')+
+  '</div>';
+const opt = k => { const c = document.querySelector('#red-opts input[data-opt="'+k+'"]'); return c ? c.checked : false; };
+
+/* ------------------------------ génération ------------------------------- */
+function retenus(){
+  const ids = [...document.querySelectorAll('#red-liste input[data-des]')].filter(c=>c.checked).map(c=>c.dataset.des);
+  return DES.filter(d => ids.indexOf(d.id) >= 0);
+}
+function num3(n){ return String(n).padStart(3,'0'); }
+
+function chifData(ref){
+  if(!window.EBR2Multi) return null;
+  try{ return JSON.parse(localStorage.getItem(window.EBR2Multi.key('chif', ref)) || 'null'); }catch(e){ return null; }
+}
+
+function build(){
+  const list = retenus();
+  const ref = (DOS && DOS.ref) || '';
+  const client = $('red-client').value.trim();
+  const adr = $('red-adr').value.trim();
+  const dv = $('red-dateV').value, dr = $('red-dateR').value;
+  let n = 0; const S = () => ++n;
+  let h = '';
+
+  if(opt('garde')){
+    h += '<div class="rp-garde"><div class="rp-b">EXPERTIS BOIS <span>RÉUNION</span></div>'+
+      '<div class="rp-s">Expertise indépendante en structures et charpentes bois</div>'+
+      '<div class="rp-t">RAPPORT TECHNIQUE</div>'+
+      '<table class="rp-ident">'+
+      [['Dossier n°', ref], ['Commanditaire', client], ['Adresse du chantier', adr],
+       ['Date de la visite', frLong(dv)], ['Rapport établi le', frLong(dr)],
+       ['Destinataire', $('red-dest').value.trim()], ['Expert', 'FG — Expertis Bois Réunion']]
+      .filter(r => r[1]).map(r => '<tr><th>'+esc(r[0])+'</th><td>'+esc(r[1])+'</td></tr>').join('')+
+      '</table>'+
+      '<div class="rp-f">Cabinet d\'expertise technique indépendant — Île de La Réunion (974)</div></div>';
+  }
+
+  const titres = [];
+  const sec = (t) => { const i = S(); titres.push([i,t]); return '<h2 class="rp-h"><b>'+i+'.</b> '+esc(t)+'</h2>'; };
+  let corps = '';
+
+  if(opt('ident')){
+    corps += sec('Identification et cadre de la mission')+
+      '<table class="rp-kv">'+
+      [['N° de dossier', ref], ['Date de la visite', frLong(dv)], ['Commanditaire', client],
+       ['Adresse du chantier', adr], ['Destinataire du rapport', $('red-dest').value.trim()],
+       ['Expert', 'FG — Expertis Bois Réunion'], ['Date d\'établissement du rapport', frLong(dr)]]
+      .filter(r=>r[1]).map(r => '<tr><th>'+esc(r[0])+'</th><td>'+esc(r[1])+'</td></tr>').join('')+'</table>'+
+      '<h3 class="rp-h3">Caractère non contradictoire des opérations</h3>'+
+      '<p>La visite s\'est déroulée en présence du seul commanditaire. L\'entreprise ayant réalisé les travaux '+
+      'n\'était ni présente ni représentée : les constatations n\'ont donc pas été effectuées contradictoirement. '+
+      'Le présent rapport constitue un avis technique établi à la demande d\'une partie ; il ne préjuge pas des '+
+      'conclusions susceptibles d\'être retenues dans le cadre d\'une expertise judiciaire ou d\'une réunion '+
+      'contradictoire ultérieure, à laquelle l\'expert se tient à disposition.</p>';
+  }
+  if(opt('mission') && $('red-mission').value.trim())
+    corps += sec('Mission — questions posées')+'<p>'+esc($('red-mission').value.trim())+'</p>';
+  if(opt('ouvrage') && $('red-ouvrage').value.trim())
+    corps += sec('Description de l\'ouvrage')+'<p>'+esc($('red-ouvrage').value.trim())+'</p>';
+  if(opt('docs') && $('red-docs').value.trim())
+    corps += sec('Documents examinés')+'<p>'+esc($('red-docs').value.trim())+'</p>';
+
+  if(opt('constat')){
+    const tri = list.slice().sort((a,b) => (a.grav||9)-(b.grav||9) || a.id.localeCompare(b.id, 'fr', {numeric:true}));
+    corps += sec('Constatations et relevés')+
+      '<p>Le relevé photographique et métrologique réalisé lors de la visite ('+((DOS.planches||[]).length)+
+      ' clichés numérotés) a permis d\'identifier '+list.length+' désordre'+(list.length>1?'s':'')+
+      ', répertorié'+(list.length>1?'s':'')+' ci-dessous par ordre de gravité décroissante.</p>'+
+      '<table class="rp-t"><tr><th>N°</th><th>Désordre constaté</th><th>Gravité</th><th>Risque encouru</th><th>Clichés</th></tr>'+
+      tri.map(d => {
+        const g = d.grav ? GRAV[d.grav] : null;
+        const nums = clichesDe(d.id);
+        return '<tr><td><b>'+esc(d.id)+'</b></td><td>'+esc(d.lab||'—')+
+          (d.elem?'<br><i style="font-size:8pt;color:#667">'+esc(d.elem)+'</i>':'')+'</td>'+
+          '<td class="rp-g"'+(g?' style="background:'+g.c+';color:'+g.t+'"':'')+'>'+(d.grav||'—')+'</td>'+
+          '<td>'+esc(d.risque||'—')+'</td><td>'+(nums.length?nums.map(num3).join(', '):'—')+'</td></tr>';
+      }).join('')+'</table>'+
+      '<h3 class="rp-h3">Synthèse par gravité</h3>'+
+      [1,2,3,4].map(g => { const l = list.filter(d => String(d.grav) === String(g));
+        return l.length ? '<p class="rp-syn"><b>Gravité '+g+' — '+esc(GRAV[g].lab)+' :</b> '+
+          l.map(d=>esc(d.id)).join(', ')+' ('+l.length+' désordre'+(l.length>1?'s':'')+')</p>' : ''; }).join('');
+  }
+
+  if(opt('analyse')){
+    corps += sec('Analyse technique détaillée')+
+      '<p>Les désordres sont analysés ci-après par composant d\'ouvrage, avec pour chacun le mécanisme observé, '+
+      'les clichés de référence et les prescriptions applicables.</p>';
+    let k = 0;
+    FAM.forEach(f => {
+      const l = list.filter(d => famDe(d) === f.id);
+      if(!l.length) return;
+      k++;
+      corps += '<h3 class="rp-h3">'+n+'.'+k+' '+esc(f.titre)+' ('+l.map(d=>esc(d.id)).join(', ')+')</h3>'+
+        '<p><b>Référence applicable :</b> '+esc(f.ref)+'. '+esc(f.regle)+'</p><ul class="rp-ul">'+
+        l.map(d => { const nums = clichesDe(d.id);
+          return '<li><b>'+esc(d.id)+'</b> — '+esc(d.lab||'désordre non intitulé')+
+            (d.elem? ' ('+esc(d.elem)+')':'')+
+            (d.risque? ' ; risque encouru : '+esc(d.risque).toLowerCase():'')+
+            (nums.length? ' — clichés '+nums.map(num3).join(', '):'')+
+            (d.grav? ' [gravité '+d.grav+']':'')+'.</li>'; }).join('')+'</ul>'+
+        (f.concl? '<p>'+esc(f.concl)+'</p>' : '')+
+        '<p class="rp-todo">À compléter par l\'expert : mécanisme précis du désordre, mesures relevées et conséquences propres à ce chantier.</p>';
+    });
+    if($('red-reserve').value.trim()){
+      k++;
+      corps += '<h3 class="rp-h3">'+n+'.'+k+' Réserve particulière — hors compétence de l\'expert</h3>'+
+        '<p>'+esc($('red-reserve').value.trim())+'</p>'+
+        '<p>Aucune conclusion n\'est formulée sur ce point, ni dans un sens ni dans l\'autre, et l\'évaluation du '+
+        'coût des travaux n\'intègre aucun poste s\'y rapportant. Il est recommandé au commanditaire de faire '+
+        'diligenter une expertise complémentaire par un spécialiste de la matière concernée.</p>';
+    }
+    if(opt('imput')){
+      k++;
+      corps += '<h3 class="rp-h3">'+n+'.'+k+' Imputabilité</h3>'+
+        '<p>Le caractère répété, généralisé et systématique des écarts relevés — touchant simultanément plusieurs '+
+        'composants porteurs de l\'ouvrage — conforte l\'hypothèse d\'un défaut d\'exécution global plutôt que '+
+        'd\'anomalies ponctuelles isolées. L\'appréciation de la responsabilité contractuelle relève de l\'analyse '+
+        'juridique du dossier et non de la présente expertise technique.</p>';
+    }
+  }
+
+  if(opt('synth')){
+    const fams = FAM.filter(f => list.some(d => famDe(d) === f.id));
+    if(fams.length) corps += sec('Synthèse de la confrontation aux règles applicables')+
+      '<table class="rp-t"><tr><th>Composant</th><th>Référence normative applicable</th></tr>'+
+      fams.map(f => '<tr><td>'+esc(f.titre)+'</td><td>'+esc(f.ref)+'</td></tr>').join('')+'</table>'+
+      '<p class="rp-note">Les valeurs citées sont issues des sources normatives consultées et des mesures relevées '+
+      'sur site ; elles ne dispensent pas d\'une vérification directe des DTU et Eurocodes dans leur version en '+
+      'vigueur à la date des travaux.</p>';
+  }
+
+  if(opt('preco')){
+    const fams = FAM.filter(f => list.some(d => famDe(d) === f.id));
+    corps += sec('Préconisations')+
+      '<p>Les préconisations ci-après portent sur les composants affectés par les désordres constatés. Elles '+
+      'devront être précisées par une étude d\'exécution préalable.</p><ul class="rp-ul">'+
+      '<li>Faire établir, préalablement à tout démarrage, une étude d\'exécution et une note de calcul de reprise '+
+      'par un bureau d\'études structure bois, intégrant les actions de vent cycloniques et sismiques applicables au site.</li>'+
+      fams.map(f => '<li>'+esc(f.titre)+' — reprise des ouvrages concernés ('+
+        list.filter(d=>famDe(d)===f.id).map(d=>esc(d.id)).join(', ')+') conformément aux prescriptions du '+esc(f.ref)+'.</li>').join('')+
+      (list.some(d => String(d.grav) === '1') ?
+        '<li>Procéder sans délai à une mise en sécurité et à une vérification complémentaire avant toute exposition '+
+        'de l\'ouvrage à un événement climatique majeur, plusieurs désordres étant classés en gravité 1.</li>' : '')+
+      '</ul><p class="rp-todo">À compléter par l\'expert : nature exacte des reprises, phasage et contraintes propres au chantier.</p>';
+  }
+
+  if(opt('chif')){
+    const d = chifData(ref);
+    if(d && (d.rows||[]).length){
+      const eur = x => (isNaN(x)?0:x).toLocaleString('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2})+' €';
+      let st = 0;
+      const lignes = d.rows.filter(r=>r.poste).map(r => {
+        const q = parseFloat(r.qte), p = parseFloat(r.pu);
+        const memo = (r.qte === '' || isNaN(q)); const t = memo ? null : q*(isNaN(p)?0:p);
+        if(t !== null) st += t;
+        return '<tr><td>'+esc(r.poste)+'</td><td>'+esc(r.des||'—')+'</td><td style="text-align:right">'+
+          (memo?'à confirmer':esc(String(r.qte)))+'</td><td>'+esc(r.u||'')+'</td><td style="text-align:right">'+
+          (isNaN(p)?'—':eur(p))+'</td><td style="text-align:right">'+(memo?'<i>pour mémoire</i>':eur(t))+'</td></tr>';
+      }).join('');
+      const al = st*((parseFloat(d.pctAlea)||0)/100), ht = st+al;
+      corps += sec('Évaluation du coût des travaux de reprise')+
+        '<p>Estimation technique du coût de remise en conformité, établie à partir des quantités relevées et de prix '+
+        'unitaires moyens du marché local. Ne constitue ni un devis, ni un engagement de prix. Montants hors taxes.</p>'+
+        '<table class="rp-t"><tr><th>Poste de reprise</th><th>Désordres</th><th>Qté</th><th>U</th><th>P.U. HT</th><th>Total HT</th></tr>'+
+        lignes+
+        '<tr><td colspan="5"><b>Sous-total travaux HT</b></td><td style="text-align:right"><b>'+eur(st)+'</b></td></tr>'+
+        '<tr><td colspan="5">Aléas et travaux induits ('+esc(String(d.pctAlea||0))+' %)</td><td style="text-align:right">'+eur(al)+'</td></tr>'+
+        '<tr><td colspan="5"><b>TOTAL ESTIMÉ HT</b></td><td style="text-align:right"><b>'+eur(ht)+'</b></td></tr></table>'+
+        (d.obs? '<p class="rp-note">'+esc(d.obs)+'</p>':'');
+    }else{
+      corps += sec('Évaluation du coût des travaux de reprise')+
+        '<p class="rp-todo">Aucun chiffrage enregistré pour ce dossier — à saisir dans l\'onglet Chiffrage.</p>';
+    }
+  }
+
+  if(opt('reserves'))
+    corps += sec('Réserves et limites')+
+      '<p>Le présent rapport est établi sur la base des seuls éléments visibles et accessibles lors de la visite, '+
+      'sans sondage destructif. Les préconisations ne se substituent pas à une étude d\'exécution complète et '+
+      'devront être confirmées par le bureau d\'études en charge de la reprise.</p>';
+
+  if(opt('annexe'))
+    corps += sec('Annexe photographique')+
+      '<p>L\'annexe photographique jointe au présent rapport comprend les '+((DOS.planches||[]).length)+
+      ' clichés numérotés pris par l\'expert lors de la visite, la numérotation étant conforme au plan de prise de vue.</p>';
+
+  if(opt('signature'))
+    corps += '<div class="rp-sig"><p>Fait à La Réunion, le '+esc(frLong(dr))+'</p>'+
+      '<p>Pour Expertis Bois Réunion</p><p><b>FG, expert en structures et charpentes bois</b></p>'+
+      '<div class="rp-sigline"></div>'+
+      '<p class="rp-note">Cabinet d\'expertise technique indépendant — Île de La Réunion (974).</p></div>';
+
+  if(opt('sommaire') && titres.length)
+    h += '<div class="rp-som"><h2 class="rp-h">Sommaire</h2>'+
+      titres.map(([i,t]) => '<div class="rp-soml"><b>'+i+'.</b> '+esc(t)+'</div>').join('')+'</div>';
+
+  return h + '<div class="rp-corps">' + corps + '</div>';
+}
+
+window.redGenerer = function(imprimer){
+  if(!DOS){ alert('Chargez d\'abord un dossier photo.'); return; }
+  const list = retenus();
+  if(!list.length){ alert('Aucun désordre sélectionné.'); return; }
+  const html = build();
+  if(!imprimer){
+    $('red-apercu').innerHTML = '<div class="rp-prev">'+html+'</div>';
+    $('red-etat').textContent = 'Aperçu généré — ' + list.length + ' désordre(s).';
+    return;
+  }
+  $('red-print').innerHTML = html;
+  const prov = window.EBR2Provisoire ? window.EBR2Provisoire('red-print', (DOS && DOS.ref) || '') : false;
+  $('red-etat').textContent = 'Rapport envoyé à l\'impression' + (prov ? ' — filigrane « document provisoire » appliqué.' : '.');
+  document.body.classList.add('red-printing');
+  setTimeout(() => { window.print();
+    setTimeout(() => { document.body.classList.remove('red-printing');
+      if(window.EBR2FiligraneOff) window.EBR2FiligraneOff(); }, 400); }, 300);
+};
+
+window.redRefresh();
+})();
+</script>
+
+<style>
+body.red-printing > *{display:none!important}
+body.red-printing > #red-print{display:block!important}
+#red-print, .rp-prev{color:#111;font-size:10.5pt;line-height:1.45}
+.rp-prev{border:1px solid var(--line);border-radius:6px;padding:18px;background:#fff;max-height:560px;overflow:auto}
+.rp-garde{text-align:center;padding:40mm 0 0}
+.rp-prev .rp-garde{padding:10px 0 0}
+.rp-b{font-size:20pt;font-weight:700;letter-spacing:.10em;color:#0e1c2f}
+.rp-b span{color:#b08d57}
+.rp-s{font-size:9.5pt;color:#555;font-style:italic;margin-top:4pt}
+.rp-t{font-size:19pt;font-weight:700;color:#0e1c2f;margin:20mm 0 9mm;letter-spacing:.05em}
+.rp-prev .rp-t{margin:14px 0 10px}
+.rp-ident{margin:0 auto;border-collapse:collapse;width:75%;font-size:9.5pt}
+.rp-ident th{background:#f6f4ee;color:#0e1c2f;text-align:left;padding:4pt 7pt;border:1px solid #c9c3b4;width:38%}
+.rp-ident td{padding:4pt 7pt;border:1px solid #c9c3b4;text-align:left}
+.rp-f{font-size:8.5pt;color:#666;font-style:italic;margin-top:14mm}
+.rp-som{page-break-before:always}
+.rp-prev .rp-som{page-break-before:auto;margin-top:18px}
+.rp-soml{font-size:10pt;color:#0e1c2f;padding:1.5pt 0}
+.rp-soml b{color:#b08d57}
+.rp-corps{page-break-before:always}
+.rp-prev .rp-corps{page-break-before:auto;margin-top:18px}
+.rp-h{font-size:13pt;color:#0e1c2f;border-bottom:1.5px solid #b08d57;padding-bottom:3pt;margin:16pt 0 8pt}
+.rp-h b{color:#b08d57}
+.rp-h3{font-size:10.5pt;color:#0e1c2f;margin:11pt 0 5pt}
+#red-print p, .rp-prev p{margin:0 0 6pt;text-align:justify}
+.rp-ul{margin:4pt 0 8pt 16pt;padding:0}
+.rp-ul li{margin-bottom:3pt}
+.rp-kv{border-collapse:collapse;margin:4pt 0 8pt}
+.rp-kv th{text-align:left;padding:2pt 10pt 2pt 0;font-weight:700;color:#0e1c2f;white-space:nowrap}
+.rp-kv td{padding:2pt 0}
+.rp-t{width:100%;border-collapse:collapse;font-size:9pt;margin:6pt 0 8pt}
+.rp-t th{background:#0e1c2f;color:#fff;text-align:left;padding:4pt 6pt;font-weight:600}
+.rp-t td{border:1px solid #c9c3b4;padding:4pt 6pt;vertical-align:top}
+.rp-g{text-align:center;font-weight:700}
+.rp-syn{font-size:9.5pt;margin:2pt 0}
+.rp-note{font-size:8.5pt;color:#666;font-style:italic}
+.rp-todo{font-size:8.5pt;color:#a2681c;font-style:italic;background:#fdf6e8;border-left:3px solid #e0b050;padding:4pt 7pt;margin:4pt 0 8pt}
+.rp-sig{margin-top:18pt}
+.rp-sigline{border-top:1px solid #c9c3b4;margin-top:22mm;width:70%}
+.rp-prev .rp-sigline{margin-top:40px}
+@media print{
+  .rp-h, .rp-h3{page-break-after:avoid}
+  .rp-t{page-break-inside:auto}
+  .rp-t tr{page-break-inside:avoid}
+}
+</style>
+
 <div class="panel" id="panel-dos">
 <div class="wrap">
 
@@ -3507,6 +4013,69 @@ window.chifRefreshList = refreshList;
 </div>
 </div>
 <div id="dos-print" style="display:none;background:#fff"></div>
+
+<script>
+/* Filigrane conditionné au règlement : appelé avant chaque impression.
+   Retourne true si le document part en « provisoire ». */
+window.EBR2Filigrane = function(ref){
+  const b = document.body;
+  b.classList.remove('ebr-unpaid');
+  if(!window.EBR2Multi) return false;
+  const regle = window.EBR2Multi.dossierRegle(ref);
+  if(!regle){ b.classList.add('ebr-unpaid'); return true; }
+  return false;
+};
+window.EBR2FiligraneOff = function(){ document.body.classList.remove('ebr-unpaid'); };
+/* Le filigrane en diagonale (position:fixed) n'est pas répété d'une page à
+   l'autre par tous les navigateurs, et les fonds de page sont désactivés par
+   défaut à l'impression. On encapsule donc le document dans un tableau dont
+   l'en-tête (thead) est, lui, réimprimé sur chaque page. */
+window.EBR2Provisoire = function(boxId, ref){
+  const prov = window.EBR2Filigrane ? window.EBR2Filigrane(ref) : false;
+  const box = document.getElementById(boxId);
+  if(!prov || !box) return prov;
+  const BAND = '<div class="ebr-band">DOCUMENT PROVISOIRE — non contractuel, en attente de règlement</div>';
+  box.insertAdjacentHTML('afterbegin', BAND);
+  /* Filigrane en diagonale. Ni position:fixed, ni les fonds de page, ni un
+     placement calculé en pixels ne suivent la pagination réelle, qui dépend du
+     moteur d'impression. On ancre donc un filigrane à chaque début de section :
+     il apparaît sur la page où cette section commence, quel que soit le moteur.
+     Le conteneur est de hauteur nulle, le filigrane ne décale donc aucun texte. */
+  const DIAG = '<div class="ebr-diag-wrap"><div class="ebr-diag">DOCUMENT PROVISOIRE'+
+               '<span>Non contractuel — en attente de règlement</span></div></div>';
+  const cibles = box.querySelectorAll('.rp-garde, .rp-som, h2.rp-h, .dos-garde, .dos-piece, .pg');
+  cibles.forEach(el => el.insertAdjacentHTML('beforebegin', DIAG));
+  if(!cibles.length) box.insertAdjacentHTML('beforeend', DIAG);
+  /* Deux sections peuvent débuter sur la même page : on écarte alors les
+     filigranes trop rapprochés. La mesure exige de rendre le conteneur
+     temporairement visible ; si le moteur ne calcule pas la mise en page, on
+     conserve tous les filigranes plutôt que de risquer de tous les retirer. */
+  const memo = box.getAttribute('style') || '';
+  box.style.display = 'block'; box.style.position = 'absolute';
+  box.style.left = '-10000px'; box.style.top = '0'; box.style.width = '210mm';
+  const wraps = [...box.querySelectorAll('.ebr-diag-wrap')];
+  const mesurable = wraps.some(el => el.offsetTop > 0);
+  if(mesurable){
+    const sonde = document.createElement('div');
+    sonde.style.cssText = 'position:absolute;visibility:hidden;height:150mm';
+    box.appendChild(sonde);
+    const mini = sonde.offsetHeight || 560;
+    sonde.remove();
+    let dernier = -Infinity;
+    wraps.forEach(el => {
+      const y = el.offsetTop;
+      if(y - dernier < mini) el.remove(); else dernier = y;
+    });
+  }else{
+    /* Sans calcul de mise en page, on ne peut pas savoir quelles sections
+       tombent sur la même page : on n'en garde qu'une sur trois, pour éviter
+       l'empilement tout en conservant une présence sur l'ensemble du document. */
+    wraps.forEach((el, i) => { if(i % 3 !== 0) el.remove(); });
+  }
+  box.setAttribute('style', memo);
+  return prov;
+};
+</script>
 
 <script>
 (function(){
@@ -3688,11 +4257,14 @@ window.dosGenerer = async function(){
   }
 
   box.innerHTML = h;
-  $('dos-etat').textContent = retenues.length + ' pièce' + (retenues.length>1?'s':'') + ' assemblée' + (retenues.length>1?'s':'') + '.';
+  const provisoire = window.EBR2Provisoire ? window.EBR2Provisoire('dos-print', ref) : false;
+  $('dos-etat').textContent = retenues.length + ' pièce' + (retenues.length>1?'s':'') +
+    ' assemblée' + (retenues.length>1?'s':'') + (provisoire ? ' — filigrane « document provisoire » appliqué (dossier non réglé).' : '.');
   document.body.classList.add('dos-printing');
   setTimeout(() => {
     window.print();
-    setTimeout(() => document.body.classList.remove('dos-printing'), 400);
+    setTimeout(() => { document.body.classList.remove('dos-printing');
+                       if(window.EBR2FiligraneOff) window.EBR2FiligraneOff(); }, 400);
   }, 300);
 };
 
@@ -3702,6 +4274,19 @@ window.dosRefresh();
 </script>
 
 <style>
+/* --- marquage « document provisoire » sur les exports non réglés --- */
+.ebr-band{background:#fdecec;border:1px solid #d98b8b;color:#a11;font-weight:700;
+  font-size:8pt;letter-spacing:.07em;text-align:center;padding:3pt 6pt;margin:0 0 7pt;
+  text-transform:uppercase;page-break-after:avoid;page-break-inside:avoid}
+.ebr-diag-wrap{position:relative;height:0;overflow:visible;page-break-inside:avoid;page-break-after:avoid}
+.ebr-diag{position:absolute;left:50%;top:60mm;transform:translate(-50%,-50%) rotate(-30deg);
+  white-space:nowrap;text-align:center;pointer-events:none;z-index:5;
+  font-weight:800;font-size:32pt;letter-spacing:.05em;line-height:1.2;
+  color:rgba(196,32,32,.15)}
+.ebr-diag span{display:block;font-size:10.5pt;font-weight:600;letter-spacing:.10em;
+  color:rgba(196,32,32,.18)}
+@media print{ .ebr-diag{color:rgba(196,32,32,.16)} }
+
 /* --- montage du dossier : mise en page d'impression --- */
 body.dos-printing > *{display:none!important}
 body.dos-printing > #dos-print{display:block!important}
@@ -3776,7 +4361,7 @@ function renderSuivi(){
        ' onchange="window.EBR2Multi.markFacturePaid(\''+fac.num.replace(/'/g,"\\'")+'\', this.checked); renderSuivi()"> réglée</label>')
     : '<span style="color:var(--muted)">—</span>';
   let h = '<table class="rec"><tr><th>N° dossier</th><th>Client</th><th>Devis</th><th>Visite</th><th>Constat</th>'+
-          '<th>Rapport</th><th>Photos</th><th>Facture acompte</th><th>Facture solde</th></tr>';
+          '<th>Rapport</th><th>Photos</th><th>Facture acompte</th><th>Facture solde</th><th></th></tr>';
   list.forEach(ref => {
     const r = refs[ref];
     const facAc = factures.find(f => f.ref === ref && f.type === 'acompte');
@@ -3792,12 +4377,41 @@ function renderSuivi(){
       '<td>'+(r.ph ? '✅' : '<span style="color:var(--muted)">—</span>')+'</td>'+
       '<td>'+cell(facAc)+'</td>'+
       '<td>'+cell(facSo)+'</td>'+
+      '<td style="text-align:center"><button type="button" title="Supprimer ce dossier" '+
+        'onclick="window.suiviSupprimer(\''+suEsc(ref).replace(/'/g,"\\'")+'\')" '+
+        'style="border:none;background:none;color:#b33;font-size:16px;cursor:pointer;line-height:1">&times;</button></td>'+
     '</tr>';
   });
   h += '</table>';
   box.innerHTML = h;
 }
 window.renderSuivi = renderSuivi;
+
+/* Suppression d'un dossier client — double confirmation, les factures étant
+   conservées par défaut au titre de la numérotation continue. */
+window.suiviSupprimer = function(ref){
+  if(!ref || !window.EBR2Multi) return;
+  const M = window.EBR2Multi;
+  const facs = M.loadFactures().filter(f => (f.ref||'').trim() === ref.trim());
+  let msg = 'Supprimer définitivement le dossier ' + ref + ' ?\n\n' +
+            'Seront effacés : les fiches (visite, constat, rapport, devis), le chiffrage ' +
+            'et le dossier photo associé, clichés compris.\n\nCette action est irréversible.';
+  if(facs.length) msg += '\n\nLes ' + facs.length + ' facture(s) de ce dossier seront CONSERVÉES ' +
+                         '(numérotation légale continue).';
+  if(!confirm(msg)) return;
+  const saisie = prompt('Pour confirmer, recopiez le n° de dossier :\n' + ref);
+  if(saisie === null) return;
+  if((saisie||'').trim() !== ref.trim()){ alert('Le n° saisi ne correspond pas. Suppression annulée.'); return; }
+  const r = M.removeDossier(ref);
+  if(facs.length && confirm('Supprimer également les ' + facs.length + ' facture(s) de ce dossier ?\n\n' +
+      'À ne faire que s\'il s\'agit d\'une saisie erronée : la numérotation des factures doit rester continue.')){
+    M.removeFactures(ref);
+  }
+  alert('Dossier ' + ref + ' supprimé.\n' + r.fiches + ' fiche(s), ' + r.photos + ' dossier(s) photo.');
+  renderSuivi();
+  if(window.dosRefresh) window.dosRefresh();
+  if(window.chifRefreshList) window.chifRefreshList();
+};
 </script>
 
 <script>
@@ -3811,6 +4425,7 @@ function go(p){
   if (p === 'suivi' && window.renderSuivi) renderSuivi();
   if (p === 'chif' && window.chifRefreshList) window.chifRefreshList();
   if (p === 'dos'  && window.dosRefresh) window.dosRefresh();
+  if (p === 'red'  && window.redRefresh) window.redRefresh();
 }
 document.querySelectorAll('.tabs .tab').forEach(b => b.onclick = () => go(b.dataset.p));
 
@@ -6029,8 +6644,10 @@ window.phPrintAnnexe = async function(){
   const box = $('ph-print');
   box.innerHTML = '<p style="padding:20px;font-size:13px">Préparation de l\'annexe…</p>';
   box.innerHTML = await buildAnnexeHTML();
+  if(window.EBR2Provisoire) window.EBR2Provisoire('ph-print', D.ref || '');
   document.body.classList.add('ph-printing');
-  setTimeout(() => { window.print(); setTimeout(()=>document.body.classList.remove('ph-printing'), 400); }, 250);
+  setTimeout(() => { window.print(); setTimeout(()=>{ document.body.classList.remove('ph-printing');
+    if(window.EBR2FiligraneOff) window.EBR2FiligraneOff(); }, 400); }, 250);
 };
 /* Annexe d'un dossier photo désigné par son n° de dossier, sans quitter la vue
    courante : sert au montage du dossier complet. */
@@ -6552,6 +7169,14 @@ function calc(){
   $('devis-tot').textContent = eur(tot);
   $('devis-solde').textContent = eur(solde);
   $('devis-barTtc').textContent = eur(tot);
+  /* Les totaux du devis font foi pour la facturation : ils comprennent la note
+     de calcul, l'option budgétaire, la majoration et la remise, que le total de
+     la fiche de prestation ne reprend pas. */
+  const rDev = fieldVal('devis-nRef');
+  if(rDev){
+    try{ localStorage.setItem('ebr2:devis:totaux:' + rDev.trim(),
+      JSON.stringify({ tot: tot, acompte: num('devis-pAc'), maj: new Date().toISOString() })); }catch(e){}
+  }
 }
 /* Option estimation budgétaire : proposée seulement si le client la demande,
    facturée, et jamais incluse d'office dans la mission de base. */
@@ -6865,7 +7490,11 @@ function buildFactureHtml(){
   const ref = fieldVal('devis-nRef'), client = fieldVal('devis-client'), adr = fieldVal('devis-adr');
   const date = frDate(fieldVal('devis-date')) || new Date().toLocaleDateString('fr-FR');
   const siret = fieldVal('devis-cabSiret'), cabAdr = fieldVal('devis-cabAdr');
-  const ac = num('devis-pAc'), tot = num('devis-pBase') + num('devis-qCalc')*num('devis-pCalc') + num('devis-pMaj') - num('devis-pRem');
+  const ac = num('devis-pAc');
+  /* Le total doit reprendre TOUTES les lignes du devis, option budgétaire comprise :
+     sans quoi la facture est établie sur un montant inférieur au devis signé. */
+  const optB = ($('devis-optBudget') && $('devis-optBudget').checked) ? num('devis-pBudget') : 0;
+  const tot = num('devis-pBase') + num('devis-qCalc')*num('devis-pCalc') + optB + num('devis-pMaj') - num('devis-pRem');
   const fac = window.EBR2Multi.issueFacture('acompte', ref, client, ac);
   const refInterne = 'FAC-' + (ref || 'SANS-REF') + '-ACOMPTE';
 
@@ -6928,7 +7557,14 @@ function buildFactureFicheHtml(p){
   const dEl = $(p+'-date');
   const date = frDate(dEl ? dEl.value : '') || new Date().toLocaleDateString('fr-FR');
   const siret = fieldVal('devis-cabSiret'), cabAdr = fieldVal('devis-cabAdr');
-  const { tot, acompte } = ficheTotals(p);
+  let { tot, acompte } = ficheTotals(p);
+  let sourceDevis = false;
+  /* Si un devis a été établi pour ce dossier, c'est lui qui a été signé : son
+     total prime sur celui de la fiche, lignes complémentaires comprises. */
+  try{
+    const dv = JSON.parse(localStorage.getItem('ebr2:devis:totaux:' + (ref||'').trim()) || 'null');
+    if(dv && dv.tot > 0){ tot = dv.tot; acompte = dv.acompte || 0; sourceDevis = true; }
+  }catch(e){}
   const solde = tot - acompte;
   const hasAcompte = acompte > 0;
   const montant = hasAcompte ? solde : tot;
@@ -6953,7 +7589,8 @@ function buildFactureFicheHtml(p){
 
   h += '<h3>Détail</h3>';
   const rows = [];
-  rows.push(['Prestation — '+esc(NOMS[p])+' — dossier '+esc(ref)+', visite du '+esc(date), eur(tot)+' €']);
+  rows.push([(sourceDevis ? 'Prestation selon devis accepté — ' : 'Prestation — ')+esc(NOMS[p])+
+             ' — dossier '+esc(ref)+', visite du '+esc(date), eur(tot)+' €']);
   if (hasAcompte){
     const facAc = window.EBR2Multi.loadFactures().find(f => f.ref === ref && f.type === 'acompte');
     rows.push(['Acompte déjà réglé (facture N° '+esc(facAc ? facAc.num : 'FAC-'+ref+'-ACOMPTE')+')', '−'+eur(acompte)+' €']);
