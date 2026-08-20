@@ -220,6 +220,8 @@ h1:first-child{margin-top:0}
   <button class="tab" data-p="c">Rapport de constat<span>890 €</span></button>
   <button class="tab" data-p="r">Rapport technique<span>2 500 €</span></button>
   <button class="tab" data-p="ph">Relevé photo<span>terrain · numéroté</span></button>
+  <button class="tab" data-p="chif">Chiffrage<span>travaux de reprise</span></button>
+  <button class="tab" data-p="dos">Dossier<span>montage · envoi</span></button>
   <button class="tab" data-p="suivi">Suivi<span>devis · factures</span></button>
 </div>
 
@@ -3143,6 +3145,590 @@ window.wipe_r = wipe;
 })();
 </script>
 
+<div class="panel" id="panel-chif">
+<div class="wrap">
+
+  <section>
+    <h2><b>1</b> Dossier concerné</h2>
+    <div class="body">
+      <div class="grid g4">
+        <div class="f"><label>N° dossier</label><input type="text" id="chif-nRef" placeholder="EBR-2026-___"></div>
+        <div class="f"><label>Commanditaire</label><input type="text" id="chif-nClient"></div>
+        <div class="f"><label>Chiffrages enregistrés</label>
+          <select id="chif-sel"><option value="">— Nouveau chiffrage —</option></select></div>
+        <div class="f"><label>&nbsp;</label>
+          <button type="button" class="ghost" onclick="window.chifLoadSel()">Ouvrir le chiffrage sélectionné</button></div>
+      </div>
+      <div style="margin-top:8px;font-size:11.5px;color:var(--muted)">
+        Reprend automatiquement le n° de dossier et le client de la fiche Rapport technique si vous les saisissez à l'identique.
+        <button type="button" onclick="window.chifFromRapport()" style="margin-left:6px;font-size:11px;padding:3px 8px;border:1px solid var(--line);background:#fcfbf7;border-radius:4px;cursor:pointer;color:var(--muted)">Reprendre depuis le rapport technique</button>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2><b>2</b> Détail estimatif des travaux de reprise</h2>
+    <div class="body">
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
+        <button type="button" class="ph-btn g" onclick="window.chifAddRow()">+ Ajouter une ligne</button>
+        <button type="button" class="ph-btn o" onclick="window.chifAddStandard()">Insérer les postes types</button>
+        <button type="button" class="ph-btn" style="background:#fff;border-color:var(--line);color:var(--muted)" onclick="window.chifClearRows()">Vider le tableau</button>
+      </div>
+      <div style="overflow-x:auto">
+        <table id="chif-table" style="width:100%;border-collapse:collapse;font-size:12.5px;min-width:820px">
+          <thead>
+            <tr style="background:var(--ink,#1B2A41);color:#fff">
+              <th style="padding:7px 8px;text-align:left;width:32%">Poste de reprise</th>
+              <th style="padding:7px 8px;text-align:left;width:14%">Désordres</th>
+              <th style="padding:7px 8px;text-align:right;width:9%">Qté</th>
+              <th style="padding:7px 8px;text-align:left;width:9%">Unité</th>
+              <th style="padding:7px 8px;text-align:right;width:13%">P.U. HT</th>
+              <th style="padding:7px 8px;text-align:right;width:15%">Total HT</th>
+              <th style="padding:7px 4px;width:36px"></th>
+            </tr>
+          </thead>
+          <tbody id="chif-body"></tbody>
+        </table>
+      </div>
+      <datalist id="chif-postes"></datalist>
+      <datalist id="chif-unites">
+        <option value="m²"><option value="ml"><option value="u"><option value="m³"><option value="forfait"><option value="ens.">
+      </datalist>
+      <p style="font-size:11.5px;color:var(--muted);margin-top:8px">
+        Laissez la quantité vide pour un poste « pour mémoire » (non totalisé) : utile lorsqu'une surface n'a pas pu être relevée.
+      </p>
+    </div>
+  </section>
+
+  <section>
+    <h2><b>3</b> Récapitulatif</h2>
+    <div class="body">
+      <div class="grid g3">
+        <div class="f"><label>Aléas et travaux induits (%)</label><input type="number" id="chif-pctAlea" value="10" step="1" min="0"></div>
+        <div class="f"><label>TVA applicable (%)</label><input type="number" id="chif-pctTva" value="8.5" step="0.1" min="0"></div>
+        <div class="f"><label>Date d'établissement</label><input type="date" id="chif-date"></div>
+      </div>
+      <table style="width:100%;border-collapse:collapse;margin-top:14px;font-size:13px">
+        <tr><td style="padding:6px 8px">Sous-total travaux HT</td><td style="padding:6px 8px;text-align:right;font-weight:600" id="chif-sousTotal">0,00 €</td></tr>
+        <tr style="background:#fcfbf7"><td style="padding:6px 8px">Aléas et travaux induits</td><td style="padding:6px 8px;text-align:right" id="chif-alea">0,00 €</td></tr>
+        <tr style="border-top:2px solid var(--line)"><td style="padding:8px;font-weight:700">TOTAL ESTIMÉ HT</td><td style="padding:8px;text-align:right;font-weight:700;font-size:15px" id="chif-totalHT">0,00 €</td></tr>
+        <tr><td style="padding:6px 8px;color:var(--muted)">TVA</td><td style="padding:6px 8px;text-align:right;color:var(--muted)" id="chif-tva">0,00 €</td></tr>
+        <tr><td style="padding:6px 8px;font-weight:600">Total estimé TTC</td><td style="padding:6px 8px;text-align:right;font-weight:600" id="chif-totalTTC">0,00 €</td></tr>
+      </table>
+      <div class="f" style="margin-top:14px"><label>Observations sur les prix retenus (source, coefficient d'insularité, postes à confirmer)</label>
+        <textarea id="chif-obs" rows="3" placeholder="Prix moyens constatés localement, majorés du coefficient d'insularité. À confronter aux devis d'entreprises qualifiées."></textarea></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
+        <button type="button" class="ph-btn g" onclick="window.chifCopy()">Copier le tableau pour le rapport</button>
+        <span id="chif-saved" style="font-size:11.5px;color:var(--muted);align-self:center"></span>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2><b>4</b> Bibliothèque de prix</h2>
+    <div class="body">
+      <p style="font-size:12px;color:var(--muted);margin:0 0 10px">
+        Prix unitaires proposés par défaut lors de l'insertion des postes types. Modifiables : ils sont conservés d'un dossier à l'autre.
+      </p>
+      <div id="chif-biblio"></div>
+      <button type="button" class="ph-btn o" style="margin-top:10px" onclick="window.chifBiblioReset()">Rétablir les prix d'origine</button>
+    </div>
+  </section>
+
+</div>
+</div>
+
+<script>
+(function(){
+const $ = id => document.getElementById(id);
+const eur = n => (isNaN(n)?0:n).toLocaleString('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2}) + ' €';
+const esc = s => (s||'').toString().replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+
+const KBIB = 'ebr2:chif:biblio';
+const DEFAUT = [
+  { poste:"Dépose/repose couverture bac acier (accès charpente, fixations neuves)", u:"m²", pu:45 },
+  { poste:"Reprise des assemblages de ferme (poinçon, arbalétriers, entrait)", u:"u", pu:1800 },
+  { poste:"Dépose pannes et pose de pannes de section conforme au calcul", u:"ml", pu:55 },
+  { poste:"Reprise du voile de contreventement (dépose OSB, pose OSB conforme)", u:"m²", pu:42 },
+  { poste:"Ancrages et dispositifs anti-soulèvement (équerres, feuillards, tiges)", u:"u", pu:45 },
+  { poste:"Pied de mur : garde au sol, désolidarisation, ventilation lame d'air", u:"ml", pu:85 },
+  { poste:"Dépose/repose bardage, tasseautage au droit des montants", u:"m²", pu:58 },
+  { poste:"Traitement préventif/curatif des bois de structure", u:"m²", pu:28 },
+  { poste:"Étude d'exécution et note de calcul de reprise (BE structure bois)", u:"forfait", pu:2500 },
+  { poste:"Installation de chantier, échafaudage, protection, évacuation déchets", u:"forfait", pu:4500 }
+];
+
+function biblio(){
+  try{ const d = JSON.parse(localStorage.getItem(KBIB) || 'null'); if(Array.isArray(d) && d.length) return d; }catch(e){}
+  return DEFAUT.map(x => ({...x}));
+}
+function biblioSave(b){ try{ localStorage.setItem(KBIB, JSON.stringify(b)); }catch(e){} }
+
+function renderBiblio(){
+  const b = biblio();
+  $('chif-biblio').innerHTML = b.map((x,i) =>
+    '<div style="display:flex;gap:8px;align-items:center;margin-bottom:6px;flex-wrap:wrap">'+
+      '<input type="text" value="'+esc(x.poste)+'" data-bi="'+i+'" data-bk="poste" style="flex:1;min-width:220px;font-size:12px;padding:5px 7px;border:1px solid var(--line);border-radius:4px">'+
+      '<input type="text" value="'+esc(x.u)+'" data-bi="'+i+'" data-bk="u" style="width:70px;font-size:12px;padding:5px 7px;border:1px solid var(--line);border-radius:4px">'+
+      '<input type="number" step="0.01" value="'+x.pu+'" data-bi="'+i+'" data-bk="pu" style="width:100px;font-size:12px;padding:5px 7px;border:1px solid var(--line);border-radius:4px;text-align:right">'+
+      '<span style="font-size:11.5px;color:var(--muted)">€ HT</span>'+
+    '</div>').join('');
+  $('chif-postes').innerHTML = b.map(x => '<option value="'+esc(x.poste)+'">').join('');
+}
+$('chif-biblio').addEventListener('input', e => {
+  const i = e.target.dataset.bi, k = e.target.dataset.bk;
+  if(i === undefined || !k) return;
+  const b = biblio();
+  b[i][k] = (k === 'pu') ? (parseFloat(e.target.value) || 0) : e.target.value;
+  biblioSave(b);
+  $('chif-postes').innerHTML = b.map(x => '<option value="'+esc(x.poste)+'">').join('');
+});
+window.chifBiblioReset = function(){
+  if(!confirm("Rétablir les prix unitaires d'origine ? Vos modifications de la bibliothèque seront perdues.")) return;
+  try{ localStorage.removeItem(KBIB); }catch(e){}
+  renderBiblio();
+};
+
+/* ------------------------------ lignes ---------------------------------- */
+function rowHTML(r){
+  r = r || {};
+  return '<tr>'+
+    '<td style="padding:3px"><input type="text" list="chif-postes" class="c-poste" value="'+esc(r.poste)+'" style="width:100%;font-size:12px;padding:5px 6px;border:1px solid var(--line);border-radius:4px"></td>'+
+    '<td style="padding:3px"><input type="text" class="c-des" value="'+esc(r.des)+'" placeholder="D1, D4…" style="width:100%;font-size:12px;padding:5px 6px;border:1px solid var(--line);border-radius:4px"></td>'+
+    '<td style="padding:3px"><input type="number" step="0.01" class="c-qte" value="'+(r.qte!==undefined&&r.qte!==null?r.qte:'')+'" style="width:100%;font-size:12px;padding:5px 6px;border:1px solid var(--line);border-radius:4px;text-align:right"></td>'+
+    '<td style="padding:3px"><input type="text" list="chif-unites" class="c-u" value="'+esc(r.u)+'" style="width:100%;font-size:12px;padding:5px 6px;border:1px solid var(--line);border-radius:4px"></td>'+
+    '<td style="padding:3px"><input type="number" step="0.01" class="c-pu" value="'+(r.pu!==undefined&&r.pu!==null?r.pu:'')+'" style="width:100%;font-size:12px;padding:5px 6px;border:1px solid var(--line);border-radius:4px;text-align:right"></td>'+
+    '<td style="padding:3px;text-align:right;white-space:nowrap" class="c-tot">—</td>'+
+    '<td style="padding:3px;text-align:center"><button type="button" onclick="window.chifDelRow(this)" title="Supprimer" style="border:none;background:none;color:#b33;font-size:17px;cursor:pointer;line-height:1">&times;</button></td>'+
+  '</tr>';
+}
+window.chifAddRow = function(r){
+  $('chif-body').insertAdjacentHTML('beforeend', rowHTML(r && r.poste !== undefined ? r : null));
+  calc(); save();
+};
+window.chifDelRow = function(btn){ btn.closest('tr').remove(); calc(); save(); };
+window.chifClearRows = function(){
+  if(!confirm('Vider entièrement le tableau de chiffrage de ce dossier ?')) return;
+  $('chif-body').innerHTML = ''; calc(); save();
+};
+window.chifAddStandard = function(){
+  biblio().forEach(x => $('chif-body').insertAdjacentHTML('beforeend', rowHTML({ poste:x.poste, u:x.u, pu:x.pu })));
+  calc(); save();
+};
+
+/* pré-remplissage du P.U. quand on choisit un poste de la bibliothèque */
+$('chif-body').addEventListener('input', e => {
+  if(e.target.classList.contains('c-poste')){
+    const hit = biblio().find(x => x.poste === e.target.value);
+    if(hit){
+      const tr = e.target.closest('tr');
+      if(!tr.querySelector('.c-pu').value) tr.querySelector('.c-pu').value = hit.pu;
+      if(!tr.querySelector('.c-u').value)  tr.querySelector('.c-u').value  = hit.u;
+    }
+  }
+  calc(); save();
+});
+
+function rows(){
+  return [...$('chif-body').querySelectorAll('tr')].map(tr => ({
+    poste: tr.querySelector('.c-poste').value,
+    des:   tr.querySelector('.c-des').value,
+    qte:   tr.querySelector('.c-qte').value,
+    u:     tr.querySelector('.c-u').value,
+    pu:    tr.querySelector('.c-pu').value
+  }));
+}
+
+function calc(){
+  let st = 0;
+  [...$('chif-body').querySelectorAll('tr')].forEach(tr => {
+    const q = parseFloat(tr.querySelector('.c-qte').value);
+    const p = parseFloat(tr.querySelector('.c-pu').value);
+    const cell = tr.querySelector('.c-tot');
+    if(isNaN(q) || tr.querySelector('.c-qte').value === ''){
+      cell.textContent = 'pour mémoire';
+      cell.style.color = 'var(--muted)';
+      cell.style.fontStyle = 'italic';
+    }else{
+      const t = q * (isNaN(p) ? 0 : p);
+      st += t;
+      cell.textContent = eur(t);
+      cell.style.color = ''; cell.style.fontStyle = '';
+    }
+  });
+  const alea = st * ((parseFloat($('chif-pctAlea').value) || 0) / 100);
+  const ht = st + alea;
+  const tva = ht * ((parseFloat($('chif-pctTva').value) || 0) / 100);
+  $('chif-sousTotal').textContent = eur(st);
+  $('chif-alea').textContent      = eur(alea);
+  $('chif-totalHT').textContent   = eur(ht);
+  $('chif-tva').textContent       = eur(tva);
+  $('chif-totalTTC').textContent  = eur(ht + tva);
+}
+
+/* --------------------------- enregistrement ------------------------------ */
+function KEY(){ return window.EBR2Multi.key('chif', ($('chif-nRef')||{}).value || ''); }
+function data(){
+  return { ref:$('chif-nRef').value, client:$('chif-nClient').value, date:$('chif-date').value,
+           pctAlea:$('chif-pctAlea').value, pctTva:$('chif-pctTva').value, obs:$('chif-obs').value, rows:rows() };
+}
+function save(){
+  try{
+    localStorage.setItem(KEY(), JSON.stringify(data()));
+    window.EBR2Multi.touch('chif', $('chif-nRef').value, $('chif-nClient').value);
+    refreshList();
+    $('chif-saved').textContent = 'Enregistré ' + new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+  }catch(e){}
+}
+function apply(d){
+  if(!d) return;
+  $('chif-nRef').value    = d.ref || '';
+  $('chif-nClient').value = d.client || '';
+  $('chif-date').value    = d.date || '';
+  $('chif-pctAlea').value = d.pctAlea !== undefined ? d.pctAlea : 10;
+  $('chif-pctTva').value  = d.pctTva  !== undefined ? d.pctTva  : 8.5;
+  $('chif-obs').value     = d.obs || '';
+  $('chif-body').innerHTML = (d.rows || []).map(r => rowHTML(r)).join('');
+  calc();
+}
+function load(){
+  try{ apply(JSON.parse(localStorage.getItem(KEY()) || 'null')); }catch(e){}
+  refreshList();
+  calc();
+}
+function refreshList(){
+  const sel = $('chif-sel'); if(!sel || !window.EBR2Multi) return;
+  const cur = sel.value;
+  const items = window.EBR2Multi.list('chif');
+  sel.innerHTML = '<option value="">— Nouveau chiffrage —</option>' +
+    items.map(x => '<option value="'+esc(x.ref)+'">'+esc(x.ref)+(x.client?' — '+esc(x.client):'')+'</option>').join('');
+  if(items.some(x => x.ref === cur)) sel.value = cur;
+}
+window.chifLoadSel = function(){
+  const ref = $('chif-sel').value; if(!ref) return;
+  try{
+    const d = JSON.parse(localStorage.getItem(window.EBR2Multi.key('chif', ref)) || 'null');
+    if(!d){ alert('Chiffrage introuvable.'); return; }
+    apply(d);
+  }catch(e){ alert("Impossible d'ouvrir ce chiffrage."); }
+};
+window.chifFromRapport = function(){
+  const r = document.getElementById('r-nRef'), c = document.getElementById('r-nClient');
+  if(r && r.value) $('chif-nRef').value = r.value;
+  if(c && c.value) $('chif-nClient').value = c.value;
+  load();
+  if(!$('chif-nRef').value) alert("La fiche Rapport technique ne comporte pas encore de n° de dossier.");
+};
+
+/* ------------------------------ export ---------------------------------- */
+window.chifCopy = function(){
+  const L = [];
+  L.push('ÉVALUATION DU COÛT DES TRAVAUX DE REPRISE');
+  if($('chif-nRef').value) L.push('Dossier : ' + $('chif-nRef').value + ($('chif-nClient').value ? ' — ' + $('chif-nClient').value : ''));
+  L.push('');
+  rows().forEach(r => {
+    if(!r.poste) return;
+    const q = parseFloat(r.qte), p = parseFloat(r.pu);
+    const mt = (r.qte === '' || isNaN(q)) ? 'pour mémoire' : eur(q * (isNaN(p)?0:p));
+    L.push(r.poste + (r.des ? ' [' + r.des + ']' : '') + ' · ' +
+           (r.qte === '' ? 'à confirmer' : r.qte) + ' ' + (r.u||'') +
+           (isNaN(p) ? '' : ' × ' + eur(p)) + ' = ' + mt);
+  });
+  L.push('');
+  L.push('Sous-total travaux HT : ' + $('chif-sousTotal').textContent);
+  L.push('Aléas et travaux induits : ' + $('chif-alea').textContent);
+  L.push('TOTAL ESTIMÉ HT : ' + $('chif-totalHT').textContent);
+  L.push('TVA : ' + $('chif-tva').textContent + '  ·  Total TTC : ' + $('chif-totalTTC').textContent);
+  if($('chif-obs').value) { L.push(''); L.push($('chif-obs').value); }
+  const txt = L.join('\n');
+  const done = () => { $('chif-saved').textContent = 'Tableau copié.'; };
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(txt).then(done, () => window.prompt('Copiez le tableau :', txt));
+  }else{
+    window.prompt('Copiez le tableau :', txt);
+  }
+};
+
+['chif-nRef','chif-nClient','chif-date','chif-pctAlea','chif-pctTva','chif-obs'].forEach(id => {
+  const el = $(id); if(!el) return;
+  el.addEventListener('input', () => { calc(); save(); });
+});
+$('chif-nRef').addEventListener('change', load);
+
+renderBiblio();
+load();
+if(!$('chif-date').value) $('chif-date').valueAsDate = new Date();
+window.chifRefreshList = refreshList;
+})();
+</script>
+
+<div class="panel" id="panel-dos">
+<div class="wrap">
+
+  <section>
+    <h2><b>1</b> Dossier à monter</h2>
+    <div class="body">
+      <div class="grid g3">
+        <div class="f"><label>N° de dossier</label>
+          <select id="dos-ref"><option value="">— Choisir —</option></select></div>
+        <div class="f"><label>Commanditaire</label><input type="text" id="dos-client" placeholder="repris automatiquement"></div>
+        <div class="f"><label>Destinataire du dossier</label>
+          <input type="text" id="dos-dest" placeholder="Maître X, avocat au barreau de Saint-Denis"></div>
+      </div>
+      <div style="margin-top:8px"><button type="button" class="ph-btn o" onclick="window.dosRefresh()">Actualiser la liste</button></div>
+    </div>
+  </section>
+
+  <section>
+    <h2><b>2</b> Pièces à intégrer</h2>
+    <div class="body">
+      <p style="font-size:12px;color:var(--muted);margin:0 0 10px">
+        Seules les pièces réellement enregistrées pour ce dossier sont cochables. Elles seront assemblées dans l'ordre ci-dessous.
+      </p>
+      <div id="dos-pieces"></div>
+      <div class="f" style="margin-top:14px"><label>Bordereau — observations (facultatif)</label>
+        <textarea id="dos-obs" rows="2" placeholder="Pièces transmises en un seul exemplaire numérique…"></textarea></div>
+    </div>
+  </section>
+
+  <section>
+    <h2><b>3</b> Génération</h2>
+    <div class="body">
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button type="button" class="ph-btn g" onclick="window.dosGenerer()">Générer le dossier — imprimer / PDF</button>
+        <span id="dos-etat" style="font-size:12px;color:var(--muted);align-self:center"></span>
+      </div>
+      <div class="strip" style="border-left-color:var(--navy);margin-top:12px;font-size:12.5px">
+        Dans la fenêtre d'impression, choisir <b>« Enregistrer au format PDF »</b> comme destination : le dossier complet
+        (page de garde, bordereau, pièces cochées) est produit en un seul fichier, prêt à être envoyé.
+      </div>
+    </div>
+  </section>
+
+</div>
+</div>
+<div id="dos-print" style="display:none;background:#fff"></div>
+
+<script>
+(function(){
+const $ = id => document.getElementById(id);
+const esc = s => (s||'').toString().replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const frD = v => { const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(v||''); return m ? m[3]+'/'+m[2]+'/'+m[1] : (v||''); };
+
+const PIECES = [
+  { id:'v',    type:'fiche', lab:'Fiche de visite technique',        panel:'panel-v' },
+  { id:'c',    type:'fiche', lab:'Rapport de constat',               panel:'panel-c' },
+  { id:'r',    type:'fiche', lab:'Rapport technique',                panel:'panel-r' },
+  { id:'chif', type:'chif',  lab:'Évaluation du coût des travaux de reprise' },
+  { id:'ph',   type:'photo', lab:'Annexe photographique' }
+];
+
+/* ------------------------- inventaire des pièces ------------------------- */
+function refsConnues(){
+  const out = [];
+  try{
+    (JSON.parse(localStorage.getItem('ebr2:fiches:index') || '[]')).forEach(x => { if(x.ref) out.push({ ref:x.ref, client:x.client||'' }); });
+  }catch(e){}
+  try{
+    (JSON.parse(localStorage.getItem('ebr2:index') || '[]')).forEach(x => { if(x.ref) out.push({ ref:x.ref, client:x.client||'' }); });
+  }catch(e){}
+  const vus = {};
+  return out.filter(x => { const k = x.ref.trim(); if(vus[k]) { if(x.client && !vus[k].client) vus[k].client = x.client; return false; } vus[k] = x; return true; });
+}
+function dispo(ref){
+  const r = (ref||'').trim(), out = {};
+  if(!r || !window.EBR2Multi) return out;
+  PIECES.forEach(p => {
+    if(p.type === 'photo'){
+      out[p.id] = window.phDossierExistePour ? window.phDossierExistePour(r) > 0 : false;
+    }else{
+      try{ out[p.id] = !!localStorage.getItem(window.EBR2Multi.key(p.id, r)); }catch(e){ out[p.id] = false; }
+    }
+  });
+  return out;
+}
+function renderPieces(){
+  const ref = $('dos-ref').value;
+  const d = dispo(ref);
+  $('dos-pieces').innerHTML = PIECES.map(p => {
+    const ok = !!d[p.id];
+    return '<label style="display:flex;align-items:center;gap:10px;padding:9px 11px;border:1px solid var(--line);'+
+      'border-radius:5px;margin-bottom:6px;background:'+(ok?'#fff':'#f6f5f2')+';'+(ok?'cursor:pointer':'opacity:.55')+'">'+
+      '<input type="checkbox" data-piece="'+p.id+'"'+(ok?' checked':' disabled')+' style="width:17px;height:17px;accent-color:var(--gold);margin:0">'+
+      '<span style="flex:1;font-size:13px">'+esc(p.lab)+'</span>'+
+      '<span style="font-size:11.5px;color:var(--muted)">'+(ok ? 'enregistrée' : 'absente')+'</span>'+
+      '</label>';
+  }).join('');
+  const e = refsConnues().find(x => x.ref.trim() === (ref||'').trim());
+  if(e && e.client && !$('dos-client').value) $('dos-client').value = e.client;
+}
+window.dosRefresh = function(){
+  const sel = $('dos-ref'), cur = sel.value;
+  const items = refsConnues();
+  sel.innerHTML = '<option value="">— Choisir —</option>' +
+    items.map(x => '<option value="'+esc(x.ref)+'">'+esc(x.ref)+(x.client?' — '+esc(x.client):'')+'</option>').join('');
+  if(items.some(x => x.ref === cur)) sel.value = cur;
+  renderPieces();
+};
+$('dos-ref').addEventListener('change', () => { $('dos-client').value = ''; renderPieces(); });
+
+/* ---------------------- rendu figé d'une fiche saisie -------------------- */
+function champsDe(panelId){
+  return [...document.querySelectorAll('#'+panelId+' input,#'+panelId+' select,#'+panelId+' textarea')]
+    .filter(el => el.id !== panelId.replace('panel-','')+'-ficheSel');
+}
+function ficheHTML(p, ref){
+  let vals = null;
+  try{ vals = JSON.parse(localStorage.getItem(window.EBR2Multi.key(p.id, ref)) || 'null'); }catch(e){}
+  const src = document.getElementById(p.panel);
+  if(!vals || !src) return '';
+  const clone = src.cloneNode(true);
+  clone.classList.remove('on');
+  clone.removeAttribute('id');
+  clone.querySelectorAll('.noprint,.bar,canvas,button').forEach(el => el.remove());
+  /* on rejoue les valeurs dans le même ordre que la sauvegarde */
+  const cibles = [...clone.querySelectorAll('input,select,textarea')]
+    .filter(el => !/-ficheSel$/.test(el.id || ''));
+  const refs = champsDe(p.panel);
+  if(cibles.length === refs.length && vals.length === refs.length){
+    cibles.forEach((el,i) => {
+      const v = vals[i];
+      if(el.type === 'checkbox'){ el.checked = !!v; el.setAttribute(v?'checked':'data-x',''); return; }
+      let txt = v == null ? '' : String(v);
+      if(el.tagName === 'SELECT'){
+        const o = [...el.options].find(o => o.value === txt);
+        txt = o ? o.textContent : txt;
+      }
+      if(/^\d{4}-\d{2}-\d{2}$/.test(txt)) txt = frD(txt);
+      const span = document.createElement('span');
+      span.textContent = txt;
+      span.style.cssText = 'display:inline-block;min-height:1em;font-size:10.5pt;border-bottom:1px solid #ccc;'+
+                           'width:100%;padding:1pt 0;white-space:pre-wrap';
+      el.replaceWith(span);
+    });
+  }
+  clone.querySelectorAll('*').forEach(el => { el.removeAttribute('onclick'); el.removeAttribute('oninput'); });
+  return '<div class="dos-piece"><h2 class="dos-h">'+esc(p.lab)+'</h2>'+clone.innerHTML+'</div>';
+}
+
+/* ------------------------------ chiffrage -------------------------------- */
+function chifHTML(ref){
+  let d = null;
+  try{ d = JSON.parse(localStorage.getItem(window.EBR2Multi.key('chif', ref)) || 'null'); }catch(e){}
+  if(!d) return '';
+  const eur = n => (isNaN(n)?0:n).toLocaleString('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2}) + ' €';
+  let st = 0;
+  const lignes = (d.rows||[]).filter(r => r.poste).map(r => {
+    const q = parseFloat(r.qte), p = parseFloat(r.pu);
+    const memo = (r.qte === '' || isNaN(q));
+    const t = memo ? null : q * (isNaN(p)?0:p);
+    if(t !== null) st += t;
+    return '<tr><td>'+esc(r.poste)+'</td><td>'+esc(r.des||'—')+'</td>'+
+      '<td style="text-align:right">'+(memo?'à confirmer':esc(String(r.qte)))+'</td>'+
+      '<td>'+esc(r.u||'')+'</td>'+
+      '<td style="text-align:right">'+(isNaN(p)?'—':eur(p))+'</td>'+
+      '<td style="text-align:right">'+(memo?'<i>pour mémoire</i>':eur(t))+'</td></tr>';
+  }).join('');
+  const alea = st * ((parseFloat(d.pctAlea)||0)/100);
+  const ht = st + alea;
+  const tva = ht * ((parseFloat(d.pctTva)||0)/100);
+  return '<div class="dos-piece"><h2 class="dos-h">Évaluation du coût des travaux de reprise</h2>'+
+    '<p style="font-size:10pt;margin:0 0 8pt">Estimation technique du coût de remise en conformité, établie à partir des '+
+    'quantités relevées lors de la visite et de prix unitaires moyens du marché local. Ne constitue ni un devis, ni un '+
+    'engagement de prix. Montants hors taxes.</p>'+
+    '<table class="dos-t"><tr><th>Poste de reprise</th><th>Désordres</th><th>Qté</th><th>U</th><th>P.U. HT</th><th>Total HT</th></tr>'+
+    lignes+
+    '<tr><td colspan="5"><b>Sous-total travaux HT</b></td><td style="text-align:right"><b>'+eur(st)+'</b></td></tr>'+
+    '<tr><td colspan="5">Aléas et travaux induits ('+esc(String(d.pctAlea||0))+' %)</td><td style="text-align:right">'+eur(alea)+'</td></tr>'+
+    '<tr><td colspan="5"><b>TOTAL ESTIMÉ HT</b></td><td style="text-align:right"><b>'+eur(ht)+'</b></td></tr>'+
+    '<tr><td colspan="5">TVA ('+esc(String(d.pctTva||0))+' %)</td><td style="text-align:right">'+eur(tva)+'</td></tr>'+
+    '<tr><td colspan="5">Total estimé TTC</td><td style="text-align:right">'+eur(ht+tva)+'</td></tr>'+
+    '</table>'+
+    (d.obs? '<p style="font-size:10pt;margin-top:8pt"><i>'+esc(d.obs)+'</i></p>' : '')+
+    '</div>';
+}
+
+/* ------------------------------ génération ------------------------------- */
+window.dosGenerer = async function(){
+  const ref = $('dos-ref').value.trim();
+  if(!ref){ alert('Choisissez d\'abord un n° de dossier.'); return; }
+  const choix = [...document.querySelectorAll('#dos-pieces input[data-piece]')]
+    .filter(c => c.checked && !c.disabled).map(c => c.dataset.piece);
+  if(!choix.length){ alert('Aucune pièce sélectionnée.'); return; }
+
+  $('dos-etat').textContent = 'Assemblage en cours…';
+  const box = $('dos-print');
+  const client = $('dos-client').value.trim();
+  const dest = $('dos-dest').value.trim();
+  const auj = new Date().toLocaleDateString('fr-FR');
+
+  const retenues = PIECES.filter(p => choix.indexOf(p.id) >= 0);
+  let h = '<div class="dos-garde">'+
+    '<div class="dg-b">EXPERTIS BOIS <span>RÉUNION</span></div>'+
+    '<div class="dg-s">Cabinet d\'expertise technique indépendant · Île de La Réunion</div>'+
+    '<div class="dg-t">DOSSIER D\'EXPERTISE</div>'+
+    '<div class="dg-r">Dossier n° '+esc(ref)+'</div>'+
+    (client? '<div class="dg-c">'+esc(client)+'</div>' : '')+
+    (dest? '<div class="dg-d">Destinataire : '+esc(dest)+'</div>' : '')+
+    '<div class="dg-dt">Dossier établi le '+esc(auj)+'</div>'+
+    '</div>'+
+    '<div class="dos-piece"><h2 class="dos-h">Bordereau des pièces</h2>'+
+    '<table class="dos-t"><tr><th style="width:50px">Pièce</th><th>Désignation</th></tr>'+
+    retenues.map((p,i) => '<tr><td style="text-align:center"><b>'+(i+1)+'</b></td><td>'+esc(p.lab)+'</td></tr>').join('')+
+    '</table>'+
+    ($('dos-obs').value.trim()? '<p style="font-size:10pt;margin-top:8pt">'+esc($('dos-obs').value.trim())+'</p>' : '')+
+    '</div>';
+
+  for(const p of retenues){
+    if(p.type === 'fiche')       h += ficheHTML(p, ref);
+    else if(p.type === 'chif')   h += chifHTML(ref);
+    else if(p.type === 'photo' && window.phAnnexeHTMLFor){
+      const a = await window.phAnnexeHTMLFor(ref);
+      if(a) h += '<div class="dos-piece dos-annexe">'+a+'</div>';
+    }
+  }
+
+  box.innerHTML = h;
+  $('dos-etat').textContent = retenues.length + ' pièce' + (retenues.length>1?'s':'') + ' assemblée' + (retenues.length>1?'s':'') + '.';
+  document.body.classList.add('dos-printing');
+  setTimeout(() => {
+    window.print();
+    setTimeout(() => document.body.classList.remove('dos-printing'), 400);
+  }, 300);
+};
+
+window.dosRefreshList = window.dosRefresh;
+window.dosRefresh();
+})();
+</script>
+
+<style>
+/* --- montage du dossier : mise en page d'impression --- */
+body.dos-printing > *{display:none!important}
+body.dos-printing > #dos-print{display:block!important}
+#dos-print .dos-garde{text-align:center;padding:70mm 0 0}
+#dos-print .dg-b{font-size:22pt;font-weight:700;letter-spacing:.10em;color:#0e1c2f}
+#dos-print .dg-b span{color:#b08d57}
+#dos-print .dg-s{font-size:10pt;color:#555;margin-top:4pt;font-style:italic}
+#dos-print .dg-t{font-size:17pt;font-weight:700;color:#0e1c2f;margin-top:28mm;letter-spacing:.05em}
+#dos-print .dg-r{font-size:12pt;margin-top:8pt;color:#0e1c2f}
+#dos-print .dg-c{font-size:12pt;margin-top:14pt;font-weight:600}
+#dos-print .dg-d{font-size:11pt;margin-top:6pt;color:#333}
+#dos-print .dg-dt{font-size:10pt;margin-top:22mm;color:#555}
+#dos-print .dos-piece{page-break-before:always;padding-top:4pt}
+#dos-print .dos-h{background:#0e1c2f;color:#fff;font-size:11pt;padding:5pt 8pt;margin:0 0 8pt;
+  letter-spacing:.04em;border-radius:0}
+#dos-print .dos-t{width:100%;border-collapse:collapse;font-size:9.5pt;margin-top:4pt}
+#dos-print .dos-t th{background:#0e1c2f;color:#fff;text-align:left;padding:4pt 6pt;font-weight:600}
+#dos-print .dos-t td{border:1px solid #b9b3a4;padding:4pt 6pt;vertical-align:top}
+#dos-print section{border:1px solid #999;margin-bottom:7pt;page-break-inside:avoid}
+#dos-print h2{background:#e8e4d8;color:#000;border-bottom:1px solid #999;font-size:9pt;padding:4pt 7pt}
+#dos-print .dos-annexe .dos-piece{page-break-before:auto}
+@media print{
+  body.dos-printing #dos-print{display:block!important}
+}
+</style>
+
 <div class="panel" id="panel-suivi">
 <div class="wrap">
   <section>
@@ -3224,6 +3810,8 @@ function go(p){
   window.scrollTo(0, 0);
   try{ localStorage.setItem('ebr-onglet', p); }catch(e){}
   if (p === 'suivi' && window.renderSuivi) renderSuivi();
+  if (p === 'chif' && window.chifRefreshList) window.chifRefreshList();
+  if (p === 'dos'  && window.dosRefresh) window.dosRefresh();
 }
 document.querySelectorAll('.tabs .tab').forEach(b => b.onclick = () => go(b.dataset.p));
 
@@ -5363,10 +5951,7 @@ window.phContact = async function(){
 function loadImg(src){ return new Promise(res => { const i = new Image(); i.onload = () => res(i); i.src = src; }); }
 
 /* ---------------- annexe photographique imprimable ---------------------- */
-window.phPrintAnnexe = async function(){
-  if(!D.planches.length){ alert("Aucun cliché à imprimer."); return; }
-  const box = $('ph-print');
-  box.innerHTML = '<p style="padding:20px;font-size:13px">Préparation de l\'annexe…</p>';
+async function buildAnnexeHTML(){
   const list = [...D.planches].sort((a,b)=>a.num-b.num);
   let h = '<div class="ttl"><div class="b">Expertis Bois Réunion — annexe photographique</div>'+
     '<div class="s">Dossier <b>'+esc(D.ref)+'</b>'+
@@ -5438,9 +6023,40 @@ window.phPrintAnnexe = async function(){
   h += '<div style="margin-top:10px;font-size:10px;color:#6b7280;border-top:1px solid #d8d2c4;padding-top:6px">'+
        'Clichés pris par l\'expert lors de la visite, non retouchés. Cadrage et numérotation conformes au plan '+
        'de prise de vue de la fiche '+esc(PRESTA[D.presta]||'')+'. Annexe indissociable du rapport.</div>';
-  box.innerHTML = h;
+  return h;
+}
+window.phPrintAnnexe = async function(){
+  if(!D || !D.planches.length){ alert("Aucun cliché à imprimer."); return; }
+  const box = $('ph-print');
+  box.innerHTML = '<p style="padding:20px;font-size:13px">Préparation de l\'annexe…</p>';
+  box.innerHTML = await buildAnnexeHTML();
   document.body.classList.add('ph-printing');
   setTimeout(() => { window.print(); setTimeout(()=>document.body.classList.remove('ph-printing'), 400); }, 250);
+};
+/* Annexe d'un dossier photo désigné par son n° de dossier, sans quitter la vue
+   courante : sert au montage du dossier complet. */
+window.phAnnexeHTMLFor = async function(ref){
+  const cible = (ref || '').trim();
+  if(!cible) return '';
+  const liste = LS.get(KI) || [];
+  const entry = liste.find(x => (x.ref || '').trim() === cible);
+  if(!entry) return '';
+  const memo = D;
+  try{
+    D = LS.get(KD(entry.id));
+    if(!D || !D.planches || !D.planches.length) return '';
+    if(!D.des) D.des = [];
+    if(!D.elems) D.elems = [];
+    setPlan();
+    return await buildAnnexeHTML();
+  }catch(e){ return ''; }
+  finally{ D = memo; if(D) setPlan(); }
+};
+window.phDossierExistePour = function(ref){
+  const cible = (ref || '').trim();
+  if(!cible) return 0;
+  const e = (LS.get(KI) || []).find(x => (x.ref || '').trim() === cible);
+  return e ? (e.n || 0) : 0;
 };
 function stamp(src, pins, strokes, texts){
   return new Promise(res => {
