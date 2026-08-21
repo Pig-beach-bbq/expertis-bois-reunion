@@ -1,6 +1,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Expertis Bois Réunion — classeur de visite</title>
+<title>Expertis Bois Réunion — classeur de visite v3.0</title>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <style>
 :root{
@@ -220,7 +220,7 @@ h1:first-child{margin-top:0}
   <div class="wrap" style="display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;padding-bottom:0">
     <div>
       <div class="brand">Expertis Bois <span>Réunion</span></div>
-      <div class="doc-title">Classeur de visite — charpente bois, ossature bois, plancher bois</div>
+      <div class="doc-title">Classeur de visite v3.0 — charpente bois, ossature bois, plancher bois</div>
     </div>
     <div class="contact">Cabinet d'expertise technique indépendant<br>Île de La Réunion · 974<br><b>06 93 40 80 11</b></div>
   </div>
@@ -242,55 +242,59 @@ h1:first-child{margin-top:0}
 <div class="panel on" id="panel-home">
 <div class="home">
 
-  <h1>Apporteurs d'affaires</h1>
-  <div class="demarrer">
-    <div class="dem-grid">
-      <div class="f"><label>Apporteur existant</label>
-        <select id="cl-sel" onchange="window.clCharger()"><option value="">— Nouvel apporteur —</option></select></div>
-      <div class="f"><label>Raison sociale</label><input type="text" id="cl-raison" placeholder="Agence immobilière / Étude notariale"></div>
-      <div class="f"><label>Interlocuteur</label><input type="text" id="cl-interloc" placeholder="Nom du contact"></div>
-      <div class="f"><label>Téléphone</label><input type="text" id="cl-tel"></div>
-      <div class="f"><label>Courriel</label><input type="text" id="cl-mail"></div>
-      <div class="f"><label>Adresse</label><input type="text" id="cl-adr"></div>
-      <div class="f"><label>Remarques</label><input type="text" id="cl-siret" placeholder="conditions, secteur, rappel…"></div>
-    </div>
-    <div class="dem-actions">
-      <button type="button" class="dem-b p" onclick="window.clEnregistrer()">Enregistrer l'apporteur</button>
-      <button type="button" class="dem-b" onclick="window.clNouveau()">Vider le formulaire</button>
-      <button type="button" class="dem-b" onclick="window.clSupprimer()">Supprimer</button>
-      <span id="cl-etat" style="font-size:12px;color:var(--muted);align-self:center"></span>
-    </div>
-    <p class="dem-note">L'apporteur transmet l'affaire — agence immobilière, étude notariale — mais ne règle pas
-      la prestation. Il est mémorisé pour savoir d'où vient chaque dossier et suivre ce que chacun rapporte.
-      <b>La facture est établie au nom du client, jamais au nom de l'apporteur.</b></p>
-  </div>
-
-  <h1>Dossiers</h1>
+  <h1>Nouveau dossier</h1>
   <div class="demarrer">
     <div class="dem-grid">
       <div class="f"><label>Client — nom et prénom</label><input type="text" id="do-acq" placeholder="Celui qui reçoit le rapport et règle"></div>
-      <div class="f"><label>Adresse de facturation du client</label><input type="text" id="do-adrfact" placeholder="si différente du bien"></div>
-      <div class="f"><label>Téléphone du client</label><input type="text" id="do-tel"></div>
-      <div class="f"><label>Apporté par</label>
-        <select id="do-client"><option value="">— Aucun / direct —</option></select></div>
       <div class="f"><label>N° de dossier</label>
         <input type="text" id="do-ref" placeholder="EBR-2026-0000">
         <button type="button" class="dem-mini" onclick="window.doNumero()">Attribuer le n° suivant</button></div>
       <div class="f"><label>Adresse du bien</label><input type="text" id="do-bien" placeholder="Rue, code postal, commune"></div>
-      <div class="f"><label>Réf. mandat / compromis</label><input type="text" id="do-mandat"></div>
+      <div class="f"><label>Adresse de facturation</label><input type="text" id="do-adrfact" placeholder="si différente du bien"></div>
+      <div class="f"><label>Téléphone du client</label><input type="text" id="do-tel"></div>
       <div class="f"><label>Date de la visite</label><input type="date" id="do-date"></div>
       <div class="f"><label>Date butoir</label><input type="date" id="do-butoir">
         <span class="dem-mini" style="border:0;background:none;padding:2px 0">délai de rétractation, condition suspensive…</span></div>
+      <div class="f"><label>Réf. mandat / compromis</label><input type="text" id="do-mandat"></div>
     </div>
+
+    <div class="app-bloc">
+      <div class="app-tete">
+        <span>Apporteur d'affaires</span>
+        <select id="do-client"><option value="">— Aucun / client direct —</option></select>
+        <button type="button" class="app-plus" onclick="window.clPanneau()" title="Ajouter un apporteur">+</button>
+      </div>
+      <div id="cl-form" class="app-form" style="display:none">
+        <div class="dem-grid">
+          <div class="f"><label>Apporteur existant</label>
+            <select id="cl-sel" onchange="window.clCharger()"><option value="">— Nouvel apporteur —</option></select></div>
+          <div class="f"><label>Raison sociale</label><input type="text" id="cl-raison" placeholder="Agence immobilière / Étude notariale"></div>
+          <div class="f"><label>Interlocuteur</label><input type="text" id="cl-interloc"></div>
+          <div class="f"><label>Téléphone</label><input type="text" id="cl-tel"></div>
+          <div class="f"><label>Courriel</label><input type="text" id="cl-mail"></div>
+          <div class="f"><label>Adresse</label><input type="text" id="cl-adr"></div>
+          <div class="f"><label>Remarques</label><input type="text" id="cl-siret" placeholder="conditions, secteur, rappel…"></div>
+        </div>
+        <div class="dem-actions">
+          <button type="button" class="dem-b p" onclick="window.clEnregistrer()">Enregistrer l'apporteur</button>
+          <button type="button" class="dem-b" onclick="window.clNouveau()">Vider</button>
+          <button type="button" class="dem-b" onclick="window.clSupprimer()">Supprimer</button>
+          <span id="cl-etat" style="font-size:12px;color:var(--muted);align-self:center"></span>
+        </div>
+        <p class="dem-note">L'apporteur transmet l'affaire mais ne règle pas : la facture reste au nom du client.
+          Il est mémorisé pour savoir d'où vient chaque dossier et suivre ce que chacun rapporte.</p>
+      </div>
+    </div>
+
     <div class="dem-actions">
-      <button type="button" class="dem-b p" onclick="window.doCreer()">Créer et rendre actif</button>
+      <button type="button" class="dem-b p" onclick="window.doCreer()">Créer et ouvrir le dossier</button>
       <span id="do-etat" style="font-size:12px;color:var(--muted);align-self:center"></span>
     </div>
   </div>
 
   <h1>Dossiers en cours</h1>
   <div class="demarrer">
-    <div style="margin-bottom:10px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+    <div id="do-importbloc" style="margin-bottom:10px;display:none;gap:8px;flex-wrap:wrap;align-items:center">
       <button type="button" class="dem-b" onclick="window.doImporter()">Reprendre les dossiers déjà saisis</button>
       <span id="do-import" style="font-size:12px;color:var(--muted)"></span>
     </div>
@@ -386,6 +390,12 @@ function champsClient(){
            tel:$('cl-tel').value.trim(), mail:$('cl-mail').value.trim(),
            adr:$('cl-adr').value.trim(), siret:$('cl-siret').value.trim() };
 }
+window.clPanneau = function(){
+  const f = $('cl-form');
+  const ouvert = f.style.display !== 'none';
+  f.style.display = ouvert ? 'none' : 'block';
+  if(!ouvert && !$('cl-raison').value) window.clNouveau();
+};
 window.clNouveau = function(){
   ['cl-raison','cl-interloc','cl-tel','cl-mail','cl-adr','cl-siret'].forEach(id => $(id).value = '');
   $('cl-sel').value = ''; $('cl-etat').textContent = '';
@@ -405,8 +415,12 @@ window.clEnregistrer = function(){
   const c = champsClient();
   if(!c.raison){ alert('La raison sociale est obligatoire.'); return; }
   const e = M().enregistrerClient(c);
-  rafraichir(); $('cl-sel').value = e.id;
-  $('cl-etat').textContent = 'Enregistré.';
+  rafraichir();
+  $('cl-sel').value = e.id;
+  /* l'apporteur qu'on vient de créer est celui du dossier en cours de saisie */
+  $('do-client').value = e.id;
+  $('cl-etat').textContent = 'Enregistré et rattaché au dossier.';
+  setTimeout(() => { $('cl-form').style.display = 'none'; }, 700);
 };
 window.clSupprimer = function(){
   const id = $('cl-sel').value;
@@ -495,9 +509,18 @@ window.doAller = function(id, onglet){
 };
 window.doSupprimer = function(id){
   const d = M().dossier(id); if(!d) return;
-  if(!confirm('Retirer le dossier ' + d.ref + ' du carnet ?\n\nLes fiches, photos et factures déjà enregistrées ne sont pas supprimées : utilisez l\'onglet Suivi pour cela.')) return;
+  if(!confirm('Retirer le dossier ' + d.ref + ' du carnet ?')) return;
   M().supprimerDossier(id);
   const a = M().actif(); if(!a) M().definirActif('');
+  /* On propose de supprimer aussi les données : sans cela le dossier
+     disparaîtrait de l'accueil mais resterait dans le suivi. */
+  if(window.EBR2Multi && confirm('Supprimer également les données de ce dossier ?\n\n' +
+      'Fiches (visite, constat, rapport, devis), chiffrage et dossier photo, clichés compris.\n' +
+      'Les factures sont conservées (numérotation légale continue).\n\n' +
+      'Annuler pour ne retirer que la fiche du carnet et conserver les données.')){
+    window.EBR2Multi.removeDossier(d.ref);
+    if(window.renderSuivi) window.renderSuivi();
+  }
   rafraichir(); if(window.majBandeauActif) window.majBandeauActif();
 };
 
@@ -540,6 +563,23 @@ function rafraichir(){
     if(ja === null) return 1; if(jb === null) return -1;
     return ja - jb;                       // les échéances les plus proches d'abord
   });
+  /* le bouton de reprise n'a de sens que s'il reste des dossiers antérieurs au
+     carnet : on le masque dès qu'il n'y a plus rien à reprendre */
+  try{
+    const connus = {}; ds.forEach(x => connus[(x.ref||'').trim()] = 1);
+    const restants = {};
+    JSON.parse(localStorage.getItem('ebr2:fiches:index')||'[]')
+      .forEach(x => { const r=(x.ref||'').trim(); if(r && !connus[r]) restants[r]=1; });
+    JSON.parse(localStorage.getItem('ebr2:index')||'[]')
+      .forEach(x => { const r=(x.ref||'').trim(); if(r && !connus[r]) restants[r]=1; });
+    const n = Object.keys(restants).length;
+    const bloc = $('do-importbloc');
+    if(bloc){
+      bloc.style.display = n ? 'flex' : 'none';
+      const lbl = bloc.querySelector('button');
+      if(lbl && n) lbl.textContent = 'Reprendre ' + n + ' dossier' + (n>1?'s':'') + ' déjà saisi' + (n>1?'s':'');
+    }
+  }catch(e){}
   if(!ds.length){ $('do-liste').innerHTML = '<p style="font-size:13px;color:var(--muted);margin:0">Aucun dossier enregistré.</p>'; return; }
   $('do-liste').innerHTML = ds.map(d => {
     const c = M().client(d.clientId);
@@ -600,13 +640,13 @@ else demarrer();
       <div class="f"><label>Heure arrivée</label><input type="time"></div>
       <div class="f"><label>Heure départ</label><input type="time"></div>
     </div>
-    <div class="grid g2" style="margin-top:8px;align-items:end">
+    <div class="grid g2 redondant" style="margin-top:8px;align-items:end">
       <div class="f"><label>Fiches enregistrées (par client)</label>
         <select id="v-ficheSel"><option value="">— Nouvelle fiche vierge —</option></select></div>
       <div class="f"><label>&nbsp;</label>
         <button type="button" class="ghost" onclick="window.EBR2Load_v()">Ouvrir la fiche sélectionnée</button></div>
     </div>
-    <div style="margin-top:6px">
+    <div class="redondant" style="margin-top:6px">
       <button type="button" onclick="window.EBR2RecoverOld('v','ebr-fiche-poutres',$('v-nRef').value,$('v-nClient').value,fields,calc)"
         style="font-size:11px;padding:3px 8px;border:1px solid var(--line);background:#fcfbf7;border-radius:4px;cursor:pointer;color:var(--muted)">
         Récupérer une ancienne fiche non classée (avant le classement par client)</button>
@@ -940,13 +980,13 @@ else demarrer();
       <div class="f"><label>Heure arrivée</label><input type="time"></div>
       <div class="f"><label>Heure départ</label><input type="time"></div>
     </div>
-    <div class="grid g2" style="margin-top:8px;align-items:end">
+    <div class="grid g2 redondant" style="margin-top:8px;align-items:end">
       <div class="f"><label>Fiches enregistrées (par client)</label>
         <select id="c-ficheSel"><option value="">— Nouvelle fiche vierge —</option></select></div>
       <div class="f"><label>&nbsp;</label>
         <button type="button" class="ghost" onclick="window.EBR2Load_c()">Ouvrir la fiche sélectionnée</button></div>
     </div>
-    <div style="margin-top:6px">
+    <div class="redondant" style="margin-top:6px">
       <button type="button" onclick="window.EBR2RecoverOld('c','ebr-fiche-constat',$('c-nRef').value,$('c-nClient').value,fields,calc)"
         style="font-size:11px;padding:3px 8px;border:1px solid var(--line);background:#fcfbf7;border-radius:4px;cursor:pointer;color:var(--muted)">
         Récupérer une ancienne fiche non classée (avant le classement par client)</button>
@@ -1294,13 +1334,13 @@ else demarrer();
       <div class="f"><label>Heure arrivée</label><input type="time"></div>
       <div class="f"><label>Heure départ</label><input type="time"></div>
     </div>
-    <div class="grid g2" style="margin-top:8px;align-items:end">
+    <div class="grid g2 redondant" style="margin-top:8px;align-items:end">
       <div class="f"><label>Fiches enregistrées (par client)</label>
         <select id="r-ficheSel"><option value="">— Nouvelle fiche vierge —</option></select></div>
       <div class="f"><label>&nbsp;</label>
         <button type="button" class="ghost" onclick="window.EBR2Load_r()">Ouvrir la fiche sélectionnée</button></div>
     </div>
-    <div style="margin-top:6px">
+    <div class="redondant" style="margin-top:6px">
       <button type="button" onclick="window.EBR2RecoverOld('r','ebr-fiche-rapport-technique',$('r-nRef').value,$('r-nClient').value,fields,calc)"
         style="font-size:11px;padding:3px 8px;border:1px solid var(--line);background:#fcfbf7;border-radius:4px;cursor:pointer;color:var(--muted)">
         Récupérer une ancienne fiche non classée (avant le classement par client)</button>
@@ -1893,7 +1933,7 @@ else demarrer();
       <div class="f"><label>Validité (jours)</label><input type="number" id="devis-valid" value="30" min="1"></div>
       <div class="f"><label>Origine du contact</label><input type="text" id="devis-origine" placeholder="Site internet, bouche à oreille…"></div>
     </div>
-    <div class="grid g2" style="margin-top:8px;align-items:end">
+    <div class="grid g2 redondant" style="margin-top:8px;align-items:end">
       <div class="f"><label>Devis enregistrés (par client)</label>
         <select id="devis-ficheSel"><option value="">— Nouveau devis vierge —</option></select></div>
       <div class="f"><label>&nbsp;</label>
@@ -2008,7 +2048,7 @@ else demarrer();
   <button class="ghost" onclick="devisPrintDevis()">Devis (PDF)</button>
   <button class="ghost" onclick="devisEmailClient()">Envoyer par e-mail</button>
   <button class="ghost" onclick="devisPrintFacture()">Facture d'acompte (PDF)</button>
-  <button onclick="devisValidate()">Valider → créer le dossier</button>
+  <button class="redondant" onclick="devisValidate()">Valider → créer le dossier</button>
 </div>
 </div>
 
@@ -2016,7 +2056,7 @@ else demarrer();
 <div class="ph-wrap">
 
 <!-- ============ VUE 1 : dossiers ============ -->
-<div id="ph-v1">
+<div id="ph-v1" class="redondant">
   <section>
     <h2><b>&#9729;</b> Sauvegarde Google Drive</h2>
     <div class="body">
@@ -4500,6 +4540,11 @@ window.majBandeauActif = function(){
   const b = document.getElementById('bandeau-actif');
   if(!b || !window.EBR2Clients) return;
   const d = window.EBR2Clients.actif();
+  /* Quand un dossier est actif, les sélecteurs de fiche et les boutons de
+     création font double emploi avec le carnet : on les replie. Ils restent
+     accessibles par « outils du dossier », et réapparaissent seuls si aucun
+     dossier n'est actif — l'app doit rester utilisable sans le carnet. */
+  document.body.classList.toggle('a-dossier-actif', !!d);
   if(!d){ b.style.display = 'none'; return; }
   const c = window.EBR2Clients.client(d.clientId);
   const j = d.butoir ? Math.ceil((new Date(d.butoir) - new Date())/86400000) : null;
@@ -4507,7 +4552,8 @@ window.majBandeauActif = function(){
   b.innerHTML = '<span class="bnd-p">Dossier actif</span> <b>' + (d.ref||'') + '</b>' +
     (d.acquereur ? ' — ' + d.acquereur : '') +
     (c ? ' <span style="opacity:.7">(apporté par ' + c.raison + ')</span>' : '') + alerte +
-    '<button type="button" onclick="window.go(\'home\')">changer</button>';
+    '<button type="button" onclick="window.go(\'home\')">changer de dossier</button>' +
+    '<button type="button" onclick="document.body.classList.toggle(\'outils-visibles\')">outils du dossier</button>';
   b.style.display = 'block';
 };
 /* Charge dans l'onglet ouvert ce qui a déjà été enregistré pour le dossier
@@ -4550,6 +4596,20 @@ function chargerExistant(px, ref){
       const e = JSON.parse(localStorage.getItem('ebr2:index') || '[]')
         .find(x => (x.ref||'').trim() === ref.trim());
       if(e){ window.phOpen(e.id); return true; }
+      /* aucun dossier photo pour ce dossier : on le crée d'office avec les
+         informations du carnet, plutôt que d'obliger à les ressaisir */
+      const dd = window.EBR2Clients.actif();
+      if(dd && window.phCreate){
+        const set = (id, v) => { const el = document.getElementById(id); if(el && v !== undefined && v !== null) el.value = v; };
+        set('ph-nRef', dd.ref);
+        set('ph-nClient', dd.acquereur || '');
+        set('ph-nAdr', dd.bien || '');
+        set('ph-nDate', dd.dateVisite || '');
+        set('ph-nNom', dd.acquereur ? ('Chantier ' + dd.acquereur.split(' ').slice(-1)[0]) : '');
+        if(dd.presta) set('ph-nPresta', dd.presta);
+        window.phCreate();
+        return true;
+      }
     }catch(err){}
     return false;
   }
@@ -4576,6 +4636,20 @@ function chargerExistant(px, ref){
   return false;
 }
 
+/* La prestation retenue au devis suit le dossier : elle détermine le plan de
+   prise de vue du relevé photo. Écouteur délégué au document, pour ne pas
+   dépendre de l'initialisation du panneau devis. */
+document.addEventListener('change', function(e){
+  if(!e.target || e.target.name !== 'devisPresta') return;
+  try{
+    const act = window.EBR2Clients ? window.EBR2Clients.actif() : null;
+    if(act && e.target.value && act.presta !== e.target.value){
+      act.presta = e.target.value;
+      window.EBR2Clients.enregistrerDossier(act);
+    }
+  }catch(err){}
+});
+
 window.prefillActif = function(onglet){
   if(!window.EBR2Clients) return;
   const d = window.EBR2Clients.actif(); if(!d) return;
@@ -4596,6 +4670,7 @@ window.prefillActif = function(onglet){
     ['-nAdresse','-adresse','-adr'].forEach(sfx => set(px + sfx, d.bien));
     ['-date','-nDate','-dateV'].forEach(sfx => set(px + sfx, d.dateVisite));
     if(px === 'red'){ set('red-adr', d.bien); set('red-dest', d.acquereur || ''); }
+    if(px === 'ph' && d.presta) set('ph-nPresta', d.presta);
     /* l'adresse de facturation du client alimente les fiches qui la demandent */
     if(d.adrFact) set(px + '-nAdresseFact', d.adrFact);
     if(px === 'dos'){ set('dos-client', d.acquereur); }
@@ -4871,6 +4946,19 @@ window.dosRefresh();
 </script>
 
 <style>
+/* Éléments rendus superflus par le carnet : sélection de fiche, création de
+   dossier, ouverture d'un dossier photo. Repliés tant qu'un dossier est actif. */
+body.a-dossier-actif .redondant{display:none}
+body.a-dossier-actif.outils-visibles .redondant{display:block}
+body.a-dossier-actif.outils-visibles .redondant.enligne{display:flex}
+.app-bloc{margin-top:14px;border:1px dashed var(--line);border-radius:6px;background:#fcfbf7}
+.app-tete{display:flex;align-items:center;gap:10px;padding:9px 12px;flex-wrap:wrap}
+.app-tete>span{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.app-tete select{flex:1;min-width:180px;padding:6px 9px;border:1px solid var(--line);border-radius:5px;font-size:13px;background:#fff}
+.app-plus{width:30px;height:30px;padding:0;border-radius:50%;border:1px solid var(--gold);
+  background:#fff;color:var(--gold);font-size:18px;line-height:1;cursor:pointer;font-weight:700}
+.app-plus:hover{background:var(--gold);color:#fff}
+.app-form{padding:0 12px 12px;border-top:1px dashed var(--line);margin-top:2px}
 /* --- dossier actif et carnet de dossiers --- */
 .bnd-actif{position:sticky;top:0;z-index:40;background:#0e1c2f;color:#fff;font-size:12.5px;
   padding:7px 16px;letter-spacing:.02em;border-bottom:2px solid var(--gold)}
@@ -4993,7 +5081,25 @@ function renderSuivi(){
        '<label style="font-size:11px"><input type="checkbox" '+(fac.paid?'checked':'')+
        ' onchange="window.EBR2Multi.markFacturePaid(\''+fac.num.replace(/'/g,"\\'")+'\', this.checked); renderSuivi()"> réglée</label>')
     : '<span style="color:var(--muted)">—</span>';
-  let h = '<table class="rec"><tr><th>N° dossier</th><th>Client</th><th>Devis</th><th>Visite</th><th>Constat</th>'+
+  /* Date affichée : celle de la visite si le dossier figure au carnet, sinon la
+     dernière modification enregistrée — pour situer le dossier dans le temps. */
+  const dateDe = ref => {
+    let visite = '';
+    try{
+      const d = window.EBR2Clients ? window.EBR2Clients.dossierParRef(ref) : null;
+      if(d && d.dateVisite) visite = d.dateVisite;
+    }catch(e){}
+    if(visite){ const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(visite);
+      return m ? { txt: m[3]+'/'+m[2]+'/'+m[1], sous: 'visite' } : { txt: visite, sous: 'visite' }; }
+    const r = refs[ref];
+    const maj = ['devis','v','c','r'].map(t => r[t] && r[t].updatedAt).filter(Boolean).sort().pop()
+             || (r.ph && r.ph.date) || '';
+    if(!maj) return { txt: '—', sous: '' };
+    const dt = new Date(maj);
+    return isNaN(dt) ? { txt: String(maj).slice(0,10), sous: 'maj' }
+                     : { txt: dt.toLocaleDateString('fr-FR'), sous: 'maj' };
+  };
+  let h = '<table class="rec"><tr><th>N° dossier</th><th>Client</th><th>Date</th><th>Devis</th><th>Visite</th><th>Constat</th>'+
           '<th>Rapport</th><th>Photos</th><th>Facture acompte</th><th>Facture solde</th><th></th></tr>';
   list.forEach(ref => {
     const r = refs[ref];
@@ -5003,6 +5109,8 @@ function renderSuivi(){
     h += '<tr>'+
       '<td><b>'+suEsc(ref)+'</b></td>'+
       '<td>'+suEsc(r.client || '—')+'</td>'+
+      '<td style="white-space:nowrap">'+(() => { const dd = dateDe(ref);
+        return dd.txt + (dd.sous ? '<br><span style="font-size:10px;color:var(--muted)">'+dd.sous+'</span>' : ''); })()+'</td>'+
       '<td>'+ok(r.devis)+'</td>'+
       '<td>'+ok(r.v)+'</td>'+
       '<td>'+ok(r.c)+'</td>'+
@@ -5040,8 +5148,19 @@ window.suiviSupprimer = function(ref){
       'À ne faire que s\'il s\'agit d\'une saisie erronée : la numérotation des factures doit rester continue.')){
     M.removeFactures(ref);
   }
-  alert('Dossier ' + ref + ' supprimé.\n' + r.fiches + ' fiche(s), ' + r.photos + ' dossier(s) photo.');
+  /* le dossier doit aussi disparaître du carnet de l'accueil, sans quoi il
+     resterait listé dans « Dossiers en cours » sans plus aucune donnée */
+  let carnet = 0;
+  try{
+    const dd = window.EBR2Clients ? window.EBR2Clients.dossierParRef(ref) : null;
+    if(dd){ window.EBR2Clients.supprimerDossier(dd.id); carnet = 1;
+            const a = window.EBR2Clients.actif(); if(!a) window.EBR2Clients.definirActif(''); }
+  }catch(e){}
+  alert('Dossier ' + ref + ' supprimé.\n' + r.fiches + ' fiche(s), ' + r.photos + ' dossier(s) photo' +
+        (carnet ? ', retiré du carnet' : '') + '.');
   renderSuivi();
+  if(window.demRefresh) window.demRefresh();
+  if(window.majBandeauActif) window.majBandeauActif();
   if(window.dosRefresh) window.dosRefresh();
   if(window.chifRefreshList) window.chifRefreshList();
 };
@@ -8351,6 +8470,7 @@ function boot(){
   loadCabinet();
   onPrestaChange();
   document.querySelectorAll('input[name=devisPresta]').forEach(r => r.addEventListener('change', onPrestaChange));
+
   document.getElementById('panel-devis').addEventListener('input', ev => {
     if (ev.target.dataset.cabinet) saveCabinet(); else devisTouch();
   });
