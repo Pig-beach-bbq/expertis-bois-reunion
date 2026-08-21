@@ -1,6 +1,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Expertis Bois Réunion — classeur de visite v3.0</title>
+<title>Expertis Bois Réunion — classeur de visite v3.1</title>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <style>
 :root{
@@ -220,7 +220,7 @@ h1:first-child{margin-top:0}
   <div class="wrap" style="display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;padding-bottom:0">
     <div>
       <div class="brand">Expertis Bois <span>Réunion</span></div>
-      <div class="doc-title">Classeur de visite v3.0 — charpente bois, ossature bois, plancher bois</div>
+      <div class="doc-title">Classeur de visite v3.1 — charpente bois, ossature bois, plancher bois</div>
     </div>
     <div class="contact">Cabinet d'expertise technique indépendant<br>Île de La Réunion · 974<br><b>06 93 40 80 11</b></div>
   </div>
@@ -1914,6 +1914,9 @@ else demarrer();
     <div class="note">
       <b>Identité du cabinet</b> — utilisée pour les factures. Renseignée une fois, mémorisée pour tous les dossiers.
       <div class="grid g2" style="margin-top:8px">
+        <div class="f"><label>Logo du cabinet — devis et factures</label>
+          <input type="file" id="devis-cabLogo" accept="image/*" onchange="window.devisLogoCharger(this)">
+          <div id="devis-logoApercu" style="margin-top:6px"></div></div>
         <div class="f"><label>SIRET</label><input type="text" id="devis-cabSiret" data-cabinet="1" value="500 320 692 00048"></div>
         <div class="f"><label>Adresse du cabinet</label><input type="text" id="devis-cabAdr" data-cabinet="1" value="Île de La Réunion · 974"></div>
       </div>
@@ -4995,6 +4998,42 @@ body.a-dossier-actif.outils-visibles .redondant.enligne{display:flex}
 .dem-b:hover{background:#fcfbf7}
 .dem-b.p{background:var(--gold);border-color:var(--gold);color:#fff}
 .dem-note{font-size:12px;color:var(--muted);margin:12px 0 0;line-height:1.5}
+/* --- mise en page du devis --- */
+.dv{color:#14202f;font-size:10.5pt;line-height:1.5}
+.dv-tete{text-align:center;margin-bottom:16pt}
+.dv-logo{max-height:70px;max-width:200px;margin:0 auto 8pt;display:block}
+.dv-nom{font-size:19pt;font-weight:700;letter-spacing:.14em;color:#0e1c2f}
+.dv-nom span{color:#b08d57}
+.dv-base{font-size:9pt;font-style:italic;color:#5b6675;margin-top:3pt}
+.dv-coord{font-size:8.5pt;color:#7b8593;margin-top:2pt}
+.dv-rule{width:70px;height:2px;background:#b08d57;margin:11pt auto}
+.dv-titre{font-size:15pt;font-weight:700;letter-spacing:.22em;color:#0e1c2f}
+.dv-ref{font-size:9.5pt;color:#5b6675;margin-top:2pt;letter-spacing:.04em}
+.dv-duo{display:flex;gap:10pt;margin-bottom:12pt}
+.dv-box{flex:1;border:1px solid #d8d2c4;border-radius:3px;padding:8pt 10pt;background:#fcfbf7}
+.dv-boxt{font-size:7.5pt;text-transform:uppercase;letter-spacing:.10em;color:#b08d57;
+  font-weight:700;margin-bottom:4pt}
+.dv-l{font-size:10pt;margin:1pt 0}
+.dv-mut{color:#6b7280}
+.dv-h{font-size:9pt;text-transform:uppercase;letter-spacing:.10em;color:#0e1c2f;font-weight:700;
+  border-bottom:1.5px solid #b08d57;padding-bottom:3pt;margin:14pt 0 7pt}
+.dv-presta{font-size:11pt;margin:0 0 5pt}
+.dv-ul{margin:0 0 8pt 15pt;padding:0;font-size:10pt}
+.dv-ul li{margin-bottom:2pt}
+.dv-t{width:100%;border-collapse:collapse;font-size:10pt;margin-top:6pt}
+.dv-t th{background:#0e1c2f;color:#fff;text-align:left;padding:6pt 9pt;font-size:8pt;
+  text-transform:uppercase;letter-spacing:.08em;font-weight:600}
+.dv-t th:last-child,.dv-t .dv-m{text-align:right;white-space:nowrap;width:26%}
+.dv-t td{border-bottom:1px solid #e2ddd1;padding:6pt 9pt;vertical-align:top}
+.dv-t .dv-tot td{background:#f4f0e6;font-weight:700;font-size:11.5pt;color:#0e1c2f;
+  border-top:2px solid #b08d57;border-bottom:2px solid #b08d57}
+.dv-t .dv-sub td{color:#4a5563;font-size:9.5pt}
+.dv-tva{font-size:8.5pt;color:#6b7280;margin-top:5pt;font-style:italic}
+.dv-sigs{margin-top:6pt}
+.dv-sig{margin-top:6pt;border-top:1px dashed #c9c3b4;padding-top:5pt;min-height:52pt;font-size:8.5pt}
+.dv-sig img{max-height:48pt}
+.dv-foot{margin-top:16pt;border-top:1px solid #d8d2c4;padding-top:6pt;
+  font-size:8pt;color:#7b8593;text-align:center}
 /* --- marquage « document provisoire » sur les exports non réglés --- */
 .ebr-band{background:#fdecec;border:1px solid #d98b8b;color:#a11;font-weight:700;
   font-size:8pt;letter-spacing:.07em;text-align:center;padding:3pt 6pt;margin:0 0 7pt;
@@ -8154,6 +8193,47 @@ function doPrint(html){
 }
 
 /* ------------------------------ devis (PDF) ---------------------------------- */
+/* Logo du cabinet : mémorisé une fois sur l'appareil et repris en tête des
+   devis et factures. Redimensionné avant stockage — une photo de 3 Mo saturerait
+   l'espace disponible du navigateur. */
+const KLOGO = 'ebr2:logo';
+window.devisLogoLire = function(){ try{ return localStorage.getItem(KLOGO) || ''; }catch(e){ return ''; } };
+window.devisLogoCharger = function(input){
+  const f = input.files && input.files[0];
+  if(!f) return;
+  const fr = new FileReader();
+  fr.onload = () => {
+    const img = new Image();
+    img.onload = () => {
+      const max = 420;
+      const ech = Math.min(1, max / Math.max(img.width, img.height));
+      const cv = document.createElement('canvas');
+      cv.width = Math.round(img.width * ech); cv.height = Math.round(img.height * ech);
+      cv.getContext('2d').drawImage(img, 0, 0, cv.width, cv.height);
+      try{
+        localStorage.setItem(KLOGO, cv.toDataURL('image/png'));
+        window.devisLogoApercu();
+      }catch(e){ alert("Le logo n'a pas pu être enregistré : espace insuffisant sur cet appareil."); }
+    };
+    img.onerror = () => alert("Ce fichier n'est pas une image exploitable.");
+    img.src = fr.result;
+  };
+  fr.readAsDataURL(f);
+};
+window.devisLogoApercu = function(){
+  const z = document.getElementById('devis-logoApercu'); if(!z) return;
+  const l = window.devisLogoLire();
+  z.innerHTML = l
+    ? '<img src="'+l+'" style="max-height:54px;border:1px solid var(--line);border-radius:4px;padding:4px;background:#fff">'+
+      '<button type="button" onclick="window.devisLogoRetirer()" style="margin-left:8px;font-size:11px;padding:3px 8px;border:1px solid var(--line);background:#fcfbf7;border-radius:4px;cursor:pointer;color:var(--muted)">Retirer</button>'
+    : '<span style="font-size:11.5px;color:var(--muted)">Aucun logo — les documents afficheront le nom du cabinet seul.</span>';
+};
+window.devisLogoRetirer = function(){
+  try{ localStorage.removeItem(KLOGO); }catch(e){}
+  window.devisLogoApercu();
+};
+setTimeout(() => { if(window.devisLogoApercu) window.devisLogoApercu(); }, 400);
+
 function buildDevisHtml(){
   calc(); // évite un total obsolète si l'impression suit une saisie de moins de 400 ms
   const p = (document.querySelector('input[name=devisPresta]:checked')||{}).value || 'c';
@@ -8164,21 +8244,40 @@ function buildDevisHtml(){
   const info = cardInfo(p);
   const qc = num('devis-qCalc');
 
-  let h = '<div class="pg">';
-  h += '<div class="ttl"><div class="b">Expertis Bois Réunion</div>' +
-       '<div class="n">DEVIS' + (ref? ' — dossier '+esc(ref):'') + '</div>' +
-       '<div class="s">Cabinet d\'expertise technique indépendant · Île de La Réunion · 974 · 06 93 40 80 11</div></div>';
+  const logo = window.devisLogoLire ? window.devisLogoLire() : '';
+  const cabAdr = fieldVal('devis-cabAdr'), cabSiret = fieldVal('devis-cabSiret');
+  const expert = fieldVal('devis-cabExpert'), qual = fieldVal('devis-cabQual');
 
-  h += '<h3>Client et chantier</h3>';
-  h += '<div class="kv"><b>Client :</b> '+esc(client||'—')+'</div>';
-  if (tel) h += '<div class="kv"><b>Téléphone :</b> '+esc(tel)+'</div>';
-  if (email) h += '<div class="kv"><b>E-mail :</b> '+esc(email)+'</div>';
-  h += '<div class="kv"><b>Adresse du chantier :</b> '+esc(adr||'—')+'</div>';
-  h += '<div class="kv"><b>Date du devis :</b> '+esc(date)+(valid? ' · valable '+esc(valid)+' jours':'')+'</div>';
+  let h = '<div class="pg dv">';
+  /* En-tête centré : logo si présent, nom du cabinet, filet doré, puis le titre
+     du document dans un cartouche — la hiérarchie visuelle doit être immédiate. */
+  h += '<div class="dv-tete">' +
+       (logo ? '<img class="dv-logo" src="'+logo+'">' : '') +
+       '<div class="dv-nom">EXPERTIS BOIS <span>RÉUNION</span></div>' +
+       '<div class="dv-base">Cabinet d\'expertise technique indépendant en structures et charpentes bois</div>' +
+       '<div class="dv-coord">' + [cabAdr, '06 93 40 80 11', cabSiret ? 'SIRET '+esc(cabSiret) : '']
+          .filter(Boolean).map(esc).join(' · ') + '</div>' +
+       '<div class="dv-rule"></div>' +
+       '<div class="dv-titre">DEVIS</div>' +
+       (ref ? '<div class="dv-ref">Dossier n° '+esc(ref)+'</div>' : '') +
+       '</div>';
 
-  h += '<h3>Prestation proposée</h3>';
-  h += '<p><b>'+esc(NOMS[p])+(info.sub? ' — '+esc(info.sub):'')+'</b></p>';
-  h += '<ul>' + info.items.map(it => '<li>'+esc(it)+'</li>').join('') + '</ul>';
+  /* Deux cartouches côte à côte : qui commande, et où intervenir. */
+  h += '<div class="dv-duo">' +
+    '<div class="dv-box"><div class="dv-boxt">Client</div>' +
+      '<div class="dv-l"><b>'+esc(client||'—')+'</b></div>' +
+      (tel ? '<div class="dv-l">'+esc(tel)+'</div>' : '') +
+      (email ? '<div class="dv-l">'+esc(email)+'</div>' : '') +
+    '</div>' +
+    '<div class="dv-box"><div class="dv-boxt">Chantier</div>' +
+      '<div class="dv-l">'+esc(adr||'—')+'</div>' +
+      '<div class="dv-l">Devis du '+esc(date)+'</div>' +
+      (valid ? '<div class="dv-l dv-mut">Valable '+esc(valid)+' jours</div>' : '') +
+    '</div></div>';
+
+  h += '<div class="dv-h">Prestation proposée</div>';
+  h += '<p class="dv-presta"><b>'+esc(NOMS[p])+'</b>'+(info.sub? ' <span class="dv-mut">— '+esc(info.sub)+'</span>':'')+'</p>';
+  h += '<ul class="dv-ul">' + info.items.map(it => '<li>'+esc(it)+'</li>').join('') + '</ul>';
   if (p === 'c' || p === 'r'){
     h += '<p style="font-style:italic">Chaque prise de vue est numérotée et rattachée au plan de prise de vue du rapport ; les désordres constatés sont repérés, mesurés et photographiés selon une série normalisée.</p>';
   }
@@ -8193,30 +8292,43 @@ function buildDevisHtml(){
                eur(num('devis-pBudget'))+' €']);
   if (num('devis-pMaj')) rows.push([esc(fieldVal('devis-lMaj')||'Majoration'), eur(num('devis-pMaj'))+' €']);
   if (num('devis-pRem')) rows.push(['Remise commerciale', '−'+eur(num('devis-pRem'))+' €']);
-  h += '<table class="rec"><tr><th>Détail</th><th>Montant</th></tr>' +
-    rows.map(r => '<tr><td>'+r[0]+'</td><td>'+r[1]+'</td></tr>').join('') +
-    '<tr class="tot"><td>TOTAL DEVIS</td><td>'+$('devis-tot').textContent+' €</td></tr>' +
-    (num('devis-pAc') ? '<tr><td>Acompte demandé à la signature</td><td>'+eur(num('devis-pAc'))+' €</td></tr>' : '') +
-    '<tr><td>Solde à réception de la prestation</td><td>'+$('devis-solde').textContent+' €</td></tr>' +
+  h += '<table class="dv-t"><tr><th>Détail de la prestation</th><th>Montant</th></tr>' +
+    rows.map(r => '<tr><td>'+r[0]+'</td><td class="dv-m">'+r[1]+'</td></tr>').join('') +
+    '<tr class="dv-tot"><td>TOTAL DEVIS</td><td class="dv-m">'+$('devis-tot').textContent+' €</td></tr>' +
+    (num('devis-pAc') ? '<tr class="dv-sub"><td>Acompte demandé à la signature</td><td class="dv-m">'+eur(num('devis-pAc'))+' €</td></tr>' : '') +
+    '<tr class="dv-sub"><td>Solde à réception de la prestation</td><td class="dv-m">'+$('devis-solde').textContent+' €</td></tr>' +
     '</table>';
-  h += '<p>TVA non applicable, article 293 B du CGI.</p>';
+  h += '<p class="dv-tva">TVA non applicable, article 293 B du CGI.</p>';
 
   const delai = fieldVal('devis-delai');
-  if (delai){ h += '<h3>Conditions</h3><div class="kv"><b>Délai d’intervention estimé :</b> '+esc(delai)+'</div>'; }
+  if (delai){ h += '<div class="dv-h">Conditions</div><p class="dv-l">Délai d’intervention estimé : <b>'+esc(delai)+'</b></p>'; }
 
-  h += '<h3>Signature du client</h3>';
-  h += '<p><b>« Bon pour accord »</b></p>';
+  /* Signatures en vis-à-vis : le client à gauche, le cabinet à droite. */
   const nom = fieldVal('devis-sigNom'), sigDate = frDate(fieldVal('devis-sigDate'));
-  if (nom) h += '<div class="kv"><b>Nom du signataire :</b> '+esc(nom)+'</div>';
-  if (sigDate) h += '<div class="kv"><b>Date de signature :</b> '+esc(sigDate)+'</div>';
-  h += '<div class="sigblock">' + (hasSig
-    ? '<img src="'+sigCanvas().toDataURL('image/png')+'">'
-    : '<span class="ph">Signature à apposer</span>') + '</div>';
+  h += '<div class="dv-h">Accord des parties</div>';
+  h += '<div class="dv-duo dv-sigs">' +
+    '<div class="dv-box"><div class="dv-boxt">Le client — « bon pour accord »</div>' +
+      (nom ? '<div class="dv-l">'+esc(nom)+'</div>' : '') +
+      (sigDate ? '<div class="dv-l dv-mut">Le '+esc(sigDate)+'</div>' : '') +
+      '<div class="dv-sig">' + (hasSig
+        ? '<img src="'+sigCanvas().toDataURL('image/png')+'">'
+        : '<span class="dv-mut">Nom, date et signature</span>') + '</div>' +
+    '</div>' +
+    '<div class="dv-box"><div class="dv-boxt">Expertis Bois Réunion</div>' +
+      (expert ? '<div class="dv-l"><b>'+esc(expert)+'</b></div>' : '') +
+      (qual ? '<div class="dv-l dv-mut">'+esc(qual)+'</div>' : '') +
+      '<div class="dv-sig"><span class="dv-mut">Date et signature</span></div>' +
+    '</div></div>';
 
-  h += '<div class="foot">Devis établi par Expertis Bois Réunion — validité '+esc(valid||'30')+' jours à compter de sa date d’émission.</div>';
+  h += '<div class="dv-foot">Devis établi par Expertis Bois Réunion — validité '+esc(valid||'30')+
+       ' jours à compter de sa date d’émission. TVA non applicable, article 293 B du CGI.</div>';
   h += '</div>';
   return h;
 }
+/* exposée pour permettre un aperçu sans passer par l'impression */
+window.buildDevisHtml = buildDevisHtml;
+window.buildFactureHtml = buildFactureHtml;
+window.buildFactureFicheHtml = buildFactureFicheHtml;
 window.devisPrintDevis = function(){
   doPrint(buildDevisHtml());
 };
@@ -8240,6 +8352,46 @@ window.devisEmailClient = function(){
 };
 
 /* --------------------------- facture d'acompte (PDF) -------------------------- */
+/* En-tête commun aux devis et aux factures : logo, cabinet centré, filet doré
+   puis cartouche du document. Un seul endroit à modifier pour tous les
+   documents émis. */
+function enTeteDoc(titre, sousTitre){
+  const logo = window.devisLogoLire ? window.devisLogoLire() : '';
+  const cabAdr = fieldVal('devis-cabAdr'), cabSiret = fieldVal('devis-cabSiret');
+  return '<div class="dv-tete">' +
+    (logo ? '<img class="dv-logo" src="'+logo+'">' : '') +
+    '<div class="dv-nom">EXPERTIS BOIS <span>RÉUNION</span></div>' +
+    '<div class="dv-base">Cabinet d\'expertise technique indépendant en structures et charpentes bois</div>' +
+    '<div class="dv-coord">' + [cabAdr, '06 93 40 80 11', cabSiret ? 'SIRET '+esc(cabSiret) : '']
+      .filter(Boolean).map(esc).join(' · ') + '</div>' +
+    '<div class="dv-rule"></div>' +
+    '<div class="dv-titre">'+esc(titre)+'</div>' +
+    (sousTitre ? '<div class="dv-ref">'+esc(sousTitre)+'</div>' : '') +
+    '</div>';
+}
+/* Cartouches « émetteur » et « client » côte à côte. */
+function duoFacture(fa, client, adr){
+  const cabAdr = fieldVal('devis-cabAdr'), cabSiret = fieldVal('devis-cabSiret');
+  const expert = fieldVal('devis-cabExpert');
+  let g = '<div class="dv-box"><div class="dv-boxt">Émetteur</div>' +
+    '<div class="dv-l"><b>Expertis Bois Réunion</b></div>' +
+    (expert ? '<div class="dv-l dv-mut">'+esc(expert)+'</div>' : '') +
+    (cabAdr ? '<div class="dv-l">'+esc(cabAdr)+'</div>' : '') +
+    (cabSiret ? '<div class="dv-l dv-mut">SIRET '+esc(cabSiret)+'</div>' : '') +
+    '</div>';
+  let dte = '<div class="dv-box"><div class="dv-boxt">Facturé à</div>';
+  if (fa && fa.nom){
+    dte += '<div class="dv-l"><b>'+esc(fa.nom)+'</b></div>' +
+           (fa.adresse ? '<div class="dv-l">'+esc(fa.adresse)+'</div>' : '') +
+           (fa.reference ? '<div class="dv-l dv-mut" style="margin-top:4pt;font-size:8.5pt">'+esc(fa.reference)+'</div>' : '');
+  } else {
+    dte += '<div class="dv-l"><b>'+esc(client||'—')+'</b></div>' +
+           (adr ? '<div class="dv-l">'+esc(adr)+'</div>' : '');
+  }
+  dte += '</div>';
+  return '<div class="dv-duo">' + g + dte + '</div>';
+}
+
 function buildFactureHtml(){
   calc();
   const p = (document.querySelector('input[name=devisPresta]:checked')||{}).value || 'c';
@@ -8254,44 +8406,35 @@ function buildFactureHtml(){
   const fac = window.EBR2Multi.issueFacture('acompte', ref, client, ac);
   const refInterne = 'FAC-' + (ref || 'SANS-REF') + '-ACOMPTE';
 
-  let h = '<div class="pg">';
-  h += '<div class="ttl"><div class="b">Expertis Bois Réunion</div>' +
-       '<div class="n">FACTURE D’ACOMPTE N° '+esc(fac.num)+'</div>' +
-       '<div class="s">Cabinet d\'expertise technique indépendant · '+esc(cabAdr||'Île de La Réunion · 974')+' · 06 93 40 80 11' +
-       (siret? ' · SIRET '+esc(siret) : '') + '</div>' +
-       '<div class="s">Référence dossier : '+esc(refInterne)+'</div></div>';
-
-  h += '<h3>Émetteur</h3>';
-  h += '<div class="kv"><b>Expertis Bois Réunion</b></div>';
-  if (cabAdr) h += '<div class="kv">'+esc(cabAdr)+'</div>';
-  if (siret) h += '<div class="kv">SIRET '+esc(siret)+'</div>';
-
   /* La facture est adressée au CLIENT du dossier — l'acquéreur — qui reçoit le
      rapport et règle la prestation. L'apporteur d'affaires (agence, notaire)
      n'apparaît pas sur la facture : il ne doit rien. */
   const fa = window.EBR2Clients ? window.EBR2Clients.facturation(ref) : null;
-  h += '<h3>Client</h3>';
-  if (fa && fa.nom){
-    h += '<div class="kv"><b>'+esc(fa.nom)+'</b></div>';
-    if (fa.adresse) h += '<div class="kv">'+esc(fa.adresse)+'</div>';
-    if (fa.reference) h += '<div class="kv" style="margin-top:6px;font-size:11px;color:#666">'+esc(fa.reference)+'</div>';
-  } else {
-    h += '<div class="kv"><b>'+esc(client||'—')+'</b></div>';
-    if (adr) h += '<div class="kv">'+esc(adr)+'</div>';
-  }
 
-  h += '<h3>Détail</h3>';
-  h += '<table class="rec"><tr><th>Désignation</th><th>Montant</th></tr>' +
-    '<tr><td>Acompte sur '+esc(NOMS[p])+' — dossier '+esc(ref)+', devis du '+esc(date)+'</td><td>'+eur(ac)+' €</td></tr>' +
-    '<tr class="tot"><td>TOTAL À RÉGLER</td><td>'+eur(ac)+' €</td></tr>' +
+  let h = '<div class="pg dv">';
+  h += enTeteDoc('FACTURE D’ACOMPTE', 'N° ' + fac.num + (ref ? ' · dossier ' + ref : ''));
+  h += duoFacture(fa, client, adr);
+
+  h += '<div class="dv-h">Détail</div>';
+  h += '<table class="dv-t"><tr><th>Désignation</th><th>Montant</th></tr>' +
+    '<tr><td>Acompte sur '+esc(NOMS[p])+' — dossier '+esc(ref)+', devis du '+esc(date)+'</td><td class="dv-m">'+eur(ac)+' €</td></tr>' +
+    '<tr class="dv-tot"><td>TOTAL À RÉGLER</td><td class="dv-m">'+eur(ac)+' €</td></tr>' +
     '</table>';
-  h += '<p>TVA non applicable, article 293 B du CGI.</p>';
-  h += '<div class="kv"><b>Date d’émission :</b> '+esc(new Date().toLocaleDateString('fr-FR'))+'</div>';
-  h += '<div class="kv"><b>Condition de règlement :</b> comptant, à la signature du devis</div>';
-  h += '<p style="margin-top:10px">Facture d’acompte à valoir sur le montant total du devis n° '+esc(ref)+' du '+esc(date)+
-       ', soit '+eur(tot)+' € au total. Solde de '+eur(tot-ac)+' € à régler à réception de la prestation.</p>';
+  h += '<p class="dv-tva">TVA non applicable, article 293 B du CGI.</p>';
 
-  h += '<div class="foot">Facture émise par Expertis Bois Réunion. Auto-entrepreneur — TVA non applicable, article 293 B du CGI.</div>';
+  h += '<div class="dv-duo" style="margin-top:12pt">' +
+    '<div class="dv-box"><div class="dv-boxt">Règlement</div>' +
+      '<div class="dv-l">Date d’émission : <b>'+esc(new Date().toLocaleDateString('fr-FR'))+'</b></div>' +
+      '<div class="dv-l">Comptant, à la signature du devis</div>' +
+      '<div class="dv-l dv-mut">Réf. interne : '+esc(refInterne)+'</div>' +
+    '</div>' +
+    '<div class="dv-box"><div class="dv-boxt">À valoir sur</div>' +
+      '<div class="dv-l">Devis du '+esc(date)+' — total <b>'+eur(tot)+' €</b></div>' +
+      '<div class="dv-l">Solde restant dû : <b>'+eur(tot-ac)+' €</b></div>' +
+      '<div class="dv-l dv-mut">à régler à réception de la prestation</div>' +
+    '</div></div>';
+
+  h += '<div class="dv-foot">Facture émise par Expertis Bois Réunion. Auto-entrepreneur — TVA non applicable, article 293 B du CGI.</div>';
   h += '</div>';
   return h;
 }
@@ -8349,33 +8492,17 @@ function buildFactureFicheHtml(p){
   const fac = window.EBR2Multi.issueFacture(hasAcompte ? 'solde' : 'unique', ref, client, montant);
   const refInterne = 'FAC-' + (ref || 'SANS-REF') + (hasAcompte ? '-SOLDE' : '');
 
-  let h = '<div class="pg">';
-  h += '<div class="ttl"><div class="b">Expertis Bois Réunion</div>' +
-       '<div class="n">'+(hasAcompte ? 'FACTURE DE SOLDE' : 'FACTURE') + ' N° '+esc(fac.num)+'</div>' +
-       '<div class="s">Cabinet d\'expertise technique indépendant · '+esc(cabAdr||'Île de La Réunion · 974')+' · 06 93 40 80 11' +
-       (siret? ' · SIRET '+esc(siret) : '') + '</div>' +
-       '<div class="s">Référence dossier : '+esc(refInterne)+'</div></div>';
-
-  h += '<h3>Émetteur</h3>';
-  h += '<div class="kv"><b>Expertis Bois Réunion</b></div>';
-  if (cabAdr) h += '<div class="kv">'+esc(cabAdr)+'</div>';
-  if (siret) h += '<div class="kv">SIRET '+esc(siret)+'</div>';
-
   /* La facture est adressée au CLIENT du dossier — l'acquéreur — qui reçoit le
      rapport et règle la prestation. L'apporteur d'affaires (agence, notaire)
      n'apparaît pas sur la facture : il ne doit rien. */
   const fa = window.EBR2Clients ? window.EBR2Clients.facturation(ref) : null;
-  h += '<h3>Client</h3>';
-  if (fa && fa.nom){
-    h += '<div class="kv"><b>'+esc(fa.nom)+'</b></div>';
-    if (fa.adresse) h += '<div class="kv">'+esc(fa.adresse)+'</div>';
-    if (fa.reference) h += '<div class="kv" style="margin-top:6px;font-size:11px;color:#666">'+esc(fa.reference)+'</div>';
-  } else {
-    h += '<div class="kv"><b>'+esc(client||'—')+'</b></div>';
-    if (adr) h += '<div class="kv">'+esc(adr)+'</div>';
-  }
 
-  h += '<h3>Détail</h3>';
+  let h = '<div class="pg dv">';
+  h += enTeteDoc(hasAcompte ? 'FACTURE DE SOLDE' : 'FACTURE',
+                 'N° ' + fac.num + (ref ? ' · dossier ' + ref : ''));
+  h += duoFacture(fa, client, adr);
+
+  h += '<div class="dv-h">Détail</div>';
   const rows = [];
   rows.push([(sourceDevis ? 'Prestation selon devis accepté — ' : 'Prestation — ')+esc(NOMS[p])+
              ' — dossier '+esc(ref)+', visite du '+esc(date), eur(tot)+' €']);
@@ -8383,15 +8510,25 @@ function buildFactureFicheHtml(p){
     const facAc = window.EBR2Multi.loadFactures().find(f => f.ref === ref && f.type === 'acompte');
     rows.push(['Acompte déjà réglé (facture N° '+esc(facAc ? facAc.num : 'FAC-'+ref+'-ACOMPTE')+')', '−'+eur(acompte)+' €']);
   }
-  h += '<table class="rec"><tr><th>Désignation</th><th>Montant</th></tr>' +
-    rows.map(r => '<tr><td>'+r[0]+'</td><td>'+r[1]+'</td></tr>').join('') +
-    '<tr class="tot"><td>TOTAL À RÉGLER'+(hasAcompte?' (solde)':'')+'</td><td>'+eur(montant)+' €</td></tr>' +
+  h += '<table class="dv-t"><tr><th>Désignation</th><th>Montant</th></tr>' +
+    rows.map(r => '<tr><td>'+r[0]+'</td><td class="dv-m">'+r[1]+'</td></tr>').join('') +
+    '<tr class="dv-tot"><td>TOTAL À RÉGLER'+(hasAcompte?' (solde)':'')+'</td><td class="dv-m">'+eur(montant)+' €</td></tr>' +
     '</table>';
-  h += '<p>TVA non applicable, article 293 B du CGI.</p>';
-  h += '<div class="kv"><b>Date d’émission :</b> '+esc(new Date().toLocaleDateString('fr-FR'))+'</div>';
-  h += '<div class="kv"><b>Condition de règlement :</b> comptant, à réception de la prestation</div>';
+  h += '<p class="dv-tva">TVA non applicable, article 293 B du CGI.</p>';
 
-  h += '<div class="foot">Facture émise par Expertis Bois Réunion. Auto-entrepreneur — TVA non applicable, article 293 B du CGI.</div>';
+  h += '<div class="dv-duo" style="margin-top:12pt">' +
+    '<div class="dv-box"><div class="dv-boxt">Règlement</div>' +
+      '<div class="dv-l">Date d’émission : <b>'+esc(new Date().toLocaleDateString('fr-FR'))+'</b></div>' +
+      '<div class="dv-l">Comptant, à réception de la prestation</div>' +
+      '<div class="dv-l dv-mut">Réf. interne : '+esc(refInterne)+'</div>' +
+    '</div>' +
+    '<div class="dv-box"><div class="dv-boxt">Prestation</div>' +
+      '<div class="dv-l">'+esc(NOMS[p])+'</div>' +
+      '<div class="dv-l dv-mut">Visite du '+esc(date)+'</div>' +
+      (hasAcompte ? '<div class="dv-l dv-mut">Total de la mission : '+eur(tot)+' €</div>' : '') +
+    '</div></div>';
+
+  h += '<div class="dv-foot">Facture émise par Expertis Bois Réunion. Auto-entrepreneur — TVA non applicable, article 293 B du CGI.</div>';
   h += '</div>';
   return h;
 }
