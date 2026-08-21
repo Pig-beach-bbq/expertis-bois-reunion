@@ -98,7 +98,20 @@ td.ctr select{border:0;background:transparent;text-align:center;padding:6px 2px;
 
 .bar{position:fixed;left:0;right:0;bottom:0;background:var(--navy);color:#fff;
   padding:10px 16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;
-  box-shadow:0 -3px 14px rgba(0,0,0,.2);z-index:50}
+  box-shadow:0 -3px 14px rgba(0,0,0,.2);z-index:50;
+  /* La barre encombre l'écran sur téléphone : elle s'efface pendant la saisie
+     et ne réapparaît qu'une fois arrivé en bas de la page. */
+  transform:translateY(105%);opacity:0;pointer-events:none;
+  transition:transform .22s ease, opacity .22s ease}
+body.bas-de-page .bar{transform:translateY(0);opacity:1;pointer-events:auto}
+/* Rappel discret du total tant que la barre est masquée, pour garder le
+   montant sous les yeux sans occuper toute la largeur. */
+.bar-pastille{position:fixed;right:12px;bottom:12px;z-index:49;background:var(--navy);
+  color:var(--gold-l);border:1px solid var(--gold);border-radius:20px;padding:7px 14px;
+  font-size:13px;font-weight:700;box-shadow:0 2px 10px rgba(0,0,0,.25);cursor:pointer;
+  display:none;font-variant-numeric:tabular-nums}
+body:not(.bas-de-page) .bar-pastille.on{display:block}
+@media print{ .bar-pastille{display:none!important} }
 .bar .tt{font-size:19px;font-weight:700;color:var(--gold-l);font-variant-numeric:tabular-nums}
 .bar .lbl{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:#a9b6c6}
 .bar .sp{flex:1}
@@ -229,30 +242,56 @@ h1:first-child{margin-top:0}
 <div class="panel on" id="panel-home">
 <div class="home">
 
-  <h1>Les trois prestations</h1>
-  <div class="cards">
-    <div class="card">
-      <div class="t">Visite technique</div><div class="p">250 €</div>
-      <div class="u">Forfait · note de calcul 100 € par élément</div>
-      <ul><li>Déplacement sur site</li><li>Relevés techniques</li><li>Analyse visuelle</li>
-        <li>Recommandations orales</li><li>Pas de rapport écrit</li></ul>
+  <h1>Apporteurs d'affaires</h1>
+  <div class="demarrer">
+    <div class="dem-grid">
+      <div class="f"><label>Apporteur existant</label>
+        <select id="cl-sel" onchange="window.clCharger()"><option value="">— Nouvel apporteur —</option></select></div>
+      <div class="f"><label>Raison sociale</label><input type="text" id="cl-raison" placeholder="Agence immobilière / Étude notariale"></div>
+      <div class="f"><label>Interlocuteur</label><input type="text" id="cl-interloc" placeholder="Nom du contact"></div>
+      <div class="f"><label>Téléphone</label><input type="text" id="cl-tel"></div>
+      <div class="f"><label>Courriel</label><input type="text" id="cl-mail"></div>
+      <div class="f"><label>Adresse</label><input type="text" id="cl-adr"></div>
+      <div class="f"><label>Remarques</label><input type="text" id="cl-siret" placeholder="conditions, secteur, rappel…"></div>
     </div>
-    <div class="card">
-      <div class="t">Rapport de constat</div><div class="p">890 €</div>
-      <div class="u">À partir de · acompte possible</div>
-      <ul><li>Visite sur site</li><li>Relevés et photographies</li><li>Description des désordres</li>
-        <li>Rapport écrit illustré PDF</li><li>Plan photo en 8 phases</li></ul>
+    <div class="dem-actions">
+      <button type="button" class="dem-b p" onclick="window.clEnregistrer()">Enregistrer l'apporteur</button>
+      <button type="button" class="dem-b" onclick="window.clNouveau()">Vider le formulaire</button>
+      <button type="button" class="dem-b" onclick="window.clSupprimer()">Supprimer</button>
+      <span id="cl-etat" style="font-size:12px;color:var(--muted);align-self:center"></span>
     </div>
-    <div class="card hi">
-      <div class="t">Rapport technique détaillé</div><div class="p">2 500 €</div>
-      <div class="u">À partir de · acompte 40 %</div>
-      <ul><li>Analyse technique approfondie</li><li>Recherche des causes</li>
-        <li>Confrontation aux DTU</li><li>Détails constructifs</li>
-        <li>Rapport illustré et préconisations</li></ul>
+    <p class="dem-note">L'apporteur transmet l'affaire — agence immobilière, étude notariale — mais ne règle pas
+      la prestation. Il est mémorisé pour savoir d'où vient chaque dossier et suivre ce que chacun rapporte.
+      <b>La facture est établie au nom du client, jamais au nom de l'apporteur.</b></p>
+  </div>
+
+  <h1>Dossiers</h1>
+  <div class="demarrer">
+    <div class="dem-grid">
+      <div class="f"><label>Client — nom et prénom</label><input type="text" id="do-acq" placeholder="Celui qui reçoit le rapport et règle"></div>
+      <div class="f"><label>Adresse de facturation du client</label><input type="text" id="do-adrfact" placeholder="si différente du bien"></div>
+      <div class="f"><label>Téléphone du client</label><input type="text" id="do-tel"></div>
+      <div class="f"><label>Apporté par</label>
+        <select id="do-client"><option value="">— Aucun / direct —</option></select></div>
+      <div class="f"><label>N° de dossier</label>
+        <input type="text" id="do-ref" placeholder="EBR-2026-0000">
+        <button type="button" class="dem-mini" onclick="window.doNumero()">Attribuer le n° suivant</button></div>
+      <div class="f"><label>Adresse du bien</label><input type="text" id="do-bien" placeholder="Rue, code postal, commune"></div>
+      <div class="f"><label>Réf. mandat / compromis</label><input type="text" id="do-mandat"></div>
+      <div class="f"><label>Date de la visite</label><input type="date" id="do-date"></div>
+      <div class="f"><label>Date butoir</label><input type="date" id="do-butoir">
+        <span class="dem-mini" style="border:0;background:none;padding:2px 0">délai de rétractation, condition suspensive…</span></div>
+    </div>
+    <div class="dem-actions">
+      <button type="button" class="dem-b p" onclick="window.doCreer()">Créer et rendre actif</button>
+      <span id="do-etat" style="font-size:12px;color:var(--muted);align-self:center"></span>
     </div>
   </div>
-  <div class="strip"><b>Note de calcul seule — 100 € par élément calculé.</b> Poutre, solive, panne,
-    chevron, ferme, montant, ancrage. <b>TVA non applicable, article 293 B du CGI.</b></div>
+
+  <h1>Dossiers en cours</h1>
+  <div class="demarrer">
+    <div id="do-liste"><p style="font-size:13px;color:var(--muted);margin:0">Aucun dossier enregistré.</p></div>
+  </div>
 
   <h1>Avant de partir — matériel</h1>
   <div class="kit">
@@ -330,6 +369,177 @@ h1:first-child{margin-top:0}
 
 </div>
 </div>
+<script>
+(function(){
+const $ = id => document.getElementById(id);
+const esc = s => (s||'').toString().replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const M = () => window.EBR2Clients;
+const frD = v => { const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(v||''); return m ? m[3]+'/'+m[2]+'/'+m[1] : (v||''); };
+
+/* --------------------------- donneurs d'ordre --------------------------- */
+function champsClient(){
+  return { id: $('cl-sel').value || '', raison:$('cl-raison').value.trim(), interloc:$('cl-interloc').value.trim(),
+           tel:$('cl-tel').value.trim(), mail:$('cl-mail').value.trim(),
+           adr:$('cl-adr').value.trim(), siret:$('cl-siret').value.trim() };
+}
+window.clNouveau = function(){
+  ['cl-raison','cl-interloc','cl-tel','cl-mail','cl-adr','cl-siret'].forEach(id => $(id).value = '');
+  $('cl-sel').value = ''; $('cl-etat').textContent = '';
+};
+window.clCharger = function(){
+  const c = M().client($('cl-sel').value);
+  if(!c){ window.clNouveau(); return; }
+  $('cl-raison').value=c.raison||''; $('cl-interloc').value=c.interloc||'';
+  $('cl-tel').value=c.tel||''; $('cl-mail').value=c.mail||'';
+  $('cl-adr').value=c.adr||''; $('cl-siret').value=c.siret||'';
+  const b = M().bilanApporteur(c.id);
+  $('cl-etat').textContent = b.dossiers + ' dossier(s) transmis · ' +
+    b.facture.toLocaleString('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2}) + ' € facturés, dont ' +
+    b.regle.toLocaleString('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2}) + ' € réglés.';
+};
+window.clEnregistrer = function(){
+  const c = champsClient();
+  if(!c.raison){ alert('La raison sociale est obligatoire.'); return; }
+  const e = M().enregistrerClient(c);
+  rafraichir(); $('cl-sel').value = e.id;
+  $('cl-etat').textContent = 'Enregistré.';
+};
+window.clSupprimer = function(){
+  const id = $('cl-sel').value;
+  if(!id){ alert('Choisissez un apporteur.'); return; }
+  const n = M().dossiersDuClient(id).length;
+  if(n && !confirm('Cet apporteur a transmis ' + n + ' dossier(s).\n\nLes dossiers seront conservés mais perdront la mention de leur provenance.\n\nContinuer ?')) return;
+  if(!n && !confirm('Supprimer définitivement cet apporteur ?')) return;
+  M().supprimerClient(id);
+  window.clNouveau(); rafraichir();
+};
+
+/* -------------------------------- dossiers ------------------------------- */
+window.doNumero = function(){
+  if(!window.EBR2Multi) return;
+  /* le n° reprend le nom du client (le payeur), pas celui de l'apporteur */
+  $('do-ref').value = window.EBR2Multi.nextRef($('do-acq').value.trim());
+};
+window.doCreer = function(){
+  const clientId = $('do-client').value;          // apporteur : facultatif
+  if(!$('do-acq').value.trim()){ alert('Le nom du client est obligatoire : c\'est lui qui reçoit le rapport et règle la prestation.'); return; }
+  let ref = $('do-ref').value.trim();
+  if(!ref){ window.doNumero(); ref = $('do-ref').value.trim(); }
+  if(M().dossierParRef(ref)){ alert('Un dossier porte déjà ce numéro.'); return; }
+  const d = M().enregistrerDossier({ ref, clientId,
+    bien:$('do-bien').value.trim(), acquereur:$('do-acq').value.trim(),
+    adrFact:$('do-adrfact').value.trim(), tel:$('do-tel').value.trim(),
+    mandat:$('do-mandat').value.trim(), dateVisite:$('do-date').value, butoir:$('do-butoir').value,
+    cree: new Date().toISOString() });
+  M().definirActif(d.id);
+  rafraichir();
+  $('do-etat').textContent = 'Dossier ' + ref + ' créé et rendu actif.';
+  if(window.majBandeauActif) window.majBandeauActif();
+};
+window.doActiver = function(id){
+  M().definirActif(id); rafraichir();
+  if(window.majBandeauActif) window.majBandeauActif();
+};
+/* Rend le dossier actif puis ouvre directement l'onglet demandé : le contenu
+   déjà enregistré y est chargé, sinon les champs sont pré-remplis. */
+window.doAller = function(id, onglet){
+  M().definirActif(id);
+  if(window.majBandeauActif) window.majBandeauActif();
+  window.go(onglet);
+};
+window.doSupprimer = function(id){
+  const d = M().dossier(id); if(!d) return;
+  if(!confirm('Retirer le dossier ' + d.ref + ' du carnet ?\n\nLes fiches, photos et factures déjà enregistrées ne sont pas supprimées : utilisez l\'onglet Suivi pour cela.')) return;
+  M().supprimerDossier(id);
+  const a = M().actif(); if(!a) M().definirActif('');
+  rafraichir(); if(window.majBandeauActif) window.majBandeauActif();
+};
+
+/* ------------------------------ avancement ------------------------------- */
+function etapes(ref){
+  const k = t => { try{ return !!localStorage.getItem(window.EBR2Multi.key(t, ref)); }catch(e){ return false; } };
+  let photos = false;
+  try{
+    photos = JSON.parse(localStorage.getItem('ebr2:index')||'[]').some(x => (x.ref||'').trim() === ref.trim() && (x.n||0) > 0);
+  }catch(e){}
+  const facs = window.EBR2Multi.loadFactures().filter(f => (f.ref||'').trim() === ref.trim());
+  return [ ['Devis', k('devis')], ['Photos', photos], ['Chiffrage', k('chif')],
+           ['Rapport', k('r') || k('c') || k('v')],
+           ['Facture', facs.length > 0], ['Réglé', facs.length > 0 && facs.every(f => f.paid)] ];
+}
+function joursRestants(butoir){
+  if(!butoir) return null;
+  const j = Math.ceil((new Date(butoir) - new Date()) / 86400000);
+  return isNaN(j) ? null : j;
+}
+
+function rafraichir(){
+  if(!M()) return;
+  const cl = M().clients();
+  const act = M().actif();
+  // listes déroulantes
+  const s1 = $('cl-sel'), cur1 = s1.value;
+  s1.innerHTML = '<option value="">— Nouvel apporteur —</option>' +
+    cl.map(c => '<option value="'+esc(c.id)+'">'+esc(c.raison)+'</option>').join('');
+  if(cl.some(c => c.id === cur1)) s1.value = cur1;
+  const s2 = $('do-client'), cur2 = s2.value;
+  s2.innerHTML = '<option value="">— Aucun / client direct —</option>' +
+    cl.map(c => '<option value="'+esc(c.id)+'">'+esc(c.raison)+'</option>').join('');
+  if(cl.some(c => c.id === cur2)) s2.value = cur2;
+
+  // liste des dossiers
+  const ds = M().dossiers().slice().sort((a,b) => {
+    const ja = joursRestants(a.butoir), jb = joursRestants(b.butoir);
+    if(ja === null && jb === null) return (b.cree||'').localeCompare(a.cree||'');
+    if(ja === null) return 1; if(jb === null) return -1;
+    return ja - jb;                       // les échéances les plus proches d'abord
+  });
+  if(!ds.length){ $('do-liste').innerHTML = '<p style="font-size:13px;color:var(--muted);margin:0">Aucun dossier enregistré.</p>'; return; }
+  $('do-liste').innerHTML = ds.map(d => {
+    const c = M().client(d.clientId);
+    const j = joursRestants(d.butoir);
+    const urgence = j === null ? '' :
+      (j < 0 ? '<span class="do-tag rouge">échéance dépassée</span>' :
+       j <= 3 ? '<span class="do-tag rouge">'+j+' j restant'+(j>1?'s':'')+'</span>' :
+       j <= 7 ? '<span class="do-tag orange">'+j+' jours restants</span>' :
+                '<span class="do-tag">'+j+' jours restants</span>');
+    const et = etapes(d.ref).map(([lab,ok]) =>
+      '<span class="do-et'+(ok?' ok':'')+'">'+(ok?'✓ ':'○ ')+esc(lab)+'</span>').join('');
+    const estActif = act && act.id === d.id;
+    return '<div class="do-c'+(estActif?' actif':'')+'">'+
+      '<div class="do-h"><b>'+esc(d.ref)+'</b>'+(estActif?'<span class="do-tag vert">dossier actif</span>':'')+urgence+'</div>'+
+      '<div class="do-s"><b>'+esc(d.acquereur||'client non renseigné')+'</b>'+
+        (d.bien? ' · '+esc(d.bien):'')+
+        (c? ' · <i>apporté par '+esc(c.raison)+'</i>':'')+
+        (d.butoir? ' · butoir '+esc(frD(d.butoir)):'')+'</div>'+
+      '<div class="do-ets">'+et+'</div>'+
+      '<div class="do-b">'+
+        (estActif?'':'<button type="button" class="dem-b p" onclick="window.doActiver(\''+esc(d.id)+'\')">Ouvrir ce dossier</button>')+
+        '<button type="button" class="dem-b" onclick="window.doSupprimer(\''+esc(d.id)+'\')">Retirer</button>'+
+      '</div>'+
+      /* accès direct : rend le dossier actif puis ouvre l'onglet voulu, déjà chargé */
+      '<div class="do-liens">'+
+        [['devis','Devis'],['v','Visite'],['c','Constat'],['r','Rapport'],['ph','Photos'],
+         ['chif','Chiffrage'],['red','Rédaction'],['dos','Dossier'],['suivi','Suivi']]
+        .map(([o,lab]) => '<a href="#" onclick="window.doAller(\''+esc(d.id)+'\',\''+o+'\');return false">'+lab+'</a>').join('')+
+      '</div></div>';
+  }).join('');
+}
+window.demRefresh = rafraichir;
+
+if($('do-date') && !$('do-date').value) $('do-date').valueAsDate = new Date();
+/* Le carnet (EBR2Clients) est défini plus bas dans la page : on attend que le
+   document soit entièrement analysé avant le premier rendu. */
+function demarrer(){
+  if(!window.EBR2Clients){ setTimeout(demarrer, 50); return; }
+  rafraichir();
+  if(window.majBandeauActif) window.majBandeauActif();
+}
+if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', demarrer);
+else demarrer();
+})();
+</script>
+
 <div class="panel" id="panel-v">
 <div class="wrap">
 
@@ -2341,6 +2551,89 @@ window.EBR2FillNext = function(fieldId, clientFieldId){
 };
 // Récupération d'une ancienne fiche enregistrée avant la mise en place du
 // classement par client (elle dormait sous une clé fixe, non rattachée à un dossier).
+/* =======================================================================
+   Carnet d'apporteurs d'affaires et dossiers
+   L'apporteur (agence immobilière, étude notariale) TRANSMET le client mais ne
+   règle pas : il est mémorisé pour savoir d'où vient l'affaire et suivre ce que
+   chaque apporteur rapporte. Le client — l'acquéreur — est le destinataire du
+   rapport ET le payeur : les factures sont établies à son nom.
+   ======================================================================= */
+window.EBR2Clients = (function(){
+  const KC = 'ebr2:clients', KDOS = 'ebr2:dossiers', KACT = 'ebr2:actif';
+  const lire = k => { try{ return JSON.parse(localStorage.getItem(k) || '[]'); }catch(e){ return []; } };
+  const ecrire = (k,v) => { try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} };
+  const uid = () => 'c' + Date.now().toString(36) + Math.random().toString(36).slice(2,6);
+
+  function clients(){ return lire(KC); }
+  function client(id){ return clients().find(x => x.id === id) || null; }
+  function enregistrerClient(c){
+    const l = clients();
+    if(!c.id){ c.id = uid(); l.push(c); }
+    else { const i = l.findIndex(x => x.id === c.id); if(i >= 0) l[i] = c; else l.push(c); }
+    ecrire(KC, l); return c;
+  }
+  function supprimerClient(id){
+    /* les dossiers sont conservés : ils perdent seulement la mention de leur
+       provenance, l'apporteur n'étant pas partie à la prestation */
+    ecrire(KDOS, dossiers().map(d => d.clientId === id ? Object.assign({}, d, {clientId:''}) : d));
+    ecrire(KC, clients().filter(x => x.id !== id)); return true;
+  }
+
+  function dossiers(){ return lire(KDOS); }
+  function dossier(id){ return dossiers().find(x => x.id === id) || null; }
+  function dossierParRef(ref){
+    const r = (ref||'').trim();
+    return dossiers().find(x => (x.ref||'').trim() === r) || null;
+  }
+  function enregistrerDossier(d){
+    const l = dossiers();
+    if(!d.id){ d.id = uid(); l.push(d); }
+    else { const i = l.findIndex(x => x.id === d.id); if(i >= 0) l[i] = d; else l.push(d); }
+    ecrire(KDOS, l); return d;
+  }
+  function supprimerDossier(id){ ecrire(KDOS, dossiers().filter(x => x.id !== id)); }
+
+  function actif(){ try{ return dossier(localStorage.getItem(KACT) || ''); }catch(e){ return null; } }
+  function definirActif(id){ try{ id ? localStorage.setItem(KACT, id) : localStorage.removeItem(KACT); }catch(e){} }
+
+  /* Coordonnées de facturation : le donneur d'ordre du dossier, à défaut le nom
+     saisi sur la fiche. La référence rappelle le bien et l'acquéreur, pour que
+     l'agence sache à quoi se rapporte la facture. */
+  /* Coordonnées de facturation : le CLIENT du dossier (l'acquéreur), qui règle
+     la prestation. L'apporteur n'apparaît pas sur la facture — il ne doit rien. */
+  function facturation(ref){
+    const d = dossierParRef(ref);
+    if(!d || !d.acquereur) return null;
+    const refs = [];
+    if(d.bien) refs.push('Bien expertisé : ' + d.bien);
+    if(d.mandat) refs.push('Réf. mandat : ' + d.mandat);
+    return {
+      nom: d.acquereur, interlocuteur: '',
+      adresse: d.adrFact || d.bien || '',
+      siret: '', reference: refs.join(' · '),
+      dossier: d, apporteur: client(d.clientId)
+    };
+  }
+  /* Ce que chaque apporteur a rapporté : nombre de dossiers et montant facturé. */
+  function bilanApporteur(id){
+    const ds = dossiers().filter(d => d.clientId === id);
+    let facture = 0, regle = 0;
+    try{
+      const facs = JSON.parse(localStorage.getItem('ebr2:factures:index') || '[]');
+      ds.forEach(d => facs.filter(f => (f.ref||'').trim() === (d.ref||'').trim())
+        .forEach(f => { facture += (f.montant||0); if(f.paid) regle += (f.montant||0); }));
+    }catch(e){}
+    return { dossiers: ds.length, facture, regle };
+  }
+  /* Dossiers d'un donneur d'ordre non encore facturés : base du regroupement
+     mensuel demandé par les agences. */
+  function dossiersDuClient(id){ return dossiers().filter(d => d.clientId === id); }
+
+  return { clients, client, enregistrerClient, supprimerClient,
+           dossiers, dossier, dossierParRef, enregistrerDossier, supprimerDossier,
+           actif, definirActif, facturation, dossiersDuClient, bilanApporteur };
+})();
+
 window.EBR2RecoverOld = function(type, oldKey, ref, client, fieldsFn, calcFn){
   const r = (ref || '').trim();
   if(!r){ alert('Indiquez d\'abord le n° de dossier à qui rattacher cette ancienne fiche.'); return false; }
@@ -3212,6 +3505,7 @@ window.wipe_r = wipe;
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
         <button type="button" class="ph-btn g" onclick="window.chifAddRow()">+ Ajouter une ligne</button>
         <button type="button" class="ph-btn o" onclick="window.chifAddStandard()">Insérer les postes types</button>
+        <button type="button" class="ph-btn o" onclick="window.chifAutoDesordres()">Rattacher les désordres</button>
         <button type="button" class="ph-btn" style="background:#fff;border-color:var(--line);color:var(--muted)" onclick="window.chifClearRows()">Vider le tableau</button>
       </div>
       <div style="overflow-x:auto">
@@ -3334,7 +3628,7 @@ function rowHTML(r){
   return '<tr>'+
     '<td style="padding:3px"><input type="text" list="chif-postes" class="c-poste" value="'+esc(r.poste)+'" style="width:100%;font-size:12px;padding:5px 6px;border:1px solid var(--line);border-radius:4px"></td>'+
     '<td style="padding:3px"><input type="text" class="c-des" value="'+esc(r.des)+'" placeholder="D1, D4…" style="width:100%;font-size:12px;padding:5px 6px;border:1px solid var(--line);border-radius:4px"></td>'+
-    '<td style="padding:3px"><input type="number" step="0.01" class="c-qte" value="'+(r.qte!==undefined&&r.qte!==null?r.qte:'')+'" style="width:100%;font-size:12px;padding:5px 6px;border:1px solid var(--line);border-radius:4px;text-align:right"></td>'+
+    '<td style="padding:3px"><input type="number" step="1" class="c-qte" value="'+(r.qte!==undefined&&r.qte!==null?r.qte:'')+'" style="width:100%;font-size:12px;padding:5px 6px;border:1px solid var(--line);border-radius:4px;text-align:right"></td>'+
     '<td style="padding:3px"><input type="text" list="chif-unites" class="c-u" value="'+esc(r.u)+'" style="width:100%;font-size:12px;padding:5px 6px;border:1px solid var(--line);border-radius:4px"></td>'+
     '<td style="padding:3px"><input type="number" step="0.01" class="c-pu" value="'+(r.pu!==undefined&&r.pu!==null?r.pu:'')+'" style="width:100%;font-size:12px;padding:5px 6px;border:1px solid var(--line);border-radius:4px;text-align:right"></td>'+
     '<td style="padding:3px;text-align:right;white-space:nowrap" class="c-tot">—</td>'+
@@ -3351,8 +3645,86 @@ window.chifClearRows = function(){
   $('chif-body').innerHTML = ''; calc(); save();
 };
 window.chifAddStandard = function(){
-  biblio().forEach(x => $('chif-body').insertAdjacentHTML('beforeend', rowHTML({ poste:x.poste, u:x.u, pu:x.pu })));
+  /* on n'insère que les postes absents du tableau, pour éviter les doublons
+     lorsque le bouton est actionné plusieurs fois */
+  const presents = rows().map(r => (r.poste||'').trim());
+  let n = 0;
+  biblio().forEach(x => {
+    if(presents.indexOf(x.poste.trim()) >= 0) return;
+    $('chif-body').insertAdjacentHTML('beforeend', rowHTML({ poste:x.poste, u:x.u, pu:x.pu, des:desordresPour(x.poste) }));
+    n++;
+  });
   calc(); save();
+  if(!n) $('chif-saved').textContent = 'Tous les postes types figurent déjà au tableau.';
+};
+
+/* ------ rattachement automatique des désordres du dossier au poste ------- */
+const FAMCHIF = [
+  { id:'couverture', prio:0.15, mots:['couverture','bac acier','toiture'],
+    cible:['couvertur','toiture','bac acier','faîtage','faitage','rive','gouttière','gouttiere'] },
+  { id:'charpente', prio:0.10, mots:['charpente','ferme','panne','arbalétrier'],
+    cible:['charpent','ferme','panne','arbalétr','arbaletr','poinçon','poincon','entrait','chevron','assemblage'] },
+  { id:'ancrage', prio:0.20, mots:['ancrage','soulèvement','soulevement','anti-soul'],
+    cible:['ancrage','soulèvement','soulevement','équerre','equerre','feuillard','tige','poteau','moise','boulon'] },
+  { id:'pied', prio:0.30, mots:['pied de mur','garde au sol','ventilation','désolidar','desolidar'],
+    cible:['pied de mur','garde au sol',"lame d'air",'ventilation','pare-pluie','dalle','béton','beton','humidit','infiltration','soubassement'] },
+  { id:'ossature', prio:0, mots:['mur','ossature','contreventement','osb','bardage','voile'],
+    cible:['ossature','montant','lisse','osb','contrevent','voile','pignon','mur','bardage','tasseau'] },
+];
+/* Chaque désordre est rattaché à UNE seule famille, celle qui obtient le
+   meilleur score : sans quoi un désordre de pied de mur, qui contient le mot
+   « mur », remonterait aussi dans le poste « murs à ossature bois ». */
+function familleDuDesordre(d){
+  const t = ((d.lab||'') + ' ' + (d.elem||'')).toLowerCase();
+  let best = null, score = 0;
+  FAMCHIF.forEach(f => {
+    const n = f.cible.reduce((a,m) => a + (t.indexOf(m) >= 0 ? 1 : 0), 0);
+    if(!n) return;
+    const sc = n + f.prio;
+    if(sc > score){ score = sc; best = f.id; }
+  });
+  return best;
+}
+function familleDuPoste(poste){
+  const p = (poste||'').toLowerCase();
+  let best = null, score = 0;
+  FAMCHIF.forEach(f => {
+    const n = f.mots.reduce((a,m) => a + (p.indexOf(m) >= 0 ? 1 : 0), 0);
+    if(!n) return;
+    const sc = n + f.prio;
+    if(sc > score){ score = sc; best = f.id; }
+  });
+  return best;
+}
+/* désordres du dossier photo portant le même n° de dossier que le chiffrage */
+function desordresDuDossier(){
+  const ref = ($('chif-nRef').value || '').trim();
+  if(!ref) return [];
+  try{
+    const idx = JSON.parse(localStorage.getItem('ebr2:index') || '[]');
+    const e = idx.find(x => (x.ref||'').trim() === ref);
+    if(!e) return [];
+    const d = JSON.parse(localStorage.getItem('ebr2:dossier:' + e.id) || 'null');
+    return (d && d.des) ? d.des : [];
+  }catch(e){ return []; }
+}
+function desordresPour(poste){
+  const fam = familleDuPoste(poste);
+  if(!fam) return '';
+  return desordresDuDossier().filter(d => familleDuDesordre(d) === fam).map(d => d.id).join(', ');
+}
+window.chifAutoDesordres = function(){
+  const des = desordresDuDossier();
+  if(!des.length){ alert("Aucun dossier photo trouvé pour ce n° de dossier : les désordres ne peuvent pas être rattachés automatiquement."); return; }
+  let n = 0;
+  [...$('chif-body').querySelectorAll('tr')].forEach(tr => {
+    const cd = tr.querySelector('.c-des');
+    if(cd.value.trim()) return;
+    const v = desordresPour(tr.querySelector('.c-poste').value);
+    if(v){ cd.value = v; n++; }
+  });
+  calc(); save();
+  $('chif-saved').textContent = n ? (n + ' ligne(s) renseignée(s) automatiquement.') : 'Aucune correspondance trouvée.';
 };
 
 /* pré-remplissage du P.U. quand on choisit un poste de la bibliothèque */
@@ -3363,6 +3735,8 @@ $('chif-body').addEventListener('input', e => {
       const tr = e.target.closest('tr');
       if(!tr.querySelector('.c-pu').value) tr.querySelector('.c-pu').value = hit.pu;
       if(!tr.querySelector('.c-u').value)  tr.querySelector('.c-u').value  = hit.u;
+      const cd = tr.querySelector('.c-des');
+      if(!cd.value.trim()){ const v = desordresPour(e.target.value); if(v) cd.value = v; }
     }
   }
   calc(); save();
@@ -3915,6 +4289,32 @@ window.redGenerer = function(imprimer){
       if(window.EBR2FiligraneOff) window.EBR2FiligraneOff(); }, 400); }, 300);
 };
 
+/* Rendu du rapport pour un dossier donné, sans passer par l'écran :
+   utilisé par l'onglet Dossier pour intégrer un rapport correctement mis en
+   page plutôt qu'un décalque du formulaire. */
+window.redRapportHTML = function(ref){
+  const cible = (ref || '').trim();
+  if(!cible) return '';
+  const idx = listeDossiers();
+  const e = idx.find(x => (x.ref||'').trim() === cible);
+  if(!e) return '';
+  const memoD = DOS, memoDES = DES;
+  try{
+    DOS = JSON.parse(localStorage.getItem('ebr2:dossier:' + e.id) || 'null');
+    if(!DOS) return '';
+    DES = (DOS.des || []).slice();
+    if(!DES.length) return '';
+    /* on renseigne l'en-tête à partir du dossier si l'écran n'a pas été rempli */
+    if(!$('red-client').value) $('red-client').value = DOS.client || DOS.nom || '';
+    if(!$('red-adr').value)    $('red-adr').value    = DOS.adresse || '';
+    if(!$('red-dateV').value && DOS.date) $('red-dateV').value = DOS.date;
+    if(!$('red-dateR').value) $('red-dateR').valueAsDate = new Date();
+    renderListe();
+    return build();
+  }catch(err){ return ''; }
+  finally{ DOS = memoD; DES = memoDES; if(DOS) renderListe(); }
+};
+
 window.redRefresh();
 })();
 </script>
@@ -4012,6 +4412,151 @@ body.red-printing > #red-print{display:block!important}
 
 </div>
 </div>
+<div class="bar-pastille" id="bar-pastille" onclick="window.scrollTo({top:document.body.scrollHeight,behavior:'smooth'})"></div>
+
+<script>
+/* Affiche la barre d'actions uniquement en bas de page. Une pastille rappelle
+   le total le reste du temps et ramène à la barre d'un appui. */
+(function(){
+  const MARGE = 90;                    // tolérance en pixels
+  /* les quatre barres sont chacune dans leur panneau : seule celle du panneau
+     affiché nous intéresse */
+  function barreVisible(){ return document.querySelector('.panel.on .bar'); }
+  function majPastille(){
+    const past = document.getElementById('bar-pastille');
+    const b = barreVisible();
+    if(!past) return;
+    if(!b){ past.classList.remove('on'); return; }
+    const tt = b.querySelector('.tt');
+    const txt = tt ? tt.textContent.replace(/\s+/g,' ').trim() : '';
+    if(txt){ past.textContent = txt; past.classList.add('on'); }
+    else { past.classList.remove('on'); }
+  }
+  function verifier(){
+    const bas = window.innerHeight + window.scrollY >= document.body.scrollHeight - MARGE;
+    document.body.classList.toggle('bas-de-page', bas);
+    if(!bas) majPastille();
+  }
+  window.addEventListener('scroll', verifier, {passive:true});
+  window.addEventListener('resize', verifier);
+  document.addEventListener('input', majPastille);
+  window.majBarreBas = verifier;
+  setTimeout(verifier, 300);
+})();
+</script>
+
+<div id="bandeau-actif" class="bnd-actif" style="display:none"></div>
+
+<script>
+/* Dossier actif : rappelé en haut de chaque onglet et reporté dans les champs
+   encore vides. On n'écrase jamais une saisie existante. */
+window.majBandeauActif = function(){
+  const b = document.getElementById('bandeau-actif');
+  if(!b || !window.EBR2Clients) return;
+  const d = window.EBR2Clients.actif();
+  if(!d){ b.style.display = 'none'; return; }
+  const c = window.EBR2Clients.client(d.clientId);
+  const j = d.butoir ? Math.ceil((new Date(d.butoir) - new Date())/86400000) : null;
+  const alerte = (j !== null && j <= 7) ? ' · <b>' + (j < 0 ? 'échéance dépassée' : j + ' jour(s) avant butoir') + '</b>' : '';
+  b.innerHTML = '<span class="bnd-p">Dossier actif</span> <b>' + (d.ref||'') + '</b>' +
+    (d.acquereur ? ' — ' + d.acquereur : '') +
+    (c ? ' <span style="opacity:.7">(apporté par ' + c.raison + ')</span>' : '') + alerte +
+    '<button type="button" onclick="window.go(\'home\')">changer</button>';
+  b.style.display = 'block';
+};
+/* Charge dans l'onglet ouvert ce qui a déjà été enregistré pour le dossier
+   actif : fiche saisie, chiffrage, dossier photo. À défaut, on se contente de
+   pré-remplir les champs encore vides. */
+function chargerExistant(px, ref){
+  if(!ref || !window.EBR2Multi) return false;
+  const existe = t => { try{ return !!localStorage.getItem(window.EBR2Multi.key(t, ref)); }catch(e){ return false; } };
+  /* fiches : on positionne la liste déroulante puis on appelle son chargeur */
+  if(['v','c','r','devis'].indexOf(px) >= 0){
+    if(!existe(px)) return false;
+    const sel = document.getElementById(px + '-ficheSel');
+    const loader = window['EBR2Load_' + px];
+    if(!sel || !loader) return false;
+    /* l'indexation des fiches est différée : l'option peut ne pas encore
+       figurer dans la liste alors que la fiche existe. On l'ajoute au besoin
+       plutôt que de renoncer au chargement. */
+    if(![...sel.options].some(o => o.value === ref)){
+      const o = document.createElement('option');
+      o.value = ref; o.textContent = ref;
+      sel.appendChild(o);
+    }
+    if(sel.value !== ref){ sel.value = ref; loader(); }
+    return true;
+  }
+  if(px === 'chif'){
+    if(!existe('chif')) return false;
+    const sel = document.getElementById('chif-sel');
+    if(!sel) return false;
+    if(![...sel.options].some(o => o.value === ref)){
+      const o = document.createElement('option');
+      o.value = ref; o.textContent = ref;
+      sel.appendChild(o);
+    }
+    if(sel.value !== ref){ sel.value = ref; window.chifLoadSel(); }
+    return true;
+  }
+  if(px === 'ph' && window.phOpen){
+    try{
+      const e = JSON.parse(localStorage.getItem('ebr2:index') || '[]')
+        .find(x => (x.ref||'').trim() === ref.trim());
+      if(e){ window.phOpen(e.id); return true; }
+    }catch(err){}
+    return false;
+  }
+  if(px === 'red' && window.redCharger){
+    try{
+      const e = JSON.parse(localStorage.getItem('ebr2:index') || '[]')
+        .find(x => (x.ref||'').trim() === ref.trim());
+      const sel = document.getElementById('red-src');
+      if(e && sel && [...sel.options].some(o => o.value === e.id)){
+        if(sel.value !== e.id){ sel.value = e.id; window.redCharger(); }
+        return true;
+      }
+    }catch(err){}
+    return false;
+  }
+  if(px === 'dos'){
+    const sel = document.getElementById('dos-ref');
+    if(sel && [...sel.options].some(o => o.value === ref)){
+      if(sel.value !== ref){ sel.value = ref; sel.dispatchEvent(new Event('change', {bubbles:true})); }
+      return true;
+    }
+    return false;
+  }
+  return false;
+}
+
+window.prefillActif = function(onglet){
+  if(!window.EBR2Clients) return;
+  const d = window.EBR2Clients.actif(); if(!d) return;
+  const c = window.EBR2Clients.client(d.clientId);
+  const px = ['v','c','r','devis','chif','ph','red','dos'].indexOf(onglet) >= 0 ? onglet : null;
+  if(!px) return;
+  setTimeout(() => {
+    /* on charge d'abord ce qui existe ; le pré-remplissage ne sert qu'ensuite,
+       pour les champs restés vides */
+    if(chargerExistant(px, d.ref)) return;
+    const set = (id, val) => { if(!val) return; const e = document.getElementById(id);
+      if(e && !e.value){ e.value = val; e.dispatchEvent(new Event('input', {bubbles:true})); } };
+    /* n° de dossier : commun à tous les onglets, c'est la clé de rattachement */
+    ['-nRef','-ref'].forEach(sfx => set(px + sfx, d.ref));
+    set('chif-nRef', d.ref); set('dos-ref', d.ref);
+    /* le client est l'acquéreur : destinataire du rapport et payeur */
+    ['-nClient','-client'].forEach(sfx => set(px + sfx, d.acquereur));
+    ['-nAdresse','-adresse','-adr'].forEach(sfx => set(px + sfx, d.bien));
+    ['-date','-nDate','-dateV'].forEach(sfx => set(px + sfx, d.dateVisite));
+    if(px === 'red'){ set('red-adr', d.bien); set('red-dest', d.acquereur || ''); }
+    /* l'adresse de facturation du client alimente les fiches qui la demandent */
+    if(d.adrFact) set(px + '-nAdresseFact', d.adrFact);
+    if(px === 'dos'){ set('dos-client', d.acquereur); }
+  }, 120);
+};
+</script>
+
 <div id="dos-print" style="display:none;background:#fff"></div>
 
 <script>
@@ -4170,8 +4715,8 @@ function ficheHTML(p, ref){
       if(/^\d{4}-\d{2}-\d{2}$/.test(txt)) txt = frD(txt);
       const span = document.createElement('span');
       span.textContent = txt;
-      span.style.cssText = 'display:inline-block;min-height:1em;font-size:10.5pt;border-bottom:1px solid #ccc;'+
-                           'width:100%;padding:1pt 0;white-space:pre-wrap';
+      span.style.cssText = 'display:inline-block;min-height:1em;font-size:10pt;'+
+                           'width:100%;padding:1pt 0;white-space:pre-wrap;font-weight:500';
       el.replaceWith(span);
     });
   }
@@ -4248,7 +4793,13 @@ window.dosGenerer = async function(){
     '</div>';
 
   for(const p of retenues){
-    if(p.type === 'fiche')       h += ficheHTML(p, ref);
+    if(p.type === 'fiche' && p.id === 'r' && window.redRapportHTML){
+      /* Le rapport technique est rendu par le moteur de l'onglet Rédaction :
+         mise en page soignée, plutôt qu'un décalque du formulaire de saisie. */
+      const rr = window.redRapportHTML(ref);
+      h += rr ? '<div class="dos-piece dos-rapport">'+rr+'</div>' : ficheHTML(p, ref);
+    }
+    else if(p.type === 'fiche')  h += ficheHTML(p, ref);
     else if(p.type === 'chif')   h += chifHTML(ref);
     else if(p.type === 'photo' && window.phAnnexeHTMLFor){
       const a = await window.phAnnexeHTMLFor(ref);
@@ -4274,6 +4825,42 @@ window.dosRefresh();
 </script>
 
 <style>
+/* --- dossier actif et carnet de dossiers --- */
+.bnd-actif{position:sticky;top:0;z-index:40;background:#0e1c2f;color:#fff;font-size:12.5px;
+  padding:7px 16px;letter-spacing:.02em;border-bottom:2px solid var(--gold)}
+.bnd-actif .bnd-p{color:var(--gold-l);text-transform:uppercase;font-size:10.5px;letter-spacing:.10em;margin-right:6px}
+.bnd-actif button{margin-left:10px;background:none;border:1px solid rgba(255,255,255,.35);color:#fff;
+  font-size:11px;padding:2px 8px;border-radius:3px;cursor:pointer}
+@media print{ .bnd-actif{display:none!important} }
+.do-c{border:1px solid var(--line);border-radius:6px;padding:11px 13px;margin-bottom:8px;background:#fff}
+.do-c.actif{border-color:var(--gold);border-left:4px solid var(--gold);background:#fffdf7}
+.do-h{font-size:14px;color:var(--navy)}
+.do-s{font-size:12px;color:var(--muted);margin-top:3px}
+.do-ets{margin-top:7px;display:flex;flex-wrap:wrap;gap:5px}
+.do-et{font-size:11px;padding:2px 7px;border:1px solid var(--line);border-radius:3px;color:var(--muted)}
+.do-et.ok{border-color:#8fbf8f;background:#f2f8f2;color:#2f6a2f}
+.do-b{margin-top:9px;display:flex;gap:6px}
+.do-liens{margin-top:8px;padding-top:8px;border-top:1px dashed var(--line);display:flex;flex-wrap:wrap;gap:4px}
+.do-liens a{font-size:11.5px;color:var(--navy);text-decoration:none;padding:3px 8px;
+  border:1px solid var(--line);border-radius:12px;background:#fcfbf7}
+.do-liens a:hover{border-color:var(--gold);color:var(--gold)}
+.do-b .dem-b{padding:5px 10px;font-size:12px}
+.do-tag{font-size:10.5px;padding:2px 7px;border-radius:3px;margin-left:8px;background:#eee;color:#555}
+.do-tag.vert{background:#e8f3e8;color:#2f6a2f}
+.do-tag.orange{background:#fdf0dc;color:#94601a}
+.do-tag.rouge{background:#fdecec;color:#a11}
+/* --- module « démarrer un dossier » de l'accueil --- */
+.demarrer{background:#fff;border:1px solid var(--line);border-radius:8px;padding:16px;margin-bottom:8px}
+.dem-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px}
+.dem-grid .f label{display:block;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+.dem-grid .f input,.dem-grid .f select{width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:5px;font-size:14px;background:#fcfbf7}
+.dem-mini{margin-top:5px;font-size:11px;padding:3px 8px;border:1px solid var(--line);background:#fcfbf7;border-radius:4px;cursor:pointer;color:var(--muted)}
+.dem-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.dem-b{padding:9px 14px;border:1px solid var(--line);background:#fff;border-radius:5px;cursor:pointer;
+  font-size:13px;color:var(--navy);font-weight:600}
+.dem-b:hover{background:#fcfbf7}
+.dem-b.p{background:var(--gold);border-color:var(--gold);color:#fff}
+.dem-note{font-size:12px;color:var(--muted);margin:12px 0 0;line-height:1.5}
 /* --- marquage « document provisoire » sur les exports non réglés --- */
 .ebr-band{background:#fdecec;border:1px solid #d98b8b;color:#a11;font-weight:700;
   font-size:8pt;letter-spacing:.07em;text-align:center;padding:3pt 6pt;margin:0 0 7pt;
@@ -4426,6 +5013,10 @@ function go(p){
   if (p === 'chif' && window.chifRefreshList) window.chifRefreshList();
   if (p === 'dos'  && window.dosRefresh) window.dosRefresh();
   if (p === 'red'  && window.redRefresh) window.redRefresh();
+  if (p === 'home' && window.demRefresh) window.demRefresh();
+  if (window.prefillActif) window.prefillActif(p);
+  if (window.majBandeauActif) window.majBandeauActif();
+  if (window.majBarreBas) setTimeout(window.majBarreBas, 60);
 }
 document.querySelectorAll('.tabs .tab').forEach(b => b.onclick = () => go(b.dataset.p));
 
@@ -7510,9 +8101,19 @@ function buildFactureHtml(){
   if (cabAdr) h += '<div class="kv">'+esc(cabAdr)+'</div>';
   if (siret) h += '<div class="kv">SIRET '+esc(siret)+'</div>';
 
+  /* La facture est adressée au CLIENT du dossier — l'acquéreur — qui reçoit le
+     rapport et règle la prestation. L'apporteur d'affaires (agence, notaire)
+     n'apparaît pas sur la facture : il ne doit rien. */
+  const fa = window.EBR2Clients ? window.EBR2Clients.facturation(ref) : null;
   h += '<h3>Client</h3>';
-  h += '<div class="kv"><b>'+esc(client||'—')+'</b></div>';
-  if (adr) h += '<div class="kv">'+esc(adr)+'</div>';
+  if (fa && fa.nom){
+    h += '<div class="kv"><b>'+esc(fa.nom)+'</b></div>';
+    if (fa.adresse) h += '<div class="kv">'+esc(fa.adresse)+'</div>';
+    if (fa.reference) h += '<div class="kv" style="margin-top:6px;font-size:11px;color:#666">'+esc(fa.reference)+'</div>';
+  } else {
+    h += '<div class="kv"><b>'+esc(client||'—')+'</b></div>';
+    if (adr) h += '<div class="kv">'+esc(adr)+'</div>';
+  }
 
   h += '<h3>Détail</h3>';
   h += '<table class="rec"><tr><th>Désignation</th><th>Montant</th></tr>' +
@@ -7548,7 +8149,13 @@ function ficheVal(panel, prefixes){
 function ficheTotals(p){
   if (p === 'v') return { tot: parseFrEur(($('v-ttc')||{textContent:'0'}).textContent), acompte: 0 };
   if (p === 'c') return { tot: parseFrEur(($('c-tot')||{textContent:'0'}).textContent), acompte: num('c-pAcompte') };
-  return { tot: parseFrEur(($('r-tot')||{textContent:'0'}).textContent), acompte: parseFrEur(($('r-acompte')||{textContent:'0'}).textContent) };
+  /* L'acompte à déduire du solde est celui RÉELLEMENT encaissé, et non le
+     pourcentage théorique : si le devis prévoit 40 % (1 100 €) mais que 1 000 €
+     ont été encaissés, le solde dû est calculé sur 1 000 €. */
+  const recu = num('r-pRecu');
+  const theorique = parseFrEur(($('r-acompte')||{textContent:'0'}).textContent);
+  return { tot: parseFrEur(($('r-tot')||{textContent:'0'}).textContent),
+           acompte: recu > 0 ? recu : theorique };
 }
 function buildFactureFicheHtml(p){
   const ref = ficheVal(p, ['n° dossier']);
@@ -7563,7 +8170,13 @@ function buildFactureFicheHtml(p){
      total prime sur celui de la fiche, lignes complémentaires comprises. */
   try{
     const dv = JSON.parse(localStorage.getItem('ebr2:devis:totaux:' + (ref||'').trim()) || 'null');
-    if(dv && dv.tot > 0){ tot = dv.tot; acompte = dv.acompte || 0; sourceDevis = true; }
+    if(dv && dv.tot > 0){
+      tot = dv.tot;
+      /* on conserve l'acompte réellement encaissé s'il a été saisi sur la fiche */
+      const recuFiche = num('r-pRecu');
+      acompte = recuFiche > 0 ? recuFiche : (dv.acompte || 0);
+      sourceDevis = true;
+    }
   }catch(e){}
   const solde = tot - acompte;
   const hasAcompte = acompte > 0;
@@ -7583,9 +8196,19 @@ function buildFactureFicheHtml(p){
   if (cabAdr) h += '<div class="kv">'+esc(cabAdr)+'</div>';
   if (siret) h += '<div class="kv">SIRET '+esc(siret)+'</div>';
 
+  /* La facture est adressée au CLIENT du dossier — l'acquéreur — qui reçoit le
+     rapport et règle la prestation. L'apporteur d'affaires (agence, notaire)
+     n'apparaît pas sur la facture : il ne doit rien. */
+  const fa = window.EBR2Clients ? window.EBR2Clients.facturation(ref) : null;
   h += '<h3>Client</h3>';
-  h += '<div class="kv"><b>'+esc(client||'—')+'</b></div>';
-  if (adr) h += '<div class="kv">'+esc(adr)+'</div>';
+  if (fa && fa.nom){
+    h += '<div class="kv"><b>'+esc(fa.nom)+'</b></div>';
+    if (fa.adresse) h += '<div class="kv">'+esc(fa.adresse)+'</div>';
+    if (fa.reference) h += '<div class="kv" style="margin-top:6px;font-size:11px;color:#666">'+esc(fa.reference)+'</div>';
+  } else {
+    h += '<div class="kv"><b>'+esc(client||'—')+'</b></div>';
+    if (adr) h += '<div class="kv">'+esc(adr)+'</div>';
+  }
 
   h += '<h3>Détail</h3>';
   const rows = [];
