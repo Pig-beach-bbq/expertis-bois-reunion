@@ -290,6 +290,10 @@ h1:first-child{margin-top:0}
 
   <h1>Dossiers en cours</h1>
   <div class="demarrer">
+    <div style="margin-bottom:10px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+      <button type="button" class="dem-b" onclick="window.doImporter()">Reprendre les dossiers déjà saisis</button>
+      <span id="do-import" style="font-size:12px;color:var(--muted)"></span>
+    </div>
     <div id="do-liste"><p style="font-size:13px;color:var(--muted);margin:0">Aucun dossier enregistré.</p></div>
   </div>
 
@@ -436,6 +440,48 @@ window.doCreer = function(){
   $('do-etat').textContent = 'Dossier ' + ref + ' créé et rendu actif.';
   if(window.majBandeauActif) window.majBandeauActif();
 };
+/* Reprise des dossiers antérieurs au carnet : on balaie les fiches et les
+   dossiers photo déjà enregistrés, et on crée l'entrée manquante en reprenant
+   le n° exact — c'est lui qui relie tout, une saisie manuelle risquerait une
+   faute de frappe. */
+window.doImporter = function(){
+  const connus = {};
+  M().dossiers().forEach(d => connus[(d.ref||'').trim()] = 1);
+  const trouves = {};
+  const noter = (ref, client, date) => {
+    const r = (ref||'').trim();
+    if(!r || connus[r]) return;
+    if(!trouves[r]) trouves[r] = { ref:r, client:client||'', date:date||'' };
+    else if(client && !trouves[r].client) trouves[r].client = client;
+  };
+  try{ JSON.parse(localStorage.getItem('ebr2:fiches:index')||'[]')
+        .forEach(x => noter(x.ref, x.client, x.updatedAt)); }catch(e){}
+  try{ JSON.parse(localStorage.getItem('ebr2:index')||'[]')
+        .forEach(x => noter(x.ref, x.client || x.nom, x.date)); }catch(e){}
+  /* on complète l'adresse du bien depuis le dossier photo lorsqu'elle existe */
+  try{
+    const ph = JSON.parse(localStorage.getItem('ebr2:index')||'[]');
+    ph.forEach(x => {
+      const r = (x.ref||'').trim();
+      if(!trouves[r]) return;
+      const dd = JSON.parse(localStorage.getItem('ebr2:dossier:'+x.id)||'null');
+      if(dd && dd.adresse) trouves[r].bien = dd.adresse;
+    });
+  }catch(e){}
+
+  const liste = Object.values(trouves);
+  if(!liste.length){ $('do-import').textContent = 'Aucun dossier à reprendre : tous sont déjà au carnet.'; return; }
+  if(!confirm(liste.length + ' dossier(s) déjà saisi(s) ne figurent pas au carnet :\n\n' +
+      liste.slice(0,12).map(x => '· ' + x.ref + (x.client ? ' — ' + x.client : '')).join('\n') +
+      (liste.length > 12 ? '\n· …' : '') +
+      '\n\nLes ajouter ? Leurs fiches, photos et factures existantes seront rattachées automatiquement.')) return;
+  liste.forEach(x => M().enregistrerDossier({
+    ref:x.ref, clientId:'', acquereur:x.client||'', bien:x.bien||'',
+    dateVisite:(x.date||'').slice(0,10), cree:new Date().toISOString(), repris:true }));
+  rafraichir();
+  $('do-import').textContent = liste.length + ' dossier(s) repris. Vérifiez le nom du client et l\'adresse du bien.';
+};
+
 window.doActiver = function(id){
   M().definirActif(id); rafraichir();
   if(window.majBandeauActif) window.majBandeauActif();
